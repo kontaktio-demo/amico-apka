@@ -10,6 +10,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body,
 #root {
@@ -21,6 +26,36 @@ body {
   background-image: radial-gradient(1200px 600px at 80% -10%, rgba(14, 21, 51, 0.55), transparent 60%),
     radial-gradient(900px 500px at 0% 0%, rgba(20, 22, 31, 0.6), transparent 55%);
   background-attachment: fixed;
+  /* Zachowanie jak w natywnej apce: bez przyblizania gestem i bez "gumowego" przewijania */
+  touch-action: pan-x pan-y;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  text-rendering: optimizeLegibility;
+}
+
+/* Elementy interfejsu nie zaznaczaja sie przypadkiem; dane i dokumenty tak. */
+button,
+.nav-link,
+.badge,
+label > span,
+.section-title {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input,
+textarea,
+[contenteditable],
+.doc-sheet,
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Czytelny focus dla nawigacji klawiatura */
+:focus-visible {
+  outline: 2px solid rgba(174, 182, 208, 0.7);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 h1,

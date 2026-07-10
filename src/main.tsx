@@ -5,6 +5,9 @@ import '@fontsource-variable/inter-tight'
 import '@fontsource-variable/space-grotesk'
 import './index.css'
 import App from './App'
+import { enableNativeFeel } from './lib/nativeFeel'
+
+enableNativeFeel()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
