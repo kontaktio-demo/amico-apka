@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-stone-50 text-ink font-sans antialiased;
+  background-image: radial-gradient(1200px 600px at 80% -10%, rgba(14, 21, 51, 0.55), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(20, 22, 31, 0.6), transparent 55%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: 'Inter Tight Variable', 'Inter Tight', 'Space Grotesk Variable', Inter, system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-stone-300 rounded-full;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-stone-400;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-white/[0.07] shadow-card;
+    background-color: #14161f;
+  }
+  .card-pad {
+    @apply p-5 sm:p-6;
+  }
+
+  /* Przyciski */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+           transition-all select-none active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn text-[#0b0b10];
+    background-color: #f5f5f5;
+  }
+  .btn-primary:hover {
+    background-color: #e2e4ea;
+  }
+  .btn-outline {
+    @apply btn border border-white/15 bg-transparent text-stone-700 hover:bg-white/[0.06] hover:border-white/25;
+  }
+  .btn-ghost {
+    @apply btn text-stone-500 hover:bg-white/[0.06] hover:text-white;
+  }
+  .btn-danger {
+    @apply btn bg-red-600/90 text-white hover:bg-red-600;
+  }
+  .btn-gold {
+    @apply btn border border-white/10 text-white;
+    background-color: #0e1224;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-[13px] rounded-md;
+  }
+  .btn-lg {
+    @apply px-5 py-3 text-base rounded-xl;
+  }
+
+  /* Formularze */
+  .label {
+    @apply block text-[13px] font-medium text-stone-400 mb-1.5;
+  }
+  .input,
+  .textarea,
+  .select {
+    @apply w-full rounded-lg border border-white/10 px-3.5 py-2.5 text-[15px] text-stone-700
+           placeholder:text-stone-400 outline-none transition
+           focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15;
+    background-color: #10121a;
+  }
+  .textarea {
+    @apply leading-relaxed;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .badge-green {
+    @apply badge bg-emerald-500/15 text-emerald-300;
+  }
+  .badge-stone {
+    @apply badge bg-white/[0.06] text-stone-500;
+  }
+  .badge-amber {
+    @apply badge bg-amber-500/15 text-amber-300;
+  }
+  .badge-blue {
+    @apply badge bg-sky-500/15 text-sky-300;
+  }
+  .badge-red {
+    @apply badge bg-red-500/15 text-red-300;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14.5px] font-medium text-stone-500
+           transition-colors hover:bg-white/[0.05] hover:text-white;
+  }
+  .nav-link-active {
+    @apply bg-white/[0.09] text-white hover:bg-white/[0.09] hover:text-white;
+  }
+
+  .section-title {
+    @apply text-[13px] font-semibold uppercase tracking-wider text-brand-700;
+  }
+
+  .th {
+    @apply text-left text-[12px] font-semibold uppercase tracking-wide text-stone-400 px-3 py-2.5;
+  }
+  .td {
+    @apply px-3 py-2.5 text-[14.5px] text-stone-600 align-middle;
+  }
+  .row-hover {
+    @apply hover:bg-white/[0.03] transition-colors;
+  }
+}
+
+/* ---------- Dokumenty (podglad + druk) – zawsze BIALE (papier) ---------- */
+.doc-sheet {
+  background: #fff;
+  color: #12130f;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 16mm 16mm 18mm;
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7);
+  font-family: 'Inter Tight Variable', 'Inter Tight', Inter, system-ui, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+}
+.doc-sheet.compact {
+  font-size: 9.5pt;
+  line-height: 1.42;
+}
+
+/* ---------- DRUK / PDF ---------- */
+#print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  :root {
+    color-scheme: light;
+  }
+  html,
+  body {
+    background: #fff !important;
+    background-image: none !important;
+  }
+  #root {
+    display: none !important;
+  }
+  #print-root {
+    display: block !important;
+  }
+  .doc-sheet {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .page-break {
+    break-before: page;
+  }
+  .avoid-break {
+    break-inside: avoid;
+  }
+}
