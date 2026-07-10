@@ -61,6 +61,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const user = useMemo(() => uzytkownicy.find((u) => u.id === userId) || null, [uzytkownicy, userId])
 
+  // Auto-blokada po bezczynnosci (5 min) – ochrona przy zgubieniu urzadzenia
+  useEffect(() => {
+    if (widok !== 'in') return
+    let t: ReturnType<typeof setTimeout>
+    const reset = () => {
+      clearTimeout(t)
+      t = setTimeout(() => setWidok('lock'), 5 * 60 * 1000)
+    }
+    const evs: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'pointermove', 'touchstart', 'wheel']
+    evs.forEach((e) => window.addEventListener(e, reset, { passive: true }))
+    reset()
+    return () => {
+      clearTimeout(t)
+      evs.forEach((e) => window.removeEventListener(e, reset))
+    }
+  }, [widok])
+
   const zaloguj = (id: string) => {
     setUserId(id)
     zapiszOstatniego(id)
@@ -257,6 +274,7 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
   const [bioOk, setBioOk] = useState(false)
   const [trybHaslo, setTrybHaslo] = useState(!user.pinHash && !user.webauthnId)
   const [haslo, setHaslo] = useState('')
+  const [proby, setProby] = useState(0)
 
   useEffect(() => {
     biometriaDostepna().then((d) => setBioOk(d && !!user.webauthnId))
@@ -268,11 +286,19 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
       sprawdzPin(pin, user.pinSalt, user.pinHash).then((ok) => {
         if (ok) onUnlock()
         else {
-          setErr('Błędny PIN')
-          setTimeout(() => {
+          const n = proby + 1
+          setProby(n)
+          if (n >= 5) {
+            setTrybHaslo(true)
+            setErr('Za dużo prób PIN — zaloguj się hasłem')
             setPin('')
-            setErr('')
-          }, 700)
+          } else {
+            setErr(`Błędny PIN (próba ${n}/5)`)
+            setTimeout(() => {
+              setPin('')
+              setErr('')
+            }, 700)
+          }
         }
       })
     }
