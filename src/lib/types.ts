@@ -489,6 +489,37 @@ export interface Odprawa {
   utworzono: ISODateTime
 }
 
+// ---------- Zadania (przypisywanie pracy) ----------
+export type ZadanieStatus = 'do_zrobienia' | 'w_trakcie' | 'zrobione'
+export type ZadaniePriorytet = 'niski' | 'sredni' | 'wysoki'
+export interface Zadanie {
+  id: ID
+  tytul: string
+  opis?: string
+  przypisanyDo?: ID // pracownikId lub uzytkownikId
+  klientId?: ID
+  zlecenieId?: ID
+  termin?: ISODate
+  godzina?: string
+  priorytet: ZadaniePriorytet
+  status: ZadanieStatus
+  utworzono: ISODateTime
+  zaktualizowano: ISODateTime
+}
+
+// ---------- Skany / dokumenty (skaner PDF) ----------
+export type SkanKategoria = 'umowa' | 'protokol' | 'faktura' | 'pomiar' | 'projekt' | 'kosztorys' | 'zdjecie' | 'inne'
+export interface Skan {
+  id: ID
+  nazwa: string
+  kategoria: SkanKategoria
+  strony: string[] // JPEG dataURL – kolejne strony/kartki po skanie i obróbce
+  zlecenieId?: ID
+  klientId?: ID
+  notatka?: string
+  utworzono: ISODateTime
+}
+
 // ---------- Ustawienia ----------
 export interface Ustawienia {
   aktywnaFirmaId: ID
@@ -521,5 +552,7 @@ export interface Baza {
   przelewy: Przelew[]
   ekspozycje: Ekspozycja[]
   odprawy: Odprawa[]
+  zadania: Zadanie[]
+  skany: Skan[]
   ustawienia: Ustawienia
 }

@@ -23,6 +23,9 @@ import Ekspozycje from './modules/Ekspozycje'
 import Finanse from './modules/Finanse'
 import Odprawa from './modules/Odprawa'
 import Ustawienia from './modules/Ustawienia'
+import Zadania from './modules/Zadania'
+import Skany from './modules/Skany'
+import { RoleGuard } from './components/RoleGuard'
 
 export default function App() {
   const init = useStore((s) => s.init)
@@ -51,24 +54,26 @@ export default function App() {
           <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Pulpit />} />
-            <Route path="/klienci" element={<Klienci />} />
-            <Route path="/klienci/:id" element={<Klienci />} />
-            <Route path="/zlecenia" element={<Zlecenia />} />
-            <Route path="/zlecenia/:id" element={<Zlecenia />} />
-            <Route path="/kalendarz" element={<Kalendarz />} />
-            <Route path="/wyceny" element={<Wyceny />} />
-            <Route path="/wyceny/:id" element={<Wyceny />} />
-            <Route path="/umowy" element={<Umowy />} />
-            <Route path="/umowy/:id" element={<Umowy />} />
-            <Route path="/faktury" element={<Faktury />} />
-            <Route path="/faktury/:id" element={<Faktury />} />
-            <Route path="/dokumenty" element={<Dokumenty />} />
-            <Route path="/kontrahenci" element={<Kontrahenci />} />
-            <Route path="/produkty" element={<Produkty />} />
-            <Route path="/ekspozycje" element={<Ekspozycje />} />
-            <Route path="/finanse" element={<Finanse />} />
-            <Route path="/odprawa" element={<Odprawa />} />
-            <Route path="/ustawienia" element={<Ustawienia />} />
+            <Route path="/klienci" element={<RoleGuard path="/klienci"><Klienci /></RoleGuard>} />
+            <Route path="/klienci/:id" element={<RoleGuard path="/klienci"><Klienci /></RoleGuard>} />
+            <Route path="/zlecenia" element={<RoleGuard path="/zlecenia"><Zlecenia /></RoleGuard>} />
+            <Route path="/zlecenia/:id" element={<RoleGuard path="/zlecenia"><Zlecenia /></RoleGuard>} />
+            <Route path="/kalendarz" element={<RoleGuard path="/kalendarz"><Kalendarz /></RoleGuard>} />
+            <Route path="/zadania" element={<RoleGuard path="/zadania"><Zadania /></RoleGuard>} />
+            <Route path="/wyceny" element={<RoleGuard path="/wyceny"><Wyceny /></RoleGuard>} />
+            <Route path="/wyceny/:id" element={<RoleGuard path="/wyceny"><Wyceny /></RoleGuard>} />
+            <Route path="/umowy" element={<RoleGuard path="/umowy"><Umowy /></RoleGuard>} />
+            <Route path="/umowy/:id" element={<RoleGuard path="/umowy"><Umowy /></RoleGuard>} />
+            <Route path="/faktury" element={<RoleGuard path="/faktury"><Faktury /></RoleGuard>} />
+            <Route path="/faktury/:id" element={<RoleGuard path="/faktury"><Faktury /></RoleGuard>} />
+            <Route path="/dokumenty" element={<RoleGuard path="/dokumenty"><Dokumenty /></RoleGuard>} />
+            <Route path="/skany" element={<RoleGuard path="/skany"><Skany /></RoleGuard>} />
+            <Route path="/kontrahenci" element={<RoleGuard path="/kontrahenci"><Kontrahenci /></RoleGuard>} />
+            <Route path="/produkty" element={<RoleGuard path="/produkty"><Produkty /></RoleGuard>} />
+            <Route path="/ekspozycje" element={<RoleGuard path="/ekspozycje"><Ekspozycje /></RoleGuard>} />
+            <Route path="/finanse" element={<RoleGuard path="/finanse"><Finanse /></RoleGuard>} />
+            <Route path="/odprawa" element={<RoleGuard path="/odprawa"><Odprawa /></RoleGuard>} />
+            <Route path="/ustawienia" element={<RoleGuard path="/ustawienia"><Ustawienia /></RoleGuard>} />
             <Route path="*" element={<Pulpit />} />
           </Routes>
           </ErrorBoundary>

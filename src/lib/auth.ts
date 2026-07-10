@@ -147,11 +147,16 @@ export function nazwaRoli(r: Rola): string {
   return ROLE.find((x) => x.rola === r)?.nazwa || r
 }
 
-// Dostep do sekcji nawigacji wg roli (sciezki dozwolone)
+// Dostep do sekcji nawigacji wg roli (sciezki dozwolone) – zasada najmniejszych uprawnien
 export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
   if (rola === 'wlasciciel' || rola === 'kierownik') return 'all'
   if (rola === 'biuro')
-    return ['/', '/klienci', '/zlecenia', '/kalendarz', '/wyceny', '/umowy', '/faktury', '/dokumenty', '/kontrahenci', '/produkty', '/ekspozycje', '/finanse', '/ustawienia']
-  // montazysta – zakres operacyjny
-  return ['/', '/zlecenia', '/kalendarz', '/odprawa', '/dokumenty', '/produkty']
+    return ['/', '/klienci', '/zlecenia', '/kalendarz', '/zadania', '/wyceny', '/umowy', '/faktury', '/dokumenty', '/skany', '/kontrahenci', '/produkty', '/ekspozycje', '/finanse', '/odprawa', '/ustawienia']
+  // montazysta – zakres wylacznie terenowy/operacyjny (bez cen, finansow, umow, klientow CRM)
+  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/dokumenty', '/produkty']
+}
+
+export function maSciezke(rola: Rola, sciezka: string): boolean {
+  const d = dozwoloneSciezki(rola)
+  return d === 'all' || d.includes(sciezka)
 }

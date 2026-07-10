@@ -14,6 +14,8 @@ import {
   Store,
   Wallet,
   ListChecks,
+  ListTodo,
+  ScanLine,
   Settings,
   Menu,
   X,
@@ -31,6 +33,7 @@ import { cx } from './ui'
 import { useAuth } from './Auth'
 import { dozwoloneSciezki, nazwaRoli } from '../lib/auth'
 import { initials } from '../lib/format'
+import { Skaner } from './Skaner'
 
 interface NavItem {
   to: string
@@ -45,6 +48,7 @@ const GROUPS: { grupa: string; items: NavItem[] }[] = [
       { to: '/klienci', label: 'Klienci CRM', icon: <Users size={19} /> },
       { to: '/zlecenia', label: 'Zlecenia', icon: <ClipboardList size={19} /> },
       { to: '/kalendarz', label: 'Kalendarz', icon: <CalendarDays size={19} /> },
+      { to: '/zadania', label: 'Zadania', icon: <ListTodo size={19} /> },
     ],
   },
   {
@@ -54,6 +58,7 @@ const GROUPS: { grupa: string; items: NavItem[] }[] = [
       { to: '/umowy', label: 'Umowy', icon: <FileSignature size={19} /> },
       { to: '/faktury', label: 'Faktury', icon: <Receipt size={19} /> },
       { to: '/dokumenty', label: 'Protokoły / KP', icon: <FileCheck2 size={19} /> },
+      { to: '/skany', label: 'Skany / Archiwum', icon: <ScanLine size={19} /> },
     ],
   },
   {
@@ -70,6 +75,7 @@ const GROUPS: { grupa: string; items: NavItem[] }[] = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [openMobile, setOpenMobile] = useState(false)
+  const [skaner, setSkaner] = useState(false)
   const loc = useLocation()
   useEffect(() => setOpenMobile(false), [loc.pathname])
 
@@ -106,6 +112,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 animate-fade-in">{children}</div>
         </main>
       </div>
+
+      {/* Szybki skan – dostepny wszedzie (szczegolnie w terenie) */}
+      <button
+        onClick={() => setSkaner(true)}
+        title="Skanuj dokument"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-brand-600 px-4 py-3.5 font-semibold text-white shadow-pop transition hover:bg-brand-500 active:scale-95 no-print"
+      >
+        <ScanLine size={20} />
+        <span className="hidden sm:inline">Skanuj</span>
+      </button>
+      <Skaner open={skaner} onClose={() => setSkaner(false)} />
     </div>
   )
 }

@@ -140,6 +140,8 @@ export function pustaBaza(): Baza {
     przelewy: [],
     ekspozycje: [],
     odprawy: [],
+    zadania: [],
+    skany: [],
     ustawienia,
   }
 }
