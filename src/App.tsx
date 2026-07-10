@@ -25,6 +25,7 @@ import Odprawa from './modules/Odprawa'
 import Ustawienia from './modules/Ustawienia'
 import Zadania from './modules/Zadania'
 import Skany from './modules/Skany'
+import Wizualizacja from './modules/Wizualizacja'
 import { RoleGuard } from './components/RoleGuard'
 
 export default function App() {
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="/faktury/:id" element={<RoleGuard path="/faktury"><Faktury /></RoleGuard>} />
             <Route path="/dokumenty" element={<RoleGuard path="/dokumenty"><Dokumenty /></RoleGuard>} />
             <Route path="/skany" element={<RoleGuard path="/skany"><Skany /></RoleGuard>} />
+            <Route path="/wizualizacja" element={<RoleGuard path="/wizualizacja"><Wizualizacja /></RoleGuard>} />
             <Route path="/kontrahenci" element={<RoleGuard path="/kontrahenci"><Kontrahenci /></RoleGuard>} />
             <Route path="/produkty" element={<RoleGuard path="/produkty"><Produkty /></RoleGuard>} />
             <Route path="/ekspozycje" element={<RoleGuard path="/ekspozycje"><Ekspozycje /></RoleGuard>} />

@@ -151,9 +151,9 @@ export function nazwaRoli(r: Rola): string {
 export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
   if (rola === 'wlasciciel' || rola === 'kierownik') return 'all'
   if (rola === 'biuro')
-    return ['/', '/klienci', '/zlecenia', '/kalendarz', '/zadania', '/wyceny', '/umowy', '/faktury', '/dokumenty', '/skany', '/kontrahenci', '/produkty', '/ekspozycje', '/finanse', '/odprawa', '/ustawienia']
+    return ['/', '/klienci', '/zlecenia', '/kalendarz', '/zadania', '/wyceny', '/umowy', '/faktury', '/dokumenty', '/skany', '/wizualizacja', '/kontrahenci', '/produkty', '/ekspozycje', '/finanse', '/odprawa', '/ustawienia']
   // montazysta – zakres wylacznie terenowy/operacyjny (bez cen, finansow, umow, klientow CRM)
-  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/dokumenty', '/produkty']
+  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/wizualizacja', '/dokumenty', '/produkty']
 }
 
 export function maSciezke(rola: Rola, sciezka: string): boolean {

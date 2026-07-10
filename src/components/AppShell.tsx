@@ -16,6 +16,7 @@ import {
   ListChecks,
   ListTodo,
   ScanLine,
+  Sparkles,
   Settings,
   Menu,
   X,
@@ -59,6 +60,7 @@ const GROUPS: { grupa: string; items: NavItem[] }[] = [
       { to: '/faktury', label: 'Faktury', icon: <Receipt size={19} /> },
       { to: '/dokumenty', label: 'Protokoły / KP', icon: <FileCheck2 size={19} /> },
       { to: '/skany', label: 'Skany / Archiwum', icon: <ScanLine size={19} /> },
+      { to: '/wizualizacja', label: 'Wizualizacja', icon: <Sparkles size={19} /> },
     ],
   },
   {
