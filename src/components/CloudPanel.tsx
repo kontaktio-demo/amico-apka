@@ -12,6 +12,7 @@ import {
   wylogujChmura,
   wymusZapis,
   sesjaChmury,
+  zapamietajWorkspace,
 } from '../lib/cloud'
 import { fmtDateTime } from '../lib/format'
 
@@ -53,6 +54,9 @@ export function CloudPanel({
       if (!sesja) throw new Error('Brak sesji – sprawdź e-mail lub hasło')
 
       const wynik = tryb === 'dolacz' ? await dolaczDoFirmy(kod.trim(), imie.trim()) : await bootstrapFirmy(imie.trim())
+      // Zapamietujemy SWIADOMIE wybrana firme. Bez tego startSync moglby przy nastepnym
+      // uruchomieniu trafic na inne czlonkostwo tego samego konta i podmienic dane.
+      zapamietajWorkspace(wynik.workspaceId)
 
       // KOLEJNOSC MA ZNACZENIE: najpierw pobranie/scalenie stanu firmy z chmury
       // (moze podmienic lokalna baze), dopiero potem zakladamy lokalne konto,

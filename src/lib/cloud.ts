@@ -16,6 +16,19 @@ import { nowISO } from './format'
 
 export type SyncStatus = 'off' | 'laczenie' | 'ok' | 'zapisywanie' | 'offline' | 'blad' | 'sesja'
 
+// Postgres przechowuje jsonb z kluczami POSORTOWANYMI, wiec zwykly JSON.stringify
+// lokalnego obiektu nigdy nie zgadza sie ze stanem z serwera (inna kolejnosc kluczy).
+// Bez tego porownanie "czy sie rozni" jest ZAWSZE prawdziwe i dwa urzadzenia
+// w nieskonczonosc odsylaja sobie cala baze. Porownujemy postac kanoniczna.
+function stabilnyJson(v: any): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null'
+  if (Array.isArray(v)) return `[${v.map(stabilnyJson).join(',')}]`
+  const klucze = Object.keys(v)
+    .filter((k) => v[k] !== undefined)
+    .sort()
+  return `{${klucze.map((k) => `${JSON.stringify(k)}:${stabilnyJson(v[k])}`).join(',')}}`
+}
+
 // Czy blad wynika z niewaznej sesji (usuniety user, zmienione haslo, wygasly/uniewazniony token)?
 function czyBladSesji(e: any): boolean {
   const m = `${e?.message || ''} ${e?.details || ''} ${e?.hint || ''}`.toLowerCase()
@@ -88,6 +101,44 @@ const WS_KEY = 'amico-baza-ws'
 const getBazaWs = () => localStorage.getItem(WS_KEY)
 const setBazaWs = (ws: string) => localStorage.setItem(WS_KEY, ws)
 
+// Ktora firme wybralismy swiadomie (bootstrap albo dolaczenie kodem).
+// Pracownik, ktory najpierw zaklada konto, a potem dolacza kodem, ma DWA czlonkostwa.
+// amico_bootstrap robi "limit 1" bez ORDER BY, wiec bez tego moglby wylosowac
+// puste, prywatne workspace i skasowac lokalne dane (zastapLokalneZdalnym).
+const AKT_WS = 'amico-workspace'
+export const zapamietajWorkspace = (ws: string) => localStorage.setItem(AKT_WS, ws)
+
+async function ustalWorkspace(imie: string) {
+  const sesja = await sesjaChmury()
+  const uid = sesja?.user.id
+  const zapamietany = localStorage.getItem(AKT_WS)
+
+  if (uid && zapamietany) {
+    const { data } = await supabase
+      .from('amico_members')
+      .select('workspace_id, rola')
+      .eq('user_id', uid)
+      .eq('workspace_id', zapamietany)
+      .maybeSingle()
+    if (data) {
+      const { data: w } = await supabase
+        .from('amico_workspaces')
+        .select('join_code')
+        .eq('id', zapamietany)
+        .maybeSingle()
+      return {
+        workspaceId: data.workspace_id as string,
+        rola: data.rola as Rola,
+        joinCode: (w?.join_code as string) || '',
+      }
+    }
+  }
+
+  const r = await bootstrapFirmy(imie)
+  zapamietajWorkspace(r.workspaceId)
+  return r
+}
+
 // ---------- Sesja / konto ----------
 export async function sesjaChmury() {
   const { data } = await supabase.auth.getSession()
@@ -120,9 +171,21 @@ export async function wylogujChmura() {
   const ws = C().workspaceId
   stopSync()
   if (ws) localStorage.removeItem(revKey(ws))
-  localStorage.removeItem(WS_KEY)
+  // UWAGA: NIE kasujemy WS_KEY. To jedyny znacznik mowiacy, do ktorej firmy naleza
+  // dane lezace na tym urzadzeniu. Skasowanie go sprawia, ze po zalogowaniu sie na
+  // konto INNEJ firmy dane starej firmy zostalyby z nia scalone i wypchniete do chmury.
   await supabase.auth.signOut()
   C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
+}
+
+// Odlacza urzadzenie od chmury BEZ wylogowania i bez wysylania czegokolwiek.
+// Uzywane przed czyszczeniem danych lokalnych, zeby pusta baza nie poszla na serwer.
+export function odlaczOdChmury() {
+  const ws = C().workspaceId
+  stopSync()
+  if (ws) localStorage.removeItem(revKey(ws))
+  localStorage.removeItem(WS_KEY)
+  C().ustaw({ status: 'off', workspaceId: null, joinCode: null, blad: null })
 }
 
 export async function bootstrapFirmy(imie: string) {
@@ -290,7 +353,7 @@ async function pobierzIScal(ws: string) {
   stosujeZdalne = false
 
   // Czy scalony stan rozni sie od serwera? Jesli tak – mamy lokalne rekordy do wyslania.
-  const rozne = JSON.stringify(bezSekretow(scalona)) !== JSON.stringify(zdalny.data)
+  const rozne = stabilnyJson(bezSekretow(scalona)) !== stabilnyJson(zdalny.data)
   if (rozne) zaplanujZapis(300)
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }
@@ -359,7 +422,7 @@ export async function startSync(imie = '') {
   podlaczNasluch()
 
   try {
-    const { workspaceId, rola, joinCode } = await bootstrapFirmy(imie)
+    const { workspaceId, rola, joinCode } = await ustalWorkspace(imie)
     C().ustaw({ workspaceId, rola, joinCode })
 
     const poprzedniWs = getBazaWs()

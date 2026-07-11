@@ -128,7 +128,7 @@ export default function Pomoc() {
           </Slowko>
           <Slowko slowo="Rola">
             To, co dana osoba może w aplikacji zobaczyć. Ty jesteś <b>Właścicielem</b> (widzisz wszystko), a montażysta
-            ma rolę <b>Montażysta</b> (widzi tylko swoje zlecenia – bez cen i finansów).
+            ma rolę <b>Montażysta</b> (widzi zlecenia i kalendarz, ale bez kwot, cennika, wycen, umów i finansów).
           </Slowko>
         </div>
       </Sekcja>
@@ -581,9 +581,10 @@ export default function Pomoc() {
             niego nie wejdzie. Twoje hasło i PIN <b>nie są wysyłane do chmury</b> – zostają tylko na urządzeniu.
           </p>
           <p>
-            <b className="text-stone-700">5. Każdy widzi tylko swoje.</b> Montażysta po zalogowaniu{' '}
-            <b>nie widzi cen, finansów ani umów</b> – tylko swoje zlecenia, kalendarz, zadania i skaner. Ty widzisz
-            wszystko.
+            <b className="text-stone-700">5. Każdy widzi tylko to, czego potrzebuje.</b> Montażysta po zalogowaniu{' '}
+            <b>nie widzi cennika, wycen, umów, faktur ani finansów</b>. Ma zlecenia, kalendarz, zadania, odprawę i
+            skaner – ale <b>bez kwot</b>. Jedyna kwota, jaką widzi, to ta na pokwitowaniu KP, które sam wystawia u
+            klienta. Ty widzisz wszystko.
           </p>
           <p>
             <b className="text-stone-700">6. Kopia zapasowa.</b> W{' '}
@@ -616,7 +617,8 @@ export default function Pomoc() {
               Ustawienia → Użytkownicy i role
             </Link>{' '}
             wybierasz przy nim rolę:
-            <br />• <b>Montażysta</b> – widzi tylko zlecenia, kalendarz, zadania, odprawę i skaner (bez cen i finansów),
+            <br />• <b>Montażysta</b> – zlecenia, kalendarz, zadania, odprawa i skaner, bez kwot (nie widzi cennika,
+            wycen, umów, faktur ani finansów),
             <br />• <b>Biuro</b> – sprzedaż, dokumenty i finanse,
             <br />• <b>Właściciel</b> – wszystko.
           </Krok>
@@ -955,7 +957,9 @@ function PoradnikDruk({ firma }: { firma: any }) {
         </li>
         <li style={li}>Dwie osoby naraz – aplikacja połączy obie zmiany; nic nie zostanie skasowane.</li>
         <li style={li}>Blokada po 5 minutach bezczynności (PIN / odcisk palca). Hasło i PIN nie idą do chmury.</li>
-        <li style={li}>Montażysta nie widzi cen, finansów ani umów – tylko swoje zlecenia, kalendarz i zadania.</li>
+        <li style={li}>
+          Montażysta nie widzi cennika, wycen, umów, faktur ani finansów. Zlecenia i kalendarz widzi bez kwot.
+        </li>
         <li style={li}>Kopia zapasowa: Ustawienia → „Eksportuj kopię” (raz na miesiąc, np. na pendrive).</li>
       </ul>
 

@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Lock,
   LogOut,
+  AlertTriangle,
 } from 'lucide-react'
 import { Logo } from './Logo'
 import { useStore } from '../lib/store'
@@ -112,6 +113,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <FirmaSwitcher compact />
         </header>
 
+        <PasekBleduZapisu />
+
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 animate-fade-in">{children}</div>
         </main>
@@ -127,6 +130,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <span className="hidden sm:inline">Skanuj</span>
       </button>
       <Skaner open={skaner} onClose={() => setSkaner(false)} />
+    </div>
+  )
+}
+
+// Zapis na urzadzeniu sie nie powiodl (najczesciej: brak miejsca).
+// Bez tego paska uzytkowniczka traci prace, nie wiedzac o tym.
+function PasekBleduZapisu() {
+  const blad = useStore((s) => s.bladZapisu)
+  if (!blad) return null
+  return (
+    <div className="no-print flex items-start gap-2.5 border-b border-red-500/30 bg-red-500/15 px-4 py-3 text-[13.5px] text-red-200">
+      <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+      <div>
+        <b>Nie udało się zapisać danych na tym urządzeniu.</b> {blad}
+        <div className="mt-0.5 text-red-300/80">
+          Nie zamykaj aplikacji. Zwolnij miejsce na urządzeniu, a następnie zrób kopię zapasową w Ustawieniach
+          (Eksport).
+        </div>
+      </div>
     </div>
   )
 }

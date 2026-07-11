@@ -4,6 +4,7 @@ import { SectionCard, Field, Input, Select, Toggle, Badge, useToast, useConfirm 
 import { useStore } from '../lib/store'
 import { useAuth } from './Auth'
 import { ROLE, nazwaRoli, hashHasla, hashPin, losowaSol, biometriaDostepna, zarejestrujBiometrie } from '../lib/auth'
+import { zmienRoleWChmurze } from '../lib/cloud'
 import type { Uzytkownik, Rola } from '../lib/types'
 import { uid } from '../lib/id'
 import { nowISO, initials } from '../lib/format'
@@ -170,7 +171,18 @@ export function UzytkownicyPanel() {
                 key={us.id}
                 us={us}
                 czyJa={us.id === user?.id}
-                onZmien={(patch) => upsert('uzytkownicy', { ...us, ...patch })}
+                onZmien={async (patch) => {
+                  upsert('uzytkownicy', { ...us, ...patch })
+                  // Rola musi trafic TAKZE do chmury. Inaczej przy nastepnym logowaniu
+                  // tej osoby chmura nadpisze ja stara rola i awans sie cofnie.
+                  if (patch.rola && patch.rola !== us.rola) {
+                    try {
+                      await zmienRoleWChmurze(us.id, patch.rola)
+                    } catch {
+                      push('Zmieniono rolę lokalnie, ale nie udało się zapisać jej w chmurze', 'err')
+                    }
+                  }
+                }}
                 onUsun={async () => {
                   if (us.id === user?.id) return push('Nie można usunąć własnego konta', 'err')
                   if (await confirm(`Usunąć użytkownika „${us.imie}”?`)) remove('uzytkownicy', us.id)
@@ -194,7 +206,7 @@ function UserRow({
 }: {
   us: Uzytkownik
   czyJa: boolean
-  onZmien: (patch: Partial<Uzytkownik>) => void
+  onZmien: (patch: Partial<Uzytkownik>) => void | Promise<void>
   onUsun: () => void
 }) {
   return (

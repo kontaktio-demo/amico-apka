@@ -411,8 +411,8 @@ function EdytorInner({ rec }: { rec: Wycena }) {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="space-y-6 xl:col-span-2">
           {/* Dane klienta */}
           <SectionCard title="Dane klienta" icon={<Calculator size={16} />}>
             <div className="grid gap-3 sm:grid-cols-2">

@@ -238,9 +238,9 @@ export default function Kalendarz() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 xl:grid-cols-3">
         {/* Siatka miesiaca */}
-        <Card className="lg:col-span-2">
+        <Card className="xl:col-span-2">
           <CardBody>
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-[16px] font-display font-semibold capitalize text-ink">

@@ -204,6 +204,14 @@ h3,
   :root {
     color-scheme: light;
   }
+  /* KRYTYCZNE: przegladarki domyslnie NIE drukuja teł. Bez tego ciemne belki
+     (naglowki tabel, wiersz RAZEM BRUTTO) znikaja, a bialy tekst na nich
+     zostaje bialy - czyli kwoty i naglowki sa niewidoczne na papierze. */
+  #print-root,
+  #print-root * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   html,
   body {
     background: #fff !important;

@@ -6,37 +6,69 @@ import { nowISO, fmtDateTime } from '../lib/format'
 
 // ---------- Plotno podpisu (pointer events, HiDPI, touch-action none) ----------
 function useSignatureCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const obserwator = useRef<ResizeObserver | null>(null)
   const drawing = useRef(false)
   const last = useRef<{ x: number; y: number } | null>(null)
+  const puste = useRef(true)
   const [empty, setEmpty] = useState(true)
 
+  // Dopasowuje bufor plotna do jego rzeczywistego rozmiaru na ekranie.
+  // Bez tego canvas zostaje z domyslnymi 300x150 px i podpis jest rozciagniety,
+  // przesuniety wzgledem palca oraz uciety po prawej stronie.
   const setup = useCallback(() => {
     const c = canvasRef.current
     if (!c) return
-    const dpr = window.devicePixelRatio || 1
-    const rect = c.getBoundingClientRect()
-    c.width = rect.width * dpr
-    c.height = rect.height * dpr
+    // offsetWidth/Height = rozmiar z ukladu, bez transformacji (modal ma animacje scale)
+    const w = c.offsetWidth
+    const h = c.offsetHeight
+    if (!w || !h) return
+    const dpr = Math.min(window.devicePixelRatio || 1, 3)
+    const bw = Math.round(w * dpr)
+    const bh = Math.round(h * dpr)
+    if (c.width === bw && c.height === bh) return
+
+    // Zmiana width/height czysci plotno - zachowujemy juz zlozony podpis
+    const poprzedni = !puste.current ? c.toDataURL('image/png') : null
+    c.width = bw
+    c.height = bh
     const ctx = c.getContext('2d')!
     ctx.scale(dpr, dpr)
     ctx.lineWidth = 2.4
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.strokeStyle = '#12261c'
+    if (poprzedni) {
+      const img = new Image()
+      img.onload = () => ctx.drawImage(img, 0, 0, w, h)
+      img.src = poprzedni
+    }
   }, [])
 
-  useEffect(() => {
-    setup()
-    const onResize = () => setup()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [setup])
+  // Callback ref: setup odpala sie dokladnie wtedy, gdy canvas trafia do DOM
+  // (modal montuje sie dopiero po otwarciu, wiec zwykly useEffect bylby za wczesnie).
+  const podepnijCanvas = useCallback(
+    (el: HTMLCanvasElement | null) => {
+      obserwator.current?.disconnect()
+      obserwator.current = null
+      canvasRef.current = el
+      if (!el) return
+      setup()
+      obserwator.current = new ResizeObserver(() => setup())
+      obserwator.current.observe(el)
+    },
+    [setup],
+  )
+
+  useEffect(() => () => obserwator.current?.disconnect(), [])
 
   const pos = (e: React.PointerEvent) => {
     const c = canvasRef.current!
     const r = c.getBoundingClientRect()
-    return { x: e.clientX - r.left, y: e.clientY - r.top }
+    // korekta na wypadek aktywnej animacji skalowania modala
+    const sx = r.width ? c.offsetWidth / r.width : 1
+    const sy = r.height ? c.offsetHeight / r.height : 1
+    return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy }
   }
   const down = (e: React.PointerEvent) => {
     e.preventDefault()
@@ -53,7 +85,10 @@ function useSignatureCanvas() {
     ctx.lineTo(p.x, p.y)
     ctx.stroke()
     last.current = p
-    if (empty) setEmpty(false)
+    if (puste.current) {
+      puste.current = false
+      setEmpty(false)
+    }
   }
   const up = () => {
     drawing.current = false
@@ -63,12 +98,16 @@ function useSignatureCanvas() {
     const c = canvasRef.current
     if (!c) return
     const ctx = c.getContext('2d')!
+    ctx.save()
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, c.width, c.height)
+    ctx.restore()
+    puste.current = true
     setEmpty(true)
   }
   const toDataURL = () => canvasRef.current?.toDataURL('image/png') || ''
 
-  return { canvasRef, down, move, up, clear, empty, toDataURL }
+  return { podepnijCanvas, down, move, up, clear, empty, toDataURL }
 }
 
 export function SignatureModal({
@@ -144,7 +183,7 @@ export function SignatureModal({
             <PenLine size={15} /> Złóż podpis palcem lub rysikiem w polu poniżej
           </div>
           <canvas
-            ref={pad.canvasRef}
+            ref={pad.podepnijCanvas}
             onPointerDown={pad.down}
             onPointerMove={pad.move}
             onPointerUp={pad.up}

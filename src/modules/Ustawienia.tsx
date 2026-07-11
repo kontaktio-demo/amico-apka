@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { requestPersistence, storageInfo } from '../lib/db'
+import { odlaczOdChmury } from '../lib/cloud'
 import {
   PageHeader,
   SectionCard,
@@ -130,12 +131,15 @@ export default function Ustawienia() {
   async function onWyczysc() {
     if (
       !(await confirm(
-        'Wyczyścić wszystkie dane? Ta operacja jest nieodwracalna. Zalecane jest wcześniejsze zrobienie kopii zapasowej.',
+        'Wyczyścić wszystkie dane z TEGO urządzenia? Operacja jest nieodwracalna. Najpierw zrób kopię zapasową przyciskiem Eksport.',
       ))
     )
       return
+    // Najpierw odlaczamy chmure. Inaczej subskrypcja store'a wyslalaby pusta baze
+    // na serwer i skasowala dane CALEJ firmy, takze na pozostalych urzadzeniach.
+    odlaczOdChmury()
     await wyczyscWszystko()
-    push('Wyczyszczono wszystkie dane', 'info')
+    push('Wyczyszczono dane na tym urządzeniu', 'info')
   }
 
   // ---------- Zespol ----------

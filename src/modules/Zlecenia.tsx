@@ -34,6 +34,7 @@ import {
   useConfirm,
 } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
+import { useAuth } from '../components/Auth'
 import { fmtPLN, fmtDate, parseNum, nowISO, today } from '../lib/format'
 import { klientNazwa, PIPELINE, etapInfo, domyslneEtapyZlecenia } from '../lib/helpers'
 import { uid } from '../lib/id'
@@ -59,6 +60,8 @@ export default function Zlecenia() {
 // ---------- LISTA ----------
 function Lista() {
   const b = useStore((s) => s.baza)
+  const { user } = useAuth()
+  const ukryjKwoty = user?.rola === 'montazysta'
   const [szukaj, setSzukaj] = useState('')
   const [filtr, setFiltr] = useState<PipelineEtap | 'all'>('all')
   const [openNowe, setOpenNowe] = useState(false)
@@ -152,7 +155,7 @@ function Lista() {
                           <MapPin size={14} className="text-stone-400" /> <span className="truncate">{z.adres}</span>
                         </div>
                       )}
-                      {(z.wartoscBrutto || z.wartoscNetto) && (
+                      {!ukryjKwoty && (z.wartoscBrutto || z.wartoscNetto) && (
                         <div className="flex items-center gap-1.5">
                           <Wallet size={14} className="text-stone-400" /> {fmtPLN(z.wartoscBrutto || z.wartoscNetto)}
                           {z.wartoscBrutto ? ' brutto' : ' netto'}
@@ -411,6 +414,8 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const ukryjKwoty = user?.rola === 'montazysta'
 
   const klient = z.klientId ? b.klienci.find((k) => k.id === z.klientId) : undefined
   const ei = etapInfo(z.etap)
@@ -449,11 +454,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
     `Etap: ${ei.nazwa}`,
     z.dataPomiaru ? `Pomiar: ${fmtDate(z.dataPomiaru)}` : '',
     z.dataMontazu ? `Montaż: ${fmtDate(z.dataMontazu)}` : '',
-    z.wartoscBrutto
-      ? `Wartość brutto: ${fmtPLN(z.wartoscBrutto)}`
-      : z.wartoscNetto
-        ? `Wartość netto: ${fmtPLN(z.wartoscNetto)}`
-        : '',
+    ukryjKwoty
+      ? ''
+      : z.wartoscBrutto
+        ? `Wartość brutto: ${fmtPLN(z.wartoscBrutto)}`
+        : z.wartoscNetto
+          ? `Wartość netto: ${fmtPLN(z.wartoscNetto)}`
+          : '',
   ]
     .filter(Boolean)
     .join('\n')
@@ -472,7 +479,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
             </Link>
             <PrintSendBar
               getPrintNode={() => (
-                <ZlecenieDoc z={z} firma={firma} klient={klient} logoDataUrl={b.ustawienia.logoDataUrl} />
+                <ZlecenieDoc
+                  z={z}
+                  firma={firma}
+                  klient={klient}
+                  logoDataUrl={b.ustawienia.logoDataUrl}
+                  ukryjKwoty={ukryjKwoty}
+                />
               )}
               share={{ title: `Zlecenie ${z.numer}`, text: shareText, to: klient?.email, phone: klient?.telefon }}
             />
@@ -483,9 +496,9 @@ function Szczegoly({ z }: { z: Zlecenie }) {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 xl:grid-cols-3">
         {/* Lewa kolumna – checklista + etap */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-6 xl:col-span-2">
           <SectionCard title="Etap główny" icon={<ClipboardList size={17} />}>
             <div className="flex flex-wrap gap-2">
               {PIPELINE.map((p) => (
@@ -565,24 +578,26 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                   placeholder="ul., kod, miasto"
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Wartość netto">
-                  <Input
-                    defaultValue={z.wartoscNetto != null ? String(z.wartoscNetto) : ''}
-                    onBlur={(e) => update({ wartoscNetto: e.target.value ? parseNum(e.target.value) : undefined })}
-                    placeholder="0,00"
-                    inputMode="decimal"
-                  />
-                </Field>
-                <Field label="Wartość brutto">
-                  <Input
-                    defaultValue={z.wartoscBrutto != null ? String(z.wartoscBrutto) : ''}
-                    onBlur={(e) => update({ wartoscBrutto: e.target.value ? parseNum(e.target.value) : undefined })}
-                    placeholder="0,00"
-                    inputMode="decimal"
-                  />
-                </Field>
-              </div>
+              {!ukryjKwoty && (
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Wartość netto">
+                    <Input
+                      defaultValue={z.wartoscNetto != null ? String(z.wartoscNetto) : ''}
+                      onBlur={(e) => update({ wartoscNetto: e.target.value ? parseNum(e.target.value) : undefined })}
+                      placeholder="0,00"
+                      inputMode="decimal"
+                    />
+                  </Field>
+                  <Field label="Wartość brutto">
+                    <Input
+                      defaultValue={z.wartoscBrutto != null ? String(z.wartoscBrutto) : ''}
+                      onBlur={(e) => update({ wartoscBrutto: e.target.value ? parseNum(e.target.value) : undefined })}
+                      placeholder="0,00"
+                      inputMode="decimal"
+                    />
+                  </Field>
+                </div>
+              )}
             </div>
           </SectionCard>
 
@@ -724,11 +739,13 @@ export function ZlecenieDoc({
   firma,
   klient,
   logoDataUrl,
+  ukryjKwoty,
 }: {
   z: Zlecenie
   firma: Firma
   klient?: Klient
   logoDataUrl?: string
+  ukryjKwoty?: boolean
 }) {
   const ei = etapInfo(z.etap)
   return (
@@ -744,15 +761,17 @@ export function ZlecenieDoc({
         <DocLine label="Etap główny:" value={ei.nazwa} />
       </DocSection>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: ukryjKwoty ? '1fr' : '1fr 1fr', gap: 16 }}>
         <DocSection n={2} title="Terminy">
           <DocLine label="Pomiar:" value={fmtDate(z.dataPomiaru)} />
           <DocLine label="Montaż:" value={fmtDate(z.dataMontazu)} />
         </DocSection>
-        <DocSection n={3} title="Wartość">
-          <DocLine label="Netto:" value={z.wartoscNetto != null ? fmtPLN(z.wartoscNetto) : '–'} />
-          <DocLine label="Brutto:" value={z.wartoscBrutto != null ? fmtPLN(z.wartoscBrutto) : '–'} />
-        </DocSection>
+        {!ukryjKwoty && (
+          <DocSection n={3} title="Wartość">
+            <DocLine label="Netto:" value={z.wartoscNetto != null ? fmtPLN(z.wartoscNetto) : '–'} />
+            <DocLine label="Brutto:" value={z.wartoscBrutto != null ? fmtPLN(z.wartoscBrutto) : '–'} />
+          </DocSection>
+        )}
       </div>
 
       <DocSection n={4} title="Etapy realizacji">

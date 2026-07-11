@@ -279,8 +279,8 @@ function Edytor({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="space-y-6 xl:col-span-2">
           {/* Dane podstawowe */}
           <SectionCard title="Dane faktury" icon={<Receipt size={18} />}>
             <div className="grid gap-4 sm:grid-cols-2">

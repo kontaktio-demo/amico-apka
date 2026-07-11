@@ -608,9 +608,9 @@ function KartaKlienta({ id }: { id: string }) {
         <style>{`.akcja{display:flex;align-items:center;gap:.5rem;justify-content:center;border:1px solid #e5e1d8;border-radius:.75rem;padding:.6rem.75rem;font-size:13px;font-weight:500;color:#57534e;transition:all.15s}.akcja:hover{border-color:#7bb899;background:#f0f7f2;color:#0f5c3f}`}</style>
       </SectionCard>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 xl:grid-cols-3">
         {/* Kolumna lewa: dane */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-6 xl:col-span-2">
           {/* Dane podstawowe */}
           <SectionCard title="Dane podstawowe" icon={<UserRound size={18} />}>
             <div className="grid gap-4 sm:grid-cols-2">
