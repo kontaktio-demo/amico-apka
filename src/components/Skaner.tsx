@@ -177,10 +177,11 @@ export function Skaner({
         br: { x: rogi.br.x * captured.width, y: rogi.br.y * captured.height },
         bl: { x: rogi.bl.x * captured.width, y: rogi.bl.y * captured.height },
       }
-      const warped = kadrujPerspektywe(captured, rp)
-      const warpJpeg = canvasNaJpeg(warped, 0.9)
+      // 1500 px + q0.78 – czytelny dokument przy rozsadnym rozmiarze (wazne dla synchronizacji)
+      const warped = kadrujPerspektywe(captured, rp, 1500)
+      const warpJpeg = canvasNaJpeg(warped, 0.85)
       const filtered = zastosujFiltr(warped, filtr)
-      const wynik = canvasNaJpeg(filtered, 0.82)
+      const wynik = canvasNaJpeg(filtered, 0.78)
       setStrony((s) => [...s, { id: uid('str'), warp: warpJpeg, filtr, wynik }])
       setCaptured(null)
       setEtap('przeglad')

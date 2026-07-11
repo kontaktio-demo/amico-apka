@@ -531,9 +531,18 @@ export interface Ustawienia {
   motyw: 'jasny'
 }
 
+// ---------- Synchronizacja ----------
+// Slad po usunietym rekordzie – dzieki temu usuniecie propaguje sie miedzy urzadzeniami
+export interface Tombstone {
+  k: string // nazwa kolekcji
+  id: ID
+  t: ISODateTime
+}
+
 // ---------- Baza (root) ----------
 export interface Baza {
   wersja: number
+  usuniete: Tombstone[]
   firmy: Firma[]
   uzytkownicy: Uzytkownik[]
   pracownicy: Pracownik[]

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Baza, Firma } from './types'
 import { loadBaza, saveBaza, clearBaza } from './db'
 import { pustaBaza, bazaDemo } from './seed'
+import { nowISO } from './format'
 
 // Kolekcje bedace tablicami obiektow z polem id
 type ArrKeys = {
@@ -16,6 +17,7 @@ interface AppState {
   init: () => Promise<void>
   persist: () => void
   setBaza: (b: Baza) => void
+  zastapBaze: (b: Baza) => void // podmiana bazy z chmury (bez ponownego wypychania)
   // Generyczne CRUD dla kolekcji
   upsert: <K extends ArrKeys>(key: K, item: ArrItem<K>) => void
   remove: <K extends ArrKeys>(key: K, id: string) => void
@@ -63,10 +65,12 @@ export const useStore = create<AppState>((setState, getState) => ({
   },
 
   upsert: (key, item) => {
+    // znacznik zmiany – potrzebny do bezpiecznego scalania miedzy urzadzeniami
+    const stamped: any = { ...(item as any), _zm: nowISO() }
     setState((s) => {
       const arr = s.baza[key] as any[]
-      const idx = arr.findIndex((x) => x.id === (item as any).id)
-      const next = idx >= 0 ? arr.map((x) => (x.id === (item as any).id ? item : x)) : [...arr, item]
+      const idx = arr.findIndex((x) => x.id === stamped.id)
+      const next = idx >= 0 ? arr.map((x) => (x.id === stamped.id ? stamped : x)) : [...arr, stamped]
       return { baza: { ...s.baza, [key]: next } }
     })
     getState().persist()
@@ -75,9 +79,15 @@ export const useStore = create<AppState>((setState, getState) => ({
   remove: (key, id) => {
     setState((s) => {
       const arr = s.baza[key] as any[]
-      return { baza: { ...s.baza, [key]: arr.filter((x) => x.id !== id) } }
+      const usuniete = [...(s.baza.usuniete || []).filter((t) => !(t.k === key && t.id === id)), { k: String(key), id, t: nowISO() }]
+      return { baza: { ...s.baza, [key]: arr.filter((x) => x.id !== id), usuniete } }
     })
     getState().persist()
+  },
+
+  zastapBaze: (b) => {
+    setState({ baza: b })
+    saveBaza(b).catch(() => {})
   },
 
   patch: (fn) => {
@@ -90,7 +100,7 @@ export const useStore = create<AppState>((setState, getState) => ({
   },
 
   updateUstawienia: (p) => {
-    setState((s) => ({ baza: { ...s.baza, ustawienia: { ...s.baza.ustawienia, ...p } } }))
+    setState((s) => ({ baza: { ...s.baza, ustawienia: { ...s.baza.ustawienia, ...p, _zm: nowISO() } as any } }))
     getState().persist()
   },
 

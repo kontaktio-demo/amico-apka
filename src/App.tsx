@@ -6,6 +6,7 @@ import { ToastProvider } from './components/ui'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { PWAReloadPrompt } from './components/PWAReloadPrompt'
 import { AuthProvider } from './components/Auth'
+import { sesjaChmury, startSync } from './lib/cloud'
 import { useStore } from './lib/store'
 import { LogoMark } from './components/Logo'
 
@@ -35,6 +36,16 @@ export default function App() {
   useEffect(() => {
     init()
   }, [init])
+
+  // Po wczytaniu lokalnej bazy: jesli jest sesja w chmurze – wlacz synchronizacje
+  useEffect(() => {
+    if (!hydrated) return
+    sesjaChmury()
+      .then((s) => {
+        if (s) return startSync()
+      })
+      .catch(() => {})
+  }, [hydrated])
 
   if (!hydrated) {
     return (

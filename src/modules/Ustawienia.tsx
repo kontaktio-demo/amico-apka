@@ -24,6 +24,7 @@ import { today, validNRB, fmtKonto, validNIP, fmtNIP } from '../lib/format'
 import { uid } from '../lib/id'
 import type { Firma, Pracownik, VatRate } from '../lib/types'
 import { UzytkownicyPanel } from '../components/UzytkownicyPanel'
+import { CloudPanel } from '../components/CloudPanel'
 
 const VAT_STAWKI: VatRate[] = [0, 5, 8, 23]
 
@@ -212,6 +213,9 @@ export default function Ustawienia() {
             </div>
           )}
         </SectionCard>
+
+        {/* 2a. Chmura i synchronizacja */}
+        <CloudPanel />
 
         {/* 2b. Konto, zabezpieczenia i uzytkownicy */}
         <UzytkownicyPanel />

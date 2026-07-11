@@ -35,6 +35,7 @@ import { useAuth } from './Auth'
 import { dozwoloneSciezki, nazwaRoli } from '../lib/auth'
 import { initials } from '../lib/format'
 import { Skaner } from './Skaner'
+import { StatusChip } from './CloudPanel'
 
 interface NavItem {
   to: string
@@ -178,6 +179,9 @@ function RoleNav() {
           </NavLink>
         )}
         <UserFooter />
+        <div className="mt-2 px-1">
+          <StatusChip />
+        </div>
         <StorageStatus />
       </div>
     </>

@@ -122,6 +122,7 @@ const ustawienia: Ustawienia = {
 export function pustaBaza(): Baza {
   return {
     wersja: 1,
+    usuniete: [],
     firmy: [firmaAndrzej, firmaMilena],
     uzytkownicy: [],
     pracownicy,

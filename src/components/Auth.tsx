@@ -21,6 +21,8 @@ import {
 } from '../lib/auth'
 import { Logo } from './Logo'
 import { Field, Input } from './ui'
+import { CloudPanel } from './CloudPanel'
+import { Cloud } from 'lucide-react'
 
 interface AuthCtx {
   user: Uzytkownik | null
@@ -102,7 +104,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {widok === 'lock' && user && (
         <Lock user={user} onUnlock={() => setWidok('in')} onSwitch={() => setWidok('login')} />
       )}
+      {(widok === 'onboarding' || widok === 'login') && <ChmuraLogowanie onZalogowano={zaloguj} />}
     </AuthShell>
+  )
+}
+
+// Logowanie przez chmure (synchronizacja miedzy urzadzeniami)
+function ChmuraLogowanie({ onZalogowano }: { onZalogowano: (id: string) => void }) {
+  const [otwarte, setOtwarte] = useState(false)
+  if (!otwarte) {
+    return (
+      <div className="mt-5 border-t border-white/10 pt-4 text-center">
+        <button
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-700 transition hover:text-white"
+          onClick={() => setOtwarte(true)}
+        >
+          <Cloud size={14} /> Zaloguj przez chmurę (te same dane na innych urządzeniach)
+        </button>
+      </div>
+    )
+  }
+  return (
+    <div className="mt-5 border-t border-white/10 pt-4">
+      <CloudPanel bezRamki onZalogowano={onZalogowano} />
+    </div>
   )
 }
 
