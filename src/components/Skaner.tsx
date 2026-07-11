@@ -102,7 +102,10 @@ export function Skaner({
     async function start() {
       if (!open || etap !== 'kamera') return
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false,
+        })
         if (anulowane) {
           stream.getTracks().forEach((t) => t.stop())
           return
@@ -217,7 +220,7 @@ export function Skaner({
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex flex-col bg-[#070810] text-stone-100 no-print">
+    <div className="fixed inset-0 z-[80] flex flex-col bg-[#070810] text-stone-700 no-print">
       {/* pasek gorny */}
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-2 font-semibold">
@@ -264,7 +267,14 @@ export function Skaner({
               <span className="w-[92px]" />
             )}
           </div>
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={wgrajPlik} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={wgrajPlik}
+          />
         </div>
       )}
 
@@ -280,7 +290,7 @@ export function Skaner({
                   onClick={() => setFiltr(f.k)}
                   className={
                     'shrink-0 rounded-lg px-3 py-1.5 text-[13px] font-medium transition ' +
-                    (filtr === f.k ? 'bg-white text-ink' : 'bg-white/10 text-stone-300 hover:bg-white/15')
+                    (filtr === f.k ? 'bg-white text-ink' : 'bg-white/10 text-stone-400 hover:bg-white/15')
                   }
                 >
                   {f.label}
@@ -289,7 +299,7 @@ export function Skaner({
             </div>
             <div className="flex items-center justify-between gap-2">
               <button
-                className="btn-ghost !text-stone-300"
+                className="btn-ghost !text-stone-400"
                 onClick={() => {
                   setCaptured(null)
                   setEtap('kamera')
@@ -313,7 +323,9 @@ export function Skaner({
               {strony.map((s, i) => (
                 <div key={s.id} className="group relative overflow-hidden rounded-xl border border-white/10 bg-white">
                   <img src={s.wynik} alt={`Strona ${i + 1}`} className="aspect-[3/4] w-full object-cover" />
-                  <span className="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">{i + 1}</span>
+                  <span className="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
+                    {i + 1}
+                  </span>
                   <button
                     onClick={() => setStrony((x) => x.filter((y) => y.id !== s.id))}
                     className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-lg bg-black/60 text-white transition hover:bg-red-600"
@@ -360,7 +372,7 @@ export function Skaner({
                 </Field>
                 <Field label="Przypisz do zlecenia">
                   <Select value={zlId} onChange={(e) => setZlId(e.target.value)}>
-                    <option value="">— brak —</option>
+                    <option value="">– brak –</option>
                     {b.zlecenia.map((z) => (
                       <option key={z.id} value={z.id}>
                         {z.numer} · {z.tytul}
@@ -370,7 +382,7 @@ export function Skaner({
                 </Field>
                 <Field label="Przypisz do klienta">
                   <Select value={klId} onChange={(e) => setKlId(e.target.value)}>
-                    <option value="">— brak —</option>
+                    <option value="">– brak –</option>
                     {b.klienci.map((k) => (
                       <option key={k.id} value={k.id}>
                         {klientNazwa(k)}
@@ -385,7 +397,7 @@ export function Skaner({
             </div>
 
             <div className="flex items-center justify-between">
-              <button className="btn-ghost !text-stone-300" onClick={() => setEtap('kamera')}>
+              <button className="btn-ghost !text-stone-400" onClick={() => setEtap('kamera')}>
                 <ChevronLeft size={17} /> Skanuj dalej
               </button>
               <button className="btn-primary btn-lg" onClick={zapisz} disabled={strony.length === 0}>
@@ -400,7 +412,15 @@ export function Skaner({
 }
 
 // ---------- Nakladka kadrowania (przeciaganie 4 rogow) ----------
-function KadrOverlay({ canvas, rogi, onChange }: { canvas: HTMLCanvasElement; rogi: Rogi; onChange: (r: Rogi) => void }) {
+function KadrOverlay({
+  canvas,
+  rogi,
+  onChange,
+}: {
+  canvas: HTMLCanvasElement
+  rogi: Rogi
+  onChange: (r: Rogi) => void
+}) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [src] = useState(() => canvas.toDataURL('image/jpeg', 0.9))
   const drag = useRef<keyof Rogi | null>(null)
@@ -417,10 +437,19 @@ function KadrOverlay({ canvas, rogi, onChange }: { canvas: HTMLCanvasElement; ro
   const rogList: (keyof Rogi)[] = ['tl', 'tr', 'br', 'bl']
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black p-3" onPointerMove={move} onPointerUp={() => (drag.current = null)} onPointerLeave={() => (drag.current = null)}>
+    <div
+      className="relative flex flex-1 items-center justify-center overflow-hidden bg-black p-3"
+      onPointerMove={move}
+      onPointerUp={() => (drag.current = null)}
+      onPointerLeave={() => (drag.current = null)}
+    >
       <div ref={wrapRef} className="relative">
         <img src={src} alt="skan" className="max-h-[62vh] max-w-full select-none" draggable={false} />
-        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
           <polygon
             points={`${rogi.tl.x * 100},${rogi.tl.y * 100} ${rogi.tr.x * 100},${rogi.tr.y * 100} ${rogi.br.x * 100},${rogi.br.y * 100} ${rogi.bl.x * 100},${rogi.bl.y * 100}`}
             fill="rgba(110,130,180,0.18)"

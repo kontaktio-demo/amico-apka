@@ -1,7 +1,7 @@
 import type { Klient, Kontrahent, KontrahentTyp, PipelineEtap, Zlecenie, WycenaStatus, UmowaStatus } from './types'
 
 export function klientNazwa(k?: Klient | null): string {
-  if (!k) return '—'
+  if (!k) return '–'
   if (k.typ === 'firma') return k.nazwaFirmy || 'Firma bez nazwy'
   return [k.imie, k.nazwisko].filter(Boolean).join(' ') || 'Klient bez nazwy'
 }

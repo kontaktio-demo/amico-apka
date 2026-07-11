@@ -136,7 +136,9 @@ export function SignatureModal({
         <Field label="Imię i nazwisko podpisującego">
           <Input value={signer} onChange={(e) => setSigner(e.target.value)} placeholder="np. Jan Kowalski" />
         </Field>
-        {klauzula && <p className="rounded-xl bg-stone-50 p-3 text-[12px] leading-relaxed text-stone-500">{klauzula}</p>}
+        {klauzula && (
+          <p className="rounded-xl bg-stone-50 p-3 text-[12px] leading-relaxed text-stone-500">{klauzula}</p>
+        )}
         <div>
           <div className="mb-1.5 flex items-center gap-2 text-[13px] font-medium text-stone-500">
             <PenLine size={15} /> Złóż podpis palcem lub rysikiem w polu poniżej
@@ -160,7 +162,18 @@ export function SignatureModal({
 export function SignatureView({ sig, label }: { sig?: Signature; label?: string }) {
   if (!sig)
     return (
-      <div style={{ display: 'flex', height: 76, alignItems: 'flex-end', justifyContent: 'center', borderBottom: '1px solid #a9a496', paddingBottom: 3, fontSize: '11px', color: '#a9a496' }}>
+      <div
+        style={{
+          display: 'flex',
+          height: 76,
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          borderBottom: '1px solid #a9a496',
+          paddingBottom: 3,
+          fontSize: '11px',
+          color: '#a9a496',
+        }}
+      >
         {label || '(brak podpisu)'}
       </div>
     )

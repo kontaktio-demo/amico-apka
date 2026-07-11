@@ -63,37 +63,184 @@ export default function App() {
     <ToastProvider>
       <PrintProvider>
         <AuthProvider>
-        <AppShell>
-          <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<Pulpit />} />
-            <Route path="/klienci" element={<RoleGuard path="/klienci"><Klienci /></RoleGuard>} />
-            <Route path="/klienci/:id" element={<RoleGuard path="/klienci"><Klienci /></RoleGuard>} />
-            <Route path="/zlecenia" element={<RoleGuard path="/zlecenia"><Zlecenia /></RoleGuard>} />
-            <Route path="/zlecenia/:id" element={<RoleGuard path="/zlecenia"><Zlecenia /></RoleGuard>} />
-            <Route path="/kalendarz" element={<RoleGuard path="/kalendarz"><Kalendarz /></RoleGuard>} />
-            <Route path="/zadania" element={<RoleGuard path="/zadania"><Zadania /></RoleGuard>} />
-            <Route path="/wyceny" element={<RoleGuard path="/wyceny"><Wyceny /></RoleGuard>} />
-            <Route path="/wyceny/:id" element={<RoleGuard path="/wyceny"><Wyceny /></RoleGuard>} />
-            <Route path="/umowy" element={<RoleGuard path="/umowy"><Umowy /></RoleGuard>} />
-            <Route path="/umowy/:id" element={<RoleGuard path="/umowy"><Umowy /></RoleGuard>} />
-            <Route path="/faktury" element={<RoleGuard path="/faktury"><Faktury /></RoleGuard>} />
-            <Route path="/faktury/:id" element={<RoleGuard path="/faktury"><Faktury /></RoleGuard>} />
-            <Route path="/dokumenty" element={<RoleGuard path="/dokumenty"><Dokumenty /></RoleGuard>} />
-            <Route path="/skany" element={<RoleGuard path="/skany"><Skany /></RoleGuard>} />
-            <Route path="/wizualizacja" element={<RoleGuard path="/wizualizacja"><Wizualizacja /></RoleGuard>} />
-            <Route path="/kontrahenci" element={<RoleGuard path="/kontrahenci"><Kontrahenci /></RoleGuard>} />
-            <Route path="/produkty" element={<RoleGuard path="/produkty"><Produkty /></RoleGuard>} />
-            <Route path="/ekspozycje" element={<RoleGuard path="/ekspozycje"><Ekspozycje /></RoleGuard>} />
-            <Route path="/finanse" element={<RoleGuard path="/finanse"><Finanse /></RoleGuard>} />
-            <Route path="/odprawa" element={<RoleGuard path="/odprawa"><Odprawa /></RoleGuard>} />
-            <Route path="/pomoc" element={<Pomoc />} />
-            <Route path="/ustawienia" element={<RoleGuard path="/ustawienia"><Ustawienia /></RoleGuard>} />
-            <Route path="*" element={<Pulpit />} />
-          </Routes>
-          </ErrorBoundary>
-        </AppShell>
-        <PWAReloadPrompt />
+          <AppShell>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<Pulpit />} />
+                <Route
+                  path="/klienci"
+                  element={
+                    <RoleGuard path="/klienci">
+                      <Klienci />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/klienci/:id"
+                  element={
+                    <RoleGuard path="/klienci">
+                      <Klienci />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/zlecenia"
+                  element={
+                    <RoleGuard path="/zlecenia">
+                      <Zlecenia />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/zlecenia/:id"
+                  element={
+                    <RoleGuard path="/zlecenia">
+                      <Zlecenia />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/kalendarz"
+                  element={
+                    <RoleGuard path="/kalendarz">
+                      <Kalendarz />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/zadania"
+                  element={
+                    <RoleGuard path="/zadania">
+                      <Zadania />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/wyceny"
+                  element={
+                    <RoleGuard path="/wyceny">
+                      <Wyceny />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/wyceny/:id"
+                  element={
+                    <RoleGuard path="/wyceny">
+                      <Wyceny />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/umowy"
+                  element={
+                    <RoleGuard path="/umowy">
+                      <Umowy />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/umowy/:id"
+                  element={
+                    <RoleGuard path="/umowy">
+                      <Umowy />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/faktury"
+                  element={
+                    <RoleGuard path="/faktury">
+                      <Faktury />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/faktury/:id"
+                  element={
+                    <RoleGuard path="/faktury">
+                      <Faktury />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/dokumenty"
+                  element={
+                    <RoleGuard path="/dokumenty">
+                      <Dokumenty />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/skany"
+                  element={
+                    <RoleGuard path="/skany">
+                      <Skany />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/wizualizacja"
+                  element={
+                    <RoleGuard path="/wizualizacja">
+                      <Wizualizacja />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/kontrahenci"
+                  element={
+                    <RoleGuard path="/kontrahenci">
+                      <Kontrahenci />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/produkty"
+                  element={
+                    <RoleGuard path="/produkty">
+                      <Produkty />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/ekspozycje"
+                  element={
+                    <RoleGuard path="/ekspozycje">
+                      <Ekspozycje />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/finanse"
+                  element={
+                    <RoleGuard path="/finanse">
+                      <Finanse />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/odprawa"
+                  element={
+                    <RoleGuard path="/odprawa">
+                      <Odprawa />
+                    </RoleGuard>
+                  }
+                />
+                <Route path="/pomoc" element={<Pomoc />} />
+                <Route
+                  path="/ustawienia"
+                  element={
+                    <RoleGuard path="/ustawienia">
+                      <Ustawienia />
+                    </RoleGuard>
+                  }
+                />
+                <Route path="*" element={<Pulpit />} />
+              </Routes>
+            </ErrorBoundary>
+          </AppShell>
+          <PWAReloadPrompt />
         </AuthProvider>
       </PrintProvider>
     </ToastProvider>

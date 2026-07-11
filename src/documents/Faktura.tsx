@@ -44,10 +44,20 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 12 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.03em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#12233a',
+            letterSpacing: '0.03em',
+          }}
+        >
           {TYP_TYTUL[f.typ]}
         </div>
-        {f.numer && <div style={{ fontSize: '9pt', color: '#0f5c3f', fontWeight: 700, marginTop: 3 }}>Nr {f.numer}</div>}
+        {f.numer && (
+          <div style={{ fontSize: '9pt', color: '#0f5c3f', fontWeight: 700, marginTop: 3 }}>Nr {f.numer}</div>
+        )}
       </div>
 
       {/* Sprzedawca / Nabywca */}
@@ -80,12 +90,14 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
         <Meta l="Data sprzedaży" v={fmtDate(f.dataSprzedazy) || fmtDate(f.dataWystawienia)} />
         <Meta l="Termin płatności" v={fmtDate(f.terminPlatnosci)} />
         <Meta l="Sposób płatności" v={f.sposobPlatnosci ? SPOSOB_TYTUL[f.sposobPlatnosci] : 'Przelew'} />
-        <Meta l="Nr konta" v={konto ? fmtKonto(konto) : '—'} colSpan={2} />
+        <Meta l="Nr konta" v={konto ? fmtKonto(konto) : '–'} colSpan={2} />
       </div>
 
       {/* Pozycje */}
       <div style={{ marginTop: 10 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt', fontVariantNumeric: 'tabular-nums' }}>
+        <table
+          style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt', fontVariantNumeric: 'tabular-nums' }}
+        >
           <thead>
             <tr style={{ background: '#12233a', color: '#fff' }}>
               <th style={th(24)}>Lp.</th>
@@ -131,7 +143,9 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
 
       {/* Podsumowanie wg stawek */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-        <table style={{ borderCollapse: 'collapse', fontSize: '8.5pt', fontVariantNumeric: 'tabular-nums', minWidth: 360 }}>
+        <table
+          style={{ borderCollapse: 'collapse', fontSize: '8.5pt', fontVariantNumeric: 'tabular-nums', minWidth: 360 }}
+        >
           <thead>
             <tr style={{ background: '#f0ede6' }}>
               <th style={{ ...thS(), textAlign: 'left' }}>Wg stawki</th>
@@ -162,8 +176,20 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
       {/* Do zapłaty */}
       <div style={{ ...box, marginTop: 10, background: '#f7f5ef' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-          <span style={{ fontSize: '9.5pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#12233a' }}>Do zapłaty</span>
-          <span style={{ fontSize: '13pt', fontWeight: 700, color: '#12233a', fontVariantNumeric: 'tabular-nums' }}>{fmtPLN(sum.brutto)}</span>
+          <span
+            style={{
+              fontSize: '9.5pt',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              color: '#12233a',
+            }}
+          >
+            Do zapłaty
+          </span>
+          <span style={{ fontSize: '13pt', fontWeight: 700, color: '#12233a', fontVariantNumeric: 'tabular-nums' }}>
+            {fmtPLN(sum.brutto)}
+          </span>
         </div>
         <div style={{ fontSize: '8.5pt', color: '#4a463f', marginTop: 3 }}>
           Słownie: <b>{kwotaSlownie(sum.brutto)}</b>
@@ -191,9 +217,13 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
 
 function Meta({ l, v, colSpan }: { l: string; v?: string; colSpan?: number }) {
   return (
-    <div style={{ display: 'flex', gap: 5, alignItems: 'baseline', gridColumn: colSpan ? `span ${colSpan}` : undefined }}>
+    <div
+      style={{ display: 'flex', gap: 5, alignItems: 'baseline', gridColumn: colSpan ? `span ${colSpan}` : undefined }}
+    >
       <span style={{ color: '#6b6459', fontSize: '8pt', whiteSpace: 'nowrap' }}>{l}:</span>
-      <span style={{ fontSize: '9pt', fontWeight: 600, color: '#12130f', fontVariantNumeric: 'tabular-nums' }}>{v || '—'}</span>
+      <span style={{ fontSize: '9pt', fontWeight: 600, color: '#12130f', fontVariantNumeric: 'tabular-nums' }}>
+        {v || '–'}
+      </span>
     </div>
   )
 }
@@ -211,5 +241,16 @@ const td = (align: 'left' | 'right' | 'center'): React.CSSProperties => ({
   padding: '4px 6px',
   textAlign: align,
 })
-const thS = (): React.CSSProperties => ({ border: '1px solid #d3cfc2', padding: '3px 8px', fontSize: '7.6pt', fontWeight: 700, textAlign: 'right' })
-const tdS = (align: 'left' | 'right'): React.CSSProperties => ({ border: '1px solid #d3cfc2', padding: '3px 8px', textAlign: align, minWidth: 70 })
+const thS = (): React.CSSProperties => ({
+  border: '1px solid #d3cfc2',
+  padding: '3px 8px',
+  fontSize: '7.6pt',
+  fontWeight: 700,
+  textAlign: 'right',
+})
+const tdS = (align: 'left' | 'right'): React.CSSProperties => ({
+  border: '1px solid #d3cfc2',
+  padding: '3px 8px',
+  textAlign: align,
+  minWidth: 70,
+})

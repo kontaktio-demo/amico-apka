@@ -97,7 +97,7 @@ export function PrintSendBar({
               </MenuItem>
               <div className="my-1 border-t border-stone-100" />
               <p className="px-3 py-1 text-[11px] leading-tight text-stone-400">
-                Aby wysłać PDF w załączniku: kliknij „Drukuj / PDF", zapisz jako PDF i dołącz do wiadomości.
+                Aby wysłać PDF w załączniku: kliknij „Drukuj / PDF”, zapisz jako PDF i dołącz do wiadomości.
               </p>
             </div>
           )}
@@ -107,7 +107,15 @@ export function PrintSendBar({
   )
 }
 
-function MenuItem({ icon, children, onClick }: { icon: React.ReactNode; children: React.ReactNode; onClick: () => void }) {
+function MenuItem({
+  icon,
+  children,
+  onClick,
+}: {
+  icon: React.ReactNode
+  children: React.ReactNode
+  onClick: () => void
+}) {
   return (
     <button
       onClick={onClick}

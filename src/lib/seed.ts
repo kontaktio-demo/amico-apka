@@ -1,6 +1,4 @@
 import type { Baza, Firma, Pracownik, Produkt, Ustawienia } from './types'
-import { nowISO } from './format'
-import { uid } from './id'
 
 // ---------- Podmioty AMICO (z dokumentow zrodlowych) ----------
 const firmaAndrzej: Firma = {
@@ -58,7 +56,14 @@ const pracownicy: Pracownik[] = [
 ]
 
 // ---------- Katalog materialow i uslug ----------
-const P = (nazwa: string, kategoria: Produkt['kategoria'], jednostka: Produkt['jednostka'], cenaNetto: number, vat: Produkt['vat'], extra: Partial<Produkt> = {}): Produkt => ({
+const P = (
+  nazwa: string,
+  kategoria: Produkt['kategoria'],
+  jednostka: Produkt['jednostka'],
+  cenaNetto: number,
+  vat: Produkt['vat'],
+  extra: Partial<Produkt> = {},
+): Produkt => ({
   id: `prod_${slug(nazwa)}`,
   nazwa,
   kategoria,
@@ -155,33 +160,4 @@ export function pustaBaza(): Baza {
     skany: [],
     ustawienia,
   }
-}
-
-// Przykladowe dane demonstracyjne (mozna wyczyscic w Ustawieniach)
-export function bazaDemo(): Baza {
-  const b = pustaBaza()
-  const now = nowISO()
-  b.klienci.push({
-    id: 'kl_demo_kowalska',
-    typ: 'osoba',
-    imie: 'Anna',
-    nazwisko: 'Kowalska',
-    telefon: '600 100 200',
-    email: 'anna.kowalska@example.com',
-    ulica: 'ul. Piotrkowska 100',
-    kod: '90-001',
-    miasto: 'Łódź',
-    etap: 'wycena',
-    zrodlo: 'Polecenie',
-    tagi: ['blat kuchenny', 'granit'],
-    zgodaRodo: true,
-    zgodaRodoData: now,
-    historia: [
-      { id: uid('h'), data: now, typ: 'notatka', tresc: 'Zapytanie o blat kuchenny z granitu, ok. 4 mb.' },
-      { id: uid('h'), data: now, typ: 'pomiar', tresc: 'Umówiony pomiar z natury.' },
-    ],
-    utworzono: now,
-    zaktualizowano: now,
-  })
-  return b
 }

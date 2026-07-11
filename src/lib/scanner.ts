@@ -39,17 +39,30 @@ export function zaladujObraz(src: string, maxDim = 2200): Promise<HTMLCanvasElem
 // ---------- Wspolczynniki odwzorowania kwadrat jednostkowy -> czworokat ----------
 // Metoda Heckberta. Rogi w kolejnosci: (0,0)=tl (1,0)=tr (1,1)=br (0,1)=bl
 function kwadratNaCzworokat(r: Rogi) {
-  const x0 = r.tl.x, y0 = r.tl.y
-  const x1 = r.tr.x, y1 = r.tr.y
-  const x2 = r.br.x, y2 = r.br.y
-  const x3 = r.bl.x, y3 = r.bl.y
-  const dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3
-  const dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3
+  const x0 = r.tl.x,
+    y0 = r.tl.y
+  const x1 = r.tr.x,
+    y1 = r.tr.y
+  const x2 = r.br.x,
+    y2 = r.br.y
+  const x3 = r.bl.x,
+    y3 = r.bl.y
+  const dx1 = x1 - x2,
+    dx2 = x3 - x2,
+    dx3 = x0 - x1 + x2 - x3
+  const dy1 = y1 - y2,
+    dy2 = y3 - y2,
+    dy3 = y0 - y1 + y2 - y3
   let a, b, c, d, e, f, g, h
   if (Math.abs(dx3) < 1e-9 && Math.abs(dy3) < 1e-9) {
-    a = x1 - x0; b = x2 - x1; c = x0
-    d = y1 - y0; e = y2 - y1; f = y0
-    g = 0; h = 0
+    a = x1 - x0
+    b = x2 - x1
+    c = x0
+    d = y1 - y0
+    e = y2 - y1
+    f = y0
+    g = 0
+    h = 0
   } else {
     const den = dx1 * dy2 - dx2 * dy1
     g = (dx3 * dy2 - dx2 * dy3) / den
@@ -79,7 +92,8 @@ export function kadrujPerspektywe(src: HTMLCanvasElement, rogi: Rogi, maxWynik =
   const sctx = src.getContext('2d')!
   const srcData = sctx.getImageData(0, 0, src.width, src.height)
   const sp = srcData.data
-  const sw = src.width, sh = src.height
+  const sw = src.width,
+    sh = src.height
 
   const out = document.createElement('canvas')
   out.width = outW
@@ -103,8 +117,10 @@ export function kadrujPerspektywe(src: HTMLCanvasElement, rogi: Rogi, maxWynik =
         op[oi + 3] = 255
         continue
       }
-      const x0 = Math.floor(sx), y0 = Math.floor(sy)
-      const fx = sx - x0, fy = sy - y0
+      const x0 = Math.floor(sx),
+        y0 = Math.floor(sy)
+      const fx = sx - x0,
+        fy = sy - y0
       const i00 = (y0 * sw + x0) * 4
       const i10 = i00 + 4
       const i01 = i00 + sw * 4
@@ -127,7 +143,8 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
   const ctx = canvas.getContext('2d')!
   const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
   const d = img.data
-  const w = canvas.width, h = canvas.height
+  const w = canvas.width,
+    h = canvas.height
 
   if (filtr === 'kolor' || filtr === 'auto') {
     // wzmocnienie: kontrast + jasnosc + lekka saturacja (dokument "czysty")
@@ -135,7 +152,9 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
     const jasnosc = filtr === 'auto' ? 14 : 6
     const sat = filtr === 'auto' ? 1.12 : 1.06
     for (let i = 0; i < d.length; i += 4) {
-      let r = d[i], g = d[i + 1], b = d[i + 2]
+      let r = d[i],
+        g = d[i + 1],
+        b = d[i + 2]
       const avg = (r + g + b) / 3
       r = avg + (r - avg) * sat
       g = avg + (g - avg) * sat
@@ -172,7 +191,13 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
   return canvas
 }
 
-function adaptiveThreshold(gray: Uint8ClampedArray, w: number, h: number, radius: number, C: number): Uint8ClampedArray {
+function adaptiveThreshold(
+  gray: Uint8ClampedArray,
+  w: number,
+  h: number,
+  radius: number,
+  C: number,
+): Uint8ClampedArray {
   const W = w + 1
   const integ = new Float64Array(W * (h + 1))
   for (let y = 0; y < h; y++) {
@@ -184,11 +209,14 @@ function adaptiveThreshold(gray: Uint8ClampedArray, w: number, h: number, radius
   }
   const out = new Uint8ClampedArray(w * h)
   for (let y = 0; y < h; y++) {
-    const y0 = Math.max(0, y - radius), y1 = Math.min(h - 1, y + radius)
+    const y0 = Math.max(0, y - radius),
+      y1 = Math.min(h - 1, y + radius)
     for (let x = 0; x < w; x++) {
-      const x0 = Math.max(0, x - radius), x1 = Math.min(w - 1, x + radius)
+      const x0 = Math.max(0, x - radius),
+        x1 = Math.min(w - 1, x + radius)
       const area = (x1 - x0 + 1) * (y1 - y0 + 1)
-      const sum = integ[(y1 + 1) * W + (x1 + 1)] - integ[y0 * W + (x1 + 1)] - integ[(y1 + 1) * W + x0] + integ[y0 * W + x0]
+      const sum =
+        integ[(y1 + 1) * W + (x1 + 1)] - integ[y0 * W + (x1 + 1)] - integ[(y1 + 1) * W + x0] + integ[y0 * W + x0]
       const mean = sum / area
       out[y * w + x] = gray[y * w + x] > mean - C ? 255 : 0
     }
@@ -207,7 +235,8 @@ export function canvasNaJpeg(canvas: HTMLCanvasElement, jakosc = 0.82): string {
 
 // Auto-propozycja rogow (lekkie wciecie od krawedzi) gdy brak detekcji
 export function domyslneRogi(w: number, h: number, margines = 0.04): Rogi {
-  const mx = w * margines, my = h * margines
+  const mx = w * margines,
+    my = h * margines
   return {
     tl: { x: mx, y: my },
     tr: { x: w - mx, y: my },

@@ -11,10 +11,23 @@ import { SignatureView } from '../components/SignaturePad'
 const has = (v: unknown): boolean => v !== undefined && v !== null && v !== ''
 
 // ---------- Style wspolne (drobny tekst prawny) ----------
-const P: React.CSSProperties = { fontSize: '8.7pt', lineHeight: 1.5, textAlign: 'justify', color: '#2a2820', margin: '0 0 5px' }
+const P: React.CSSProperties = {
+  fontSize: '8.7pt',
+  lineHeight: 1.5,
+  textAlign: 'justify',
+  color: '#2a2820',
+  margin: '0 0 5px',
+}
 const OL: React.CSSProperties = { margin: '2px 0 4px', paddingLeft: 20 }
 const OL_ALPHA: React.CSSProperties = { ...OL, listStyleType: 'lower-alpha', marginTop: 3 }
-const LI: React.CSSProperties = { fontSize: '8.7pt', lineHeight: 1.5, textAlign: 'justify', color: '#2a2820', marginBottom: 4, paddingLeft: 3 }
+const LI: React.CSSProperties = {
+  fontSize: '8.7pt',
+  lineHeight: 1.5,
+  textAlign: 'justify',
+  color: '#2a2820',
+  marginBottom: 4,
+  paddingLeft: 3,
+}
 const partyTitle: React.CSSProperties = { fontWeight: 700, color: '#12130f' }
 
 // ---------- Pole do wpisania: wartosc z 'u' albo kropkowana linia ----------
@@ -69,7 +82,7 @@ function StopkaPodpisow({
   )
 }
 
-// ---------- Naglowek "zawarta w ... w dniu ..." ----------
+// ---------- Naglowek "zawarta w... w dniu..." ----------
 function Zawarcie({ u }: { u: Umowa }) {
   return (
     <div style={P}>
@@ -82,8 +95,8 @@ function Zawarcie({ u }: { u: Umowa }) {
 function WykonawcaOpis({ firma }: { firma: Firma }) {
   return (
     <div style={P}>
-      <span style={partyTitle}>{firma.nazwa}</span> z siedzibą w {firma.miasto} ({firma.kod}) przy ul. {firma.ulica}, numer
-      NIP: {fmtNIP(firma.nip)} reprezentowaną przez właściciela {firma.wlasciciel}, zwanego w dalszej części umowy
+      <span style={partyTitle}>{firma.nazwa}</span> z siedzibą w {firma.miasto} ({firma.kod}) przy ul. {firma.ulica},
+      numer NIP: {fmtNIP(firma.nip)} reprezentowaną przez właściciela {firma.wlasciciel}, zwanego w dalszej części umowy
       „Wykonawcą”
     </div>
   )
@@ -101,8 +114,8 @@ function ZamawiajacyOpis({ u, pesel }: { u: Umowa; pesel?: boolean }) {
       </div>
       <div style={P}>
         {pesel ? 'PESEL: ' : 'NIP: '}
-        <Fill v={pesel ? u.zamawiajacyPesel : u.zamawiajacyNip} w={150} />
-        {'  '}telefon: <Fill v={u.zamawiajacyTelefon} w={150} />
+        <Fill v={pesel ? u.zamawiajacyPesel : u.zamawiajacyNip} w={150} /> telefon:{' '}
+        <Fill v={u.zamawiajacyTelefon} w={150} />
       </div>
       <div style={P}>zwanym w dalszej części umowy „Zamawiającym”</div>
       <div style={P}>Zwanymi łącznie „Stronami”</div>
@@ -186,9 +199,9 @@ function DzieloBody({
           {showProporcja && (
             <li style={LI}>
               Stawką podatku VAT w wysokości 8% zostanie objęta część prac odpowiadająca proporcjonalnie powierzchni
-              nieruchomości podlegającej preferencyjnej stawce podatku VAT, zaś podstawową stawką 23% VAT zostanie objęta
-              część należności przypadająca na powierzchnię nieruchomości większą niż powierzchnia uprawniająca do
-              zastosowania preferencyjnej stawki podatku od towarów i usług.
+              nieruchomości podlegającej preferencyjnej stawce podatku VAT, zaś podstawową stawką 23% VAT zostanie
+              objęta część należności przypadająca na powierzchnię nieruchomości większą niż powierzchnia uprawniająca
+              do zastosowania preferencyjnej stawki podatku od towarów i usług.
             </li>
           )}
           <li style={LI}>
@@ -198,11 +211,11 @@ function DzieloBody({
           </li>
           <li style={LI}>
             Wykonawca oświadcza, a Zamawiający przyjmuje do wiadomości i akceptuje, iż wyroby Wykonawcy wykonywane są z
-            produktów natury i jako takie posiadają charakterystyczne dla danego kamienia naturalne zmiany barwy, odcieni
-            i użylenia. Takie cechy jak: żyła krystaliczna, odcień barwy, muszla, plamka rdzy czy odcisk skamielin, nie
-            dają podstawy do zwrotu zakupionego materiału ani nie powodują obniżenia ceny. Kamienie naturalne i ich
-            konglomeraty posiadają w swej naturze mikropory i mikroszczeliny. Odcień i użylenie kamienia może różnić się
-            od próbnika przedstawionego Zamawiającemu.
+            produktów natury i jako takie posiadają charakterystyczne dla danego kamienia naturalne zmiany barwy,
+            odcieni i użylenia. Takie cechy jak: żyła krystaliczna, odcień barwy, muszla, plamka rdzy czy odcisk
+            skamielin, nie dają podstawy do zwrotu zakupionego materiału ani nie powodują obniżenia ceny. Kamienie
+            naturalne i ich konglomeraty posiadają w swej naturze mikropory i mikroszczeliny. Odcień i użylenie kamienia
+            może różnić się od próbnika przedstawionego Zamawiającemu.
           </li>
         </ol>
       </DocSection>
@@ -236,8 +249,8 @@ function DzieloBody({
             Strony ustalają termin zakończenia prac na: <Fill v={fmtDate(u.terminZakonczenia)} w={140} />.
           </li>
           <li style={LI}>
-            Termin wykonania umowy może ulec zmianie, w przypadku opóźnienia w dostawie materiałów zamówionych na żądanie
-            Zamawiającego.
+            Termin wykonania umowy może ulec zmianie, w przypadku opóźnienia w dostawie materiałów zamówionych na
+            żądanie Zamawiającego.
           </li>
           <li style={LI}>
             Termin wykonania umowy ulega przedłużeniu o:
@@ -246,7 +259,8 @@ function DzieloBody({
               <li style={LI}>czas opóźnień w przekazaniu pomieszczeń, w których ma być wykonywana niniejsza umowa,</li>
               <li style={LI}>
                 czas oczekiwania na wskazówki Zamawiającego w przypadku zaistnienia konieczności dokonania konsultacji
-                pomiędzy Wykonawcą i Zamawiającym. Ewentualne konsultacje będą prowadzone za pośrednictwem poczty e-mail.
+                pomiędzy Wykonawcą i Zamawiającym. Ewentualne konsultacje będą prowadzone za pośrednictwem poczty
+                e-mail.
               </li>
               <li style={LI}>przerw w dostawie nośników energii i działania siły wyższej,</li>
               <li style={LI}>
@@ -274,10 +288,10 @@ function DzieloBody({
             niniejszej umowy do godziny 9:00.
           </li>
           <li style={LI}>
-            Wykonawca może odstąpić od wykonania niniejszej umowy w sytuacji, gdy Zamawiający nie wywiąże się z obowiązku
-            opisanego powyżej, przy czym zachowuje on prawo do całości wynagrodzenia, pomniejszonego o koszt zakupu
-            materiałów, które nie zostały użyte do wykonania dzieła, a które nie zostały zamówione do wykonania niniejszej
-            umowy.
+            Wykonawca może odstąpić od wykonania niniejszej umowy w sytuacji, gdy Zamawiający nie wywiąże się z
+            obowiązku opisanego powyżej, przy czym zachowuje on prawo do całości wynagrodzenia, pomniejszonego o koszt
+            zakupu materiałów, które nie zostały użyte do wykonania dzieła, a które nie zostały zamówione do wykonania
+            niniejszej umowy.
           </li>
           <li style={LI}>Odbiór przedmiotu umowy musi być potwierdzony pisemnie protokołem odbioru.</li>
           <li style={LI}>
@@ -302,7 +316,8 @@ function DzieloBody({
             zdarzenie nadzwyczajne, zewnętrzne i niemożliwe do zapobieżenia i przewidzenia.
           </li>
           <li style={LI}>
-            Przez dni robocze Strony rozumieją dni od poniedziałku do piątku z wyłączeniem dni ustawowo wolnych od pracy.
+            Przez dni robocze Strony rozumieją dni od poniedziałku do piątku z wyłączeniem dni ustawowo wolnych od
+            pracy.
           </li>
         </ol>
       </DocSection>
@@ -326,9 +341,13 @@ function DzieloBody({
             </li>
           )}
           {is23 && (
-            <li style={LI}>Za brak zapłaty w terminie należne są odsetki umowne w wysokości 10% pozostałej kwoty wynagrodzenia.</li>
+            <li style={LI}>
+              Za brak zapłaty w terminie należne są odsetki umowne w wysokości 10% pozostałej kwoty wynagrodzenia.
+            </li>
           )}
-          <li style={LI}>Wykonawca zastrzega prawo własności przedmiotu dzieła, aż do zupełnego uiszczenia wynagrodzenia.</li>
+          <li style={LI}>
+            Wykonawca zastrzega prawo własności przedmiotu dzieła, aż do zupełnego uiszczenia wynagrodzenia.
+          </li>
           <li style={LI}>
             Wykonawca może podwyższyć wynagrodzenie w stosunku do kwoty wynikającej z kosztorysu ofertowego stanowiącego
             załącznik do niniejszej umowy, jeżeli prace nie były ujęte w kosztorysie, zaś konieczność ich wykonania
@@ -346,14 +365,14 @@ function DzieloBody({
             <ol style={OL_ALPHA}>
               <li style={LI}>może od umowy odstąpić zachowując prawo do całości wynagrodzenia, lub</li>
               <li style={LI}>
-                może żądać podwyższenia umówionego wynagrodzenia, jeżeli w czasie wykonywania prac zaistnieje konieczność
-                przeprowadzenia dodatkowych prac.
+                może żądać podwyższenia umówionego wynagrodzenia, jeżeli w czasie wykonywania prac zaistnieje
+                konieczność przeprowadzenia dodatkowych prac.
               </li>
             </ol>
           </li>
           <li style={LI}>
-            Zgody Zamawiającego nie wymaga wykonanie prac dodatkowych o wartości nieprzekraczającej <Fill v={prog} w={140} />{' '}
-            zł (słownie: <Fill v={progSlownie} w={260} /> złotych).
+            Zgody Zamawiającego nie wymaga wykonanie prac dodatkowych o wartości nieprzekraczającej{' '}
+            <Fill v={prog} w={140} /> zł (słownie: <Fill v={progSlownie} w={260} /> złotych).
           </li>
           <li style={LI}>
             Jeżeli w trakcie wykonywania prac remontowych koszty wykonania przekroczą kwotę ustaloną powyżej, Wykonawca
@@ -380,8 +399,8 @@ function DzieloBody({
               wysokości 0,5% umówionego wynagrodzenia za każdy dzień opóźnienia.
             </li>
             <li style={LI}>
-              W przypadku opóźnienia w wydaniu pomieszczeń, w których ma być wykonywana umowa, Zamawiający obowiązany jest
-              do zapłaty kary umownej w wysokości 0,5% umówionego wynagrodzenia za każdy dzień opóźnienia.
+              W przypadku opóźnienia w wydaniu pomieszczeń, w których ma być wykonywana umowa, Zamawiający obowiązany
+              jest do zapłaty kary umownej w wysokości 0,5% umówionego wynagrodzenia za każdy dzień opóźnienia.
             </li>
           </ol>
         </DocSection>
@@ -390,13 +409,13 @@ function DzieloBody({
       <DocSection n={nr()} title="Postanowienia końcowe">
         <ol style={OL}>
           <li style={LI}>
-            Zmiana postanowień niniejszej umowy wymaga zgody obu stron wyrażonej na piśmie, w formie aneksu do umowy, pod
-            rygorem nieważności takiej zmiany.
+            Zmiana postanowień niniejszej umowy wymaga zgody obu stron wyrażonej na piśmie, w formie aneksu do umowy,
+            pod rygorem nieważności takiej zmiany.
           </li>
           <li style={LI}>
             Ewentualne spory wynikłe w związku z realizacją przedmiotu umowy Strony zobowiązują się rozwiązywać w drodze
-            wspólnych negocjacji, a w przypadku niemożności ustalenia kompromisu będą rozstrzygane przez Sąd właściwy dla
-            siedziby Wykonawcy.
+            wspólnych negocjacji, a w przypadku niemożności ustalenia kompromisu będą rozstrzygane przez Sąd właściwy
+            dla siedziby Wykonawcy.
           </li>
           <li style={LI}>
             W sprawach, których nie reguluje niniejsza umowa, będą miały zastosowanie odpowiednie przepisy kodeksu
@@ -411,17 +430,17 @@ function DzieloBody({
           </li>
           {is23 && (
             <li style={LI}>
-              Zamawiający przyjmuje nadto do wiadomości i akceptuje, iż wyroby Wykonawcy stanowią rzecz nieprefabrykowaną,
-              wyprodukowaną według specyfikacji Zamawiającego lub służącą zaspokojeniu jego zindywidualizowanych potrzeb,
-              co powoduje, że Zamawiającemu nie przysługuje prawo odstąpienia od umowy.
+              Zamawiający przyjmuje nadto do wiadomości i akceptuje, iż wyroby Wykonawcy stanowią rzecz
+              nieprefabrykowaną, wyprodukowaną według specyfikacji Zamawiającego lub służącą zaspokojeniu jego
+              zindywidualizowanych potrzeb, co powoduje, że Zamawiającemu nie przysługuje prawo odstąpienia od umowy.
             </li>
           )}
           {is23 && (
             <li style={LI}>
-              Nadto Zamawiający przyjmuje do wiadomości i akceptuje, że nie przysługuje mu prawo do odstąpienia od umowy w
-              sytuacji, gdy Wykonawca wykonał w pełni usługę za wyraźną zgodą Zamawiającego, który został poinformowany
-              przed rozpoczęciem świadczenia, że po spełnieniu świadczenia przez przedsiębiorcę utraci prawo odstąpienia
-              od umowy.
+              Nadto Zamawiający przyjmuje do wiadomości i akceptuje, że nie przysługuje mu prawo do odstąpienia od umowy
+              w sytuacji, gdy Wykonawca wykonał w pełni usługę za wyraźną zgodą Zamawiającego, który został
+              poinformowany przed rozpoczęciem świadczenia, że po spełnieniu świadczenia przez przedsiębiorcę utraci
+              prawo odstąpienia od umowy.
             </li>
           )}
           <li style={LI}>Załączniki do niniejszej umowy stanowią jej integralną część.</li>
@@ -467,8 +486,8 @@ function OswiadczenieBody({ u }: { u: Umowa }) {
         </li>
         <li style={LI}>
           wyroby Wykonawcy stanowią rzecz nieprefabrykowaną, wyprodukowaną według specyfikacji konsumenta lub służącą
-          zaspokojeniu jego zindywidualizowanych potrzeb, co powoduje, że Zamawiającemu nie przysługuje prawo odstąpienia
-          od umowy;
+          zaspokojeniu jego zindywidualizowanych potrzeb, co powoduje, że Zamawiającemu nie przysługuje prawo
+          odstąpienia od umowy;
         </li>
         <li style={LI}>
           zostałem poinformowany, iż po spełnieniu świadczenia przez Wykonawcę tracę prawo odstąpienia od umowy, w
@@ -491,12 +510,12 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
   return (
     <>
       <div style={P}>
-        zawarta w <Fill v={u.miejscowoscZawarcia ?? 'Łodzi'} w={120} /> w dniu <Fill v={fmtDate(u.dataZawarcia)} w={90} />{' '}
-        pomiędzy:
+        zawarta w <Fill v={u.miejscowoscZawarcia ?? 'Łodzi'} w={120} /> w dniu{' '}
+        <Fill v={fmtDate(u.dataZawarcia)} w={90} /> pomiędzy:
       </div>
       <div style={P}>
-        <span style={partyTitle}>{firma.nazwa}</span>, NIP: {fmtNIP(firma.nip)}, reprezentowaną przez {firma.wlasciciel},
-        zwaną dalej „Zleceniodawcą”
+        <span style={partyTitle}>{firma.nazwa}</span>, NIP: {fmtNIP(firma.nip)}, reprezentowaną przez {firma.wlasciciel}
+        , zwaną dalej „Zleceniodawcą”
       </div>
       <div style={{ ...P, textAlign: 'center', fontWeight: 700 }}>a</div>
       <div style={P}>
@@ -508,7 +527,7 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
         Strony postanawiają zawrzeć poniższą umowę.
       </div>
 
-      <DocSection title="§ 1  Przedmiot i zakres umowy">
+      <DocSection title="§ 1 Przedmiot i zakres umowy">
         <ol style={OL}>
           <li style={LI}>
             Zleceniobiorca będzie pozyskiwać klientów oraz umożliwi Zleceniodawcy kontakt i zawarcie umów z klientem w
@@ -516,15 +535,17 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
           </li>
           <li style={LI}>
             Przekazywanie kontaktu lub zgłaszanie zapotrzebowań na wykonanie usług będzie następować wyłącznie drogą
-            mailową na adres: <Fill v={firma.email} w={190} /> lub SMS na numer <Fill v={firma.telefon} w={140} />. Strony
-            zgodnie oświadczają, że przekazanie kontaktu w inny sposób niż opisany powyżej nie stanowi realizacji umowy i
-            nie powoduje powstania roszczenia o wynagrodzenie.
+            mailową na adres: <Fill v={firma.email} w={190} /> lub SMS na numer <Fill v={firma.telefon} w={140} />.
+            Strony zgodnie oświadczają, że przekazanie kontaktu w inny sposób niż opisany powyżej nie stanowi realizacji
+            umowy i nie powoduje powstania roszczenia o wynagrodzenie.
           </li>
           <li style={LI}>
             Przekazywane dane kontaktu muszą zawierać: numer telefonu pozyskiwanego klienta, jego imię i nazwisko oraz
             adres e-mail.
           </li>
-          <li style={LI}>Zleceniobiorca zobowiązany jest do uzyskania zgody Klienta na przekazanie jego danych Zleceniodawcy.</li>
+          <li style={LI}>
+            Zleceniobiorca zobowiązany jest do uzyskania zgody Klienta na przekazanie jego danych Zleceniodawcy.
+          </li>
           <li style={LI}>
             Zleceniobiorca decyduje sam o swoich czynnościach i nie podlega żadnym poleceniom Zleceniodawcy.
             Zleceniobiorca nie jest upoważniony do zawierania umów w imieniu Zleceniodawcy, chyba że otrzymał odrębne
@@ -537,7 +558,7 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
         </ol>
       </DocSection>
 
-      <DocSection title="§ 2  Prowizja, rekompensata kosztów">
+      <DocSection title="§ 2 Prowizja, rekompensata kosztów">
         <ol style={OL}>
           <li style={LI}>
             Zleceniobiorca otrzyma za swoją pracę i wszystkie transakcje, w których pośredniczy i które zakończą się dla
@@ -574,15 +595,15 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
         </ol>
       </DocSection>
 
-      <DocSection title="§ 3  Okres trwania umowy, wypowiedzenie">
+      <DocSection title="§ 3 Okres trwania umowy, wypowiedzenie">
         <ol style={OL}>
           <li style={LI}>
             Umowa jest zawarta na czas nieokreślony i może zostać wypowiedziana z 1-miesięcznym okresem wypowiedzenia na
             koniec miesiąca kalendarzowego.
           </li>
           <li style={LI}>
-            Wypowiedzenie to nie ma jednakże wpływu na prawo do otrzymania prowizji od umów i zamówień złożonych w trakcie
-            trwania niniejszej umowy.
+            Wypowiedzenie to nie ma jednakże wpływu na prawo do otrzymania prowizji od umów i zamówień złożonych w
+            trakcie trwania niniejszej umowy.
           </li>
           <li style={LI}>
             Umowa może być rozwiązana bez wypowiedzenia z ważnych powodów, a w szczególności w wypadku naruszenia przez
@@ -591,7 +612,7 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
         </ol>
       </DocSection>
 
-      <DocSection title="§ 4  Częściowa nieważność umowy, forma pisemna, właściwy sąd">
+      <DocSection title="§ 4 Częściowa nieważność umowy, forma pisemna, właściwy sąd">
         <ol style={OL}>
           <li style={LI}>
             Zleceniodawca nie jest zobowiązany do zwrotu Zleceniobiorcy wydatków oraz kosztów związanych z wykonywaniem
@@ -634,7 +655,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
   return (
     <>
       <div style={P}>
-        zawarta w <Fill v={u.miejscowoscZawarcia} w={120} /> w dniu <Fill v={fmtDate(u.dataZawarcia)} w={90} /> pomiędzy:
+        zawarta w <Fill v={u.miejscowoscZawarcia} w={120} /> w dniu <Fill v={fmtDate(u.dataZawarcia)} w={90} />{' '}
+        pomiędzy:
       </div>
       <div style={P}>
         <span style={partyTitle}>{firma.marka || firma.nazwa}</span> z siedzibą w {firma.miasto} ({firma.kod}) przy ul.{' '}
@@ -676,9 +698,9 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
             </ol>
           </li>
           <li style={LI}>
-            W przypadku niezłożenia zamówień określonych w punkcie 1 lit. c, Sprzedawca obowiązany będzie do zapłaty ceny
-            równej wartości rynkowej stoiska ekspozycyjnego, która to wartość określona zostanie w wycenie stanowiącej
-            załącznik do niniejszej umowy.
+            W przypadku niezłożenia zamówień określonych w punkcie 1 lit. c, Sprzedawca obowiązany będzie do zapłaty
+            ceny równej wartości rynkowej stoiska ekspozycyjnego, która to wartość określona zostanie w wycenie
+            stanowiącej załącznik do niniejszej umowy.
           </li>
           <li style={LI}>
             Na podstawie niniejszej umowy Wykonawca zobowiązuje się do:
@@ -711,8 +733,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
             Sprzedawca.
           </li>
           <li style={LI}>
-            Sprzedawca obowiązany jest każdorazowo dostarczyć zamówienie Wykonawcy na formularzu stanowiącym załącznik do
-            niniejszej umowy.
+            Sprzedawca obowiązany jest każdorazowo dostarczyć zamówienie Wykonawcy na formularzu stanowiącym załącznik
+            do niniejszej umowy.
           </li>
           <li style={LI}>
             Sprzedawca obowiązany jest do sprzedaży produktów w cenach detalicznych sugerowanych przez Wykonawcę.
@@ -729,8 +751,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
           </li>
           <li style={LI}>
             Przed wykonaniem stoiska ekspozycyjnego Sprzedawca obowiązany jest do przygotowania projektu stoiska
-            ekspozycyjnego i przedstawienia projektu Wykonawcy. Wykonawca może zgłaszać poprawki do projektu, które winny
-            być uwzględnione przez Sprzedawcę. Projekt stanowi załącznik do niniejszej umowy.
+            ekspozycyjnego i przedstawienia projektu Wykonawcy. Wykonawca może zgłaszać poprawki do projektu, które
+            winny być uwzględnione przez Sprzedawcę. Projekt stanowi załącznik do niniejszej umowy.
           </li>
           <li style={LI}>Sprzedawca umieści stoisko w swoim lokalu handlowym w miejscu uzgodnionym z Wykonawcą.</li>
           <li style={LI}>Wykonawca dostarczy Sprzedawcy produkty niezbędne do wykonania stoiska w obniżonej cenie.</li>
@@ -770,11 +792,11 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
           </li>
           <li style={LI}>
             Wykonawca oświadcza, a Sprzedawca przyjmuje do wiadomości i akceptuje, iż wyroby Wykonawcy wykonywane są z
-            produktów natury i jako takie posiadają charakterystyczne dla danego kamienia naturalne zmiany barwy, odcieni
-            i użylenia. Takie cechy jak: żyła krystaliczna, odcień barwy, muszla, plamka rdzy czy odcisk skamielin, nie
-            dają podstawy do zwrotu zakupionego materiału ani nie powodują obniżenia ceny. Kamienie naturalne i ich
-            konglomeraty posiadają w swej naturze mikropory i mikroszczeliny. Odcień i użylenie kamienia może różnić się
-            od próbnika przedstawionego Sprzedawcy.
+            produktów natury i jako takie posiadają charakterystyczne dla danego kamienia naturalne zmiany barwy,
+            odcieni i użylenia. Takie cechy jak: żyła krystaliczna, odcień barwy, muszla, plamka rdzy czy odcisk
+            skamielin, nie dają podstawy do zwrotu zakupionego materiału ani nie powodują obniżenia ceny. Kamienie
+            naturalne i ich konglomeraty posiadają w swej naturze mikropory i mikroszczeliny. Odcień i użylenie kamienia
+            może różnić się od próbnika przedstawionego Sprzedawcy.
           </li>
           <li style={LI}>
             Sprzedawca oświadcza, iż posiada prawo do lokalu, w którym będzie umieszczone stoisko ekspozycyjne, i gotowy
@@ -792,12 +814,13 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
         <ol style={OL}>
           <li style={LI}>
             Strony ustalają, iż produkty niezbędne do wykonania stoiska z ekspozycją oraz elementy, które mają zostać
-            umieszczone na stoisku ekspozycyjnym, zostaną dostarczone do dnia <Fill v={fmtDate(u.terminZakonczenia)} w={130} />.
+            umieszczone na stoisku ekspozycyjnym, zostaną dostarczone do dnia{' '}
+            <Fill v={fmtDate(u.terminZakonczenia)} w={130} />.
           </li>
           <li style={LI}>
-            Strony ustalają, iż zamówienia produktów wytwarzanych przez Wykonawcę będą dokonywane na podstawie formularza
-            zamówień stanowiącego załącznik do niniejszej umowy, zaś wypełniony formularz przesyłany będzie na adres
-            e-mail: <Fill v={firma.email} w={190} />.
+            Strony ustalają, iż zamówienia produktów wytwarzanych przez Wykonawcę będą dokonywane na podstawie
+            formularza zamówień stanowiącego załącznik do niniejszej umowy, zaś wypełniony formularz przesyłany będzie
+            na adres e-mail: <Fill v={firma.email} w={190} />.
           </li>
           <li style={LI}>
             Wykonawca po otrzymaniu zamówienia obowiązany jest w terminie 3 dni roboczych licząc od dnia otrzymania
@@ -815,10 +838,12 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
             produktu.
           </li>
           <li style={LI}>
-            Termin wykonania umowy ulega przedłużeniu o czas opóźnień Sprzedawcy w zapłacie zadatku lub o czas udzielania
-            odpowiedzi przez Sprzedawcę na pytania Wykonawcy powstałe w toku wytwarzania produktów.
+            Termin wykonania umowy ulega przedłużeniu o czas opóźnień Sprzedawcy w zapłacie zadatku lub o czas
+            udzielania odpowiedzi przez Sprzedawcę na pytania Wykonawcy powstałe w toku wytwarzania produktów.
           </li>
-          <li style={LI}>Odbiór zamówionych produktów przez Sprzedawcę musi być potwierdzony pisemnie protokołem odbioru.</li>
+          <li style={LI}>
+            Odbiór zamówionych produktów przez Sprzedawcę musi być potwierdzony pisemnie protokołem odbioru.
+          </li>
           <li style={LI}>
             Odbiór produktów dokonany zostanie w terminie 3 dni roboczych licząc od dnia, w którym Wykonawca poinformuje
             Sprzedawcę o zakończeniu wytwarzania produktów, przesyłając wiadomość na adres e-mail:{' '}
@@ -839,7 +864,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
             nadzwyczajne, zewnętrzne i niemożliwe do zapobieżenia i przewidzenia.
           </li>
           <li style={LI}>
-            Przez dni robocze Strony rozumieją dni od poniedziałku do piątku z wyłączeniem dni ustawowo wolnych od pracy.
+            Przez dni robocze Strony rozumieją dni od poniedziałku do piątku z wyłączeniem dni ustawowo wolnych od
+            pracy.
           </li>
         </ol>
       </DocSection>
@@ -852,8 +878,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
             konkurencyjnych.
           </li>
           <li style={LI}>
-            W przypadku uchybienia postanowieniu określonemu w pkt 1 Sprzedawca obowiązany będzie do zapłaty kary umownej
-            w wysokości dwukrotności kwoty obliczonej w sposób opisany w punkcie 7 sekcji „Stoisko ekspozycyjne”
+            W przypadku uchybienia postanowieniu określonemu w pkt 1 Sprzedawca obowiązany będzie do zapłaty kary
+            umownej w wysokości dwukrotności kwoty obliczonej w sposób opisany w punkcie 7 sekcji „Stoisko ekspozycyjne”
             niniejszej umowy.
           </li>
           <li style={LI}>
@@ -865,7 +891,9 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
 
       <DocSection n={nr()} title="Wynagrodzenie">
         <ol style={OL}>
-          <li style={LI}>Wynagrodzenie należne Wykonawcy określone zostanie każdorazowo na podstawie złożonego zamówienia.</li>
+          <li style={LI}>
+            Wynagrodzenie należne Wykonawcy określone zostanie każdorazowo na podstawie złożonego zamówienia.
+          </li>
           <li style={LI}>
             Sprzedawca zapłaci całość ceny Wykonawcy najpóźniej na 7 dni po odbiorze produktu, przelewem na rachunek
             bankowy Wykonawcy o numerze <Fill v={konto} w={230} /> zgodnie z ceną potwierdzoną w chwili składania
@@ -878,8 +906,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
       <DocSection n={nr()} title="Kary umowne">
         <ol style={OL}>
           <li style={LI}>
-            W przypadku zwłoki w wykonaniu przedmiotu niniejszej umowy, Wykonawca obowiązany jest do zapłaty kary umownej
-            w wysokości 0,1% wartości umowy za każdy dzień zwłoki.
+            W przypadku zwłoki w wykonaniu przedmiotu niniejszej umowy, Wykonawca obowiązany jest do zapłaty kary
+            umownej w wysokości 0,1% wartości umowy za każdy dzień zwłoki.
           </li>
           <li style={LI}>
             W przypadku opóźnienia w zapłacie wynagrodzenia Sprzedawca obowiązany jest do zapłaty kary umownej w
@@ -906,13 +934,13 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
       <DocSection n={nr()} title="Postanowienia końcowe">
         <ol style={OL}>
           <li style={LI}>
-            Zmiana postanowień niniejszej umowy wymaga zgody obu stron wyrażonej na piśmie, w formie aneksu do umowy, pod
-            rygorem nieważności takiej zmiany.
+            Zmiana postanowień niniejszej umowy wymaga zgody obu stron wyrażonej na piśmie, w formie aneksu do umowy,
+            pod rygorem nieważności takiej zmiany.
           </li>
           <li style={LI}>
             Ewentualne spory wynikłe w związku z realizacją przedmiotu Strony zobowiązują się rozwiązywać w drodze
-            wspólnych negocjacji, a w przypadku niemożności ustalenia kompromisu będą rozstrzygane przez Sąd właściwy dla
-            siedziby Wykonawcy.
+            wspólnych negocjacji, a w przypadku niemożności ustalenia kompromisu będą rozstrzygane przez Sąd właściwy
+            dla siedziby Wykonawcy.
           </li>
           <li style={LI}>
             W sprawach, których nie reguluje niniejsza umowa, będą miały zastosowanie odpowiednie przepisy kodeksu

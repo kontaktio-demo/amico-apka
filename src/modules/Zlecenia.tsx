@@ -145,7 +145,7 @@ function Lista() {
                     </div>
                     <div className="space-y-1 text-[13px] text-stone-500">
                       <div className="flex items-center gap-1.5">
-                        <Users size={14} className="text-stone-400" /> {kl ? klientNazwa(kl) : '— brak klienta'}
+                        <Users size={14} className="text-stone-400" /> {kl ? klientNazwa(kl) : '– brak klienta'}
                       </div>
                       {z.adres && (
                         <div className="flex items-center gap-1.5">
@@ -154,8 +154,7 @@ function Lista() {
                       )}
                       {(z.wartoscBrutto || z.wartoscNetto) && (
                         <div className="flex items-center gap-1.5">
-                          <Wallet size={14} className="text-stone-400" />{' '}
-                          {fmtPLN(z.wartoscBrutto || z.wartoscNetto)}
+                          <Wallet size={14} className="text-stone-400" /> {fmtPLN(z.wartoscBrutto || z.wartoscNetto)}
                           {z.wartoscBrutto ? ' brutto' : ' netto'}
                         </div>
                       )}
@@ -250,7 +249,8 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
       return
     }
     const kl = f.klientId ? b.klienci.find((k) => k.id === f.klientId) : undefined
-    const adres = f.adres.trim() || (kl ? [kl.ulica, [kl.kod, kl.miasto].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '')
+    const adres =
+      f.adres.trim() || (kl ? [kl.ulica, [kl.kod, kl.miasto].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '')
     const nowe: Zlecenie = {
       id: uid('zl'),
       numer: kolejnyNumer('ZL'),
@@ -300,12 +300,16 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
     >
       <div className="space-y-4">
         <Field label="Tytuł zlecenia" required>
-          <Input value={f.tytul} onChange={(e) => set({ tytul: e.target.value })} placeholder="np. Blaty kuchenne – granit Steel Grey" />
+          <Input
+            value={f.tytul}
+            onChange={(e) => set({ tytul: e.target.value })}
+            placeholder="np. Blaty kuchenne – granit Steel Grey"
+          />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Klient">
             <Select value={f.klientId} onChange={(e) => set({ klientId: e.target.value })}>
-              <option value="">— bez klienta —</option>
+              <option value="">– bez klienta –</option>
               {b.klienci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {klientNazwa(k)}
@@ -321,7 +325,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Projektant">
             <Select value={f.projektantId} onChange={(e) => set({ projektantId: e.target.value })}>
-              <option value="">—</option>
+              <option value="">–</option>
               {projektanci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nazwa}
@@ -331,7 +335,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           </Field>
           <Field label="Stolarz / studio">
             <Select value={f.stolarzId} onChange={(e) => set({ stolarzId: e.target.value })}>
-              <option value="">—</option>
+              <option value="">–</option>
               {stolarze.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nazwa}
@@ -341,7 +345,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           </Field>
           <Field label="Wykonawca">
             <Select value={f.wykonawcaId} onChange={(e) => set({ wykonawcaId: e.target.value })}>
-              <option value="">—</option>
+              <option value="">–</option>
               {wykonawcy.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nazwa}
@@ -351,7 +355,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           </Field>
           <Field label="Koordynator">
             <Select value={f.koordynatorId} onChange={(e) => set({ koordynatorId: e.target.value })}>
-              <option value="">—</option>
+              <option value="">–</option>
               {b.pracownicy.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.imie}
@@ -363,10 +367,20 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Wartość netto">
-            <Input value={f.wartoscNetto} onChange={(e) => set({ wartoscNetto: e.target.value })} placeholder="0,00" inputMode="decimal" />
+            <Input
+              value={f.wartoscNetto}
+              onChange={(e) => set({ wartoscNetto: e.target.value })}
+              placeholder="0,00"
+              inputMode="decimal"
+            />
           </Field>
           <Field label="Wartość brutto">
-            <Input value={f.wartoscBrutto} onChange={(e) => set({ wartoscBrutto: e.target.value })} placeholder="0,00" inputMode="decimal" />
+            <Input
+              value={f.wartoscBrutto}
+              onChange={(e) => set({ wartoscBrutto: e.target.value })}
+              placeholder="0,00"
+              inputMode="decimal"
+            />
           </Field>
           <Field label="Data pomiaru">
             <Input type="date" value={f.dataPomiaru} onChange={(e) => set({ dataPomiaru: e.target.value })} />
@@ -377,7 +391,11 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
 
         <Field label="Notatki">
-          <Textarea value={f.notatki} onChange={(e) => set({ notatki: e.target.value })} placeholder="Dodatkowe informacje o realizacji…" />
+          <Textarea
+            value={f.notatki}
+            onChange={(e) => set({ notatki: e.target.value })}
+            placeholder="Dodatkowe informacje o realizacji…"
+          />
         </Field>
       </div>
     </Modal>
@@ -407,7 +425,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   }
 
   const usun = async () => {
-    if (await confirm(`Usunąć zlecenie „${z.tytul}"? Tej operacji nie można cofnąć.`)) {
+    if (await confirm(`Usunąć zlecenie „${z.tytul}”? Tej operacji nie można cofnąć.`)) {
       remove('zlecenia', z.id)
       push('Zlecenie usunięte', 'ok')
       navigate('/zlecenia')
@@ -431,7 +449,11 @@ function Szczegoly({ z }: { z: Zlecenie }) {
     `Etap: ${ei.nazwa}`,
     z.dataPomiaru ? `Pomiar: ${fmtDate(z.dataPomiaru)}` : '',
     z.dataMontazu ? `Montaż: ${fmtDate(z.dataMontazu)}` : '',
-    z.wartoscBrutto ? `Wartość brutto: ${fmtPLN(z.wartoscBrutto)}` : z.wartoscNetto ? `Wartość netto: ${fmtPLN(z.wartoscNetto)}` : '',
+    z.wartoscBrutto
+      ? `Wartość brutto: ${fmtPLN(z.wartoscBrutto)}`
+      : z.wartoscNetto
+        ? `Wartość netto: ${fmtPLN(z.wartoscNetto)}`
+        : '',
   ]
     .filter(Boolean)
     .join('\n')
@@ -449,7 +471,9 @@ function Szczegoly({ z }: { z: Zlecenie }) {
               <ArrowLeft size={16} /> Lista
             </Link>
             <PrintSendBar
-              getPrintNode={() => <ZlecenieDoc z={z} firma={firma} klient={klient} logoDataUrl={b.ustawienia.logoDataUrl} />}
+              getPrintNode={() => (
+                <ZlecenieDoc z={z} firma={firma} klient={klient} logoDataUrl={b.ustawienia.logoDataUrl} />
+              )}
               share={{ title: `Zlecenie ${z.numer}`, text: shareText, to: klient?.email, phone: klient?.telefon }}
             />
             <button className="btn-danger" onClick={usun}>
@@ -480,7 +504,11 @@ function Szczegoly({ z }: { z: Zlecenie }) {
             </div>
           </SectionCard>
 
-          <SectionCard title="Checklista etapów" icon={<Check size={17} />} desc="Kliknij, aby oznaczyć etap jako zrobiony">
+          <SectionCard
+            title="Checklista etapów"
+            icon={<Check size={17} />}
+            desc="Kliknij, aby oznaczyć etap jako zrobiony"
+          >
             <div className="divide-y divide-stone-100">
               {z.etapy.map((e, i) => (
                 <button
@@ -497,7 +525,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                   >
                     {e.zrobione && <Check size={15} strokeWidth={3} />}
                   </span>
-                  <span className={e.zrobione ? 'flex-1 text-[14px] text-stone-400 line-through' : 'flex-1 text-[14px] text-stone-700'}>
+                  <span
+                    className={
+                      e.zrobione
+                        ? 'flex-1 text-[14px] text-stone-400 line-through'
+                        : 'flex-1 text-[14px] text-stone-700'
+                    }
+                  >
                     {e.nazwa}
                   </span>
                   {e.zrobione && e.data && <span className="text-[12px] text-stone-400">{fmtDate(e.data)}</span>}
@@ -525,7 +559,11 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                 <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
               </div>
               <Field label="Adres realizacji">
-                <Input value={z.adres || ''} onChange={(e) => update({ adres: e.target.value || undefined })} placeholder="ul., kod, miasto" />
+                <Input
+                  value={z.adres || ''}
+                  onChange={(e) => update({ adres: e.target.value || undefined })}
+                  placeholder="ul., kod, miasto"
+                />
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Wartość netto">
@@ -551,10 +589,18 @@ function Szczegoly({ z }: { z: Zlecenie }) {
           <SectionCard title="Terminy" icon={<CalendarDays size={17} />}>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Data pomiaru">
-                <Input type="date" value={z.dataPomiaru || ''} onChange={(e) => update({ dataPomiaru: e.target.value || undefined })} />
+                <Input
+                  type="date"
+                  value={z.dataPomiaru || ''}
+                  onChange={(e) => update({ dataPomiaru: e.target.value || undefined })}
+                />
               </Field>
               <Field label="Data montażu">
-                <Input type="date" value={z.dataMontazu || ''} onChange={(e) => update({ dataMontazu: e.target.value || undefined })} />
+                <Input
+                  type="date"
+                  value={z.dataMontazu || ''}
+                  onChange={(e) => update({ dataMontazu: e.target.value || undefined })}
+                />
               </Field>
             </div>
           </SectionCard>
@@ -635,7 +681,7 @@ function Powiazanie({
       </span>
       <div className="flex items-center gap-2">
         <Select value={value || ''} onChange={(e) => onChange(e.target.value || undefined)} className="flex-1">
-          <option value="">— brak —</option>
+          <option value="">– brak –</option>
           {opcje.map((o) => (
             <option key={o.id} value={o.id}>
               {o.label}
@@ -693,7 +739,7 @@ export function ZlecenieDoc({
 
       <DocSection n={1} title="Dane podstawowe">
         <DocLine label="Tytuł:" value={z.tytul} />
-        <DocLine label="Klient:" value={klient ? klientNazwa(klient) : '—'} />
+        <DocLine label="Klient:" value={klient ? klientNazwa(klient) : '–'} />
         <DocLine label="Adres realizacji:" value={z.adres} />
         <DocLine label="Etap główny:" value={ei.nazwa} />
       </DocSection>
@@ -704,8 +750,8 @@ export function ZlecenieDoc({
           <DocLine label="Montaż:" value={fmtDate(z.dataMontazu)} />
         </DocSection>
         <DocSection n={3} title="Wartość">
-          <DocLine label="Netto:" value={z.wartoscNetto != null ? fmtPLN(z.wartoscNetto) : '—'} />
-          <DocLine label="Brutto:" value={z.wartoscBrutto != null ? fmtPLN(z.wartoscBrutto) : '—'} />
+          <DocLine label="Netto:" value={z.wartoscNetto != null ? fmtPLN(z.wartoscNetto) : '–'} />
+          <DocLine label="Brutto:" value={z.wartoscBrutto != null ? fmtPLN(z.wartoscBrutto) : '–'} />
         </DocSection>
       </div>
 
@@ -714,16 +760,22 @@ export function ZlecenieDoc({
           <thead>
             <tr style={{ background: '#f0ede6' }}>
               <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', width: 34, fontSize: '7.6pt' }}>✓</th>
-              <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'left', fontSize: '7.6pt' }}>ETAP</th>
+              <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'left', fontSize: '7.6pt' }}>
+                ETAP
+              </th>
               <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', width: 90, fontSize: '7.6pt' }}>DATA</th>
             </tr>
           </thead>
           <tbody>
             {z.etapy.map((e, i) => (
               <tr key={e.klucz + i}>
-                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'center' }}>{e.zrobione ? '✓' : ''}</td>
+                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'center' }}>
+                  {e.zrobione ? '✓' : ''}
+                </td>
                 <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px' }}>{e.nazwa}</td>
-                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'center' }}>{fmtDate(e.data)}</td>
+                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'center' }}>
+                  {fmtDate(e.data)}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -1,7 +1,19 @@
 import { useState, useMemo } from 'react'
 import { ListTodo, Plus, Trash2, Flag, User, Link2, Calendar, Check } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { PageHeader, Card, Field, Input, Textarea, Select, Modal, Badge, EmptyState, useToast, cx } from '../components/ui'
+import {
+  PageHeader,
+  Card,
+  Field,
+  Input,
+  Textarea,
+  Select,
+  Modal,
+  Badge,
+  EmptyState,
+  useToast,
+  cx,
+} from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
 import { useAuth } from '../components/Auth'
 import { DocSheet } from '../documents/DocShell'
@@ -39,7 +51,7 @@ export default function Zadania() {
     const p = b.pracownicy.map((x) => ({ id: x.id, nazwa: `${x.imie} (zespół)` }))
     return [...u, ...p]
   }, [b.uzytkownicy, b.pracownicy])
-  const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '—'
+  const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '–'
 
   const widoczne = b.zadania.filter((z) => !tylkoMoje || z.przypisanyDo === user?.id)
 
@@ -82,7 +94,12 @@ export default function Zadania() {
             )}
             <PrintSendBar
               getPrintNode={() => <ZadaniaDruk zadania={widoczne} nazwaOsoby={nazwaOsoby} firma={firma} />}
-              share={{ title: 'Lista zadań AMICO', text: widoczne.map((z) => `• ${z.tytul} — ${nazwaOsoby(z.przypisanyDo)} (${fmtDate(z.termin)})`).join('\n') }}
+              share={{
+                title: 'Lista zadań AMICO',
+                text: widoczne
+                  .map((z) => `• ${z.tytul} – ${nazwaOsoby(z.przypisanyDo)} (${fmtDate(z.termin)})`)
+                  .join('\n'),
+              }}
               size="sm"
             />
             <button className="btn-primary" onClick={nowe}>
@@ -93,7 +110,16 @@ export default function Zadania() {
       />
 
       {widoczne.length === 0 ? (
-        <EmptyState icon={<ListTodo size={26} />} title="Brak zadań" desc="Dodaj pierwsze zadanie i przypisz je do osoby z zespołu." action={<button className="btn-primary" onClick={nowe}><Plus size={16} /> Nowe zadanie</button>} />
+        <EmptyState
+          icon={<ListTodo size={26} />}
+          title="Brak zadań"
+          desc="Dodaj pierwsze zadanie i przypisz je do osoby z zespołu."
+          action={
+            <button className="btn-primary" onClick={nowe}>
+              <Plus size={16} /> Nowe zadanie
+            </button>
+          }
+        />
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
           {STATUSY.map((st) => {
@@ -101,7 +127,7 @@ export default function Zadania() {
             return (
               <div key={st.k} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-3">
                 <div className="mb-2.5 flex items-center justify-between px-1">
-                  <span className="flex items-center gap-2 text-[13px] font-semibold text-stone-300">
+                  <span className="flex items-center gap-2 text-[13px] font-semibold text-stone-400">
                     <Badge tone={st.tone as any}>{kol.length}</Badge> {st.label}
                   </span>
                 </div>
@@ -115,24 +141,47 @@ export default function Zadania() {
                       <div key={z.id} className="card card-pad !p-3.5 cursor-pointer" onClick={() => setEdycja(z)}>
                         <div className="flex items-start justify-between gap-2">
                           <span className="text-[14px] font-medium text-ink leading-snug">{z.tytul}</span>
-                          <span className={cx('mt-0.5 shrink-0', `text-${pr.tone === 'red' ? 'red' : pr.tone === 'amber' ? 'amber' : 'stone'}-400`)}>
+                          <span
+                            className={cx(
+                              'mt-0.5 shrink-0',
+                              pr.tone === 'red'
+                                ? 'text-red-400'
+                                : pr.tone === 'amber'
+                                  ? 'text-amber-400'
+                                  : 'text-stone-400',
+                            )}
+                          >
                             <Flag size={14} />
                           </span>
                         </div>
                         {z.opis && <p className="mt-1 line-clamp-2 text-[12.5px] text-stone-500">{z.opis}</p>}
                         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11.5px] text-stone-400">
-                          <span className="inline-flex items-center gap-1"><User size={12} /> {nazwaOsoby(z.przypisanyDo)}</span>
+                          <span className="inline-flex items-center gap-1">
+                            <User size={12} /> {nazwaOsoby(z.przypisanyDo)}
+                          </span>
                           {z.termin && (
                             <span className={cx('inline-flex items-center gap-1', spozniony && 'text-red-400')}>
                               <Calendar size={12} /> {fmtDate(z.termin)}
                             </span>
                           )}
-                          {zl && <span className="inline-flex items-center gap-1"><Link2 size={12} /> {zl.numer}</span>}
-                          {kl && !zl && <span className="inline-flex items-center gap-1"><Link2 size={12} /> {klientNazwa(kl)}</span>}
+                          {zl && (
+                            <span className="inline-flex items-center gap-1">
+                              <Link2 size={12} /> {zl.numer}
+                            </span>
+                          )}
+                          {kl && !zl && (
+                            <span className="inline-flex items-center gap-1">
+                              <Link2 size={12} /> {klientNazwa(kl)}
+                            </span>
+                          )}
                         </div>
                         <div className="mt-2.5 flex gap-1" onClick={(e) => e.stopPropagation()}>
                           {STATUSY.filter((s) => s.k !== z.status).map((s) => (
-                            <button key={s.k} onClick={() => ustawStatus(z, s.k)} className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-stone-400 hover:bg-white/5 hover:text-white">
+                            <button
+                              key={s.k}
+                              onClick={() => ustawStatus(z, s.k)}
+                              className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-stone-400 hover:bg-white/5 hover:text-white"
+                            >
                               → {s.label}
                             </button>
                           ))}
@@ -199,7 +248,9 @@ function EdytorZadania({
               <Trash2 size={16} /> Usuń
             </button>
           )}
-          <button className="btn-ghost" onClick={onClose}>Anuluj</button>
+          <button className="btn-ghost" onClick={onClose}>
+            Anuluj
+          </button>
           <button className="btn-primary" onClick={() => d.tytul.trim() && onZapisz(d)}>
             <Check size={16} /> Zapisz
           </button>
@@ -208,7 +259,12 @@ function EdytorZadania({
     >
       <div className="space-y-4">
         <Field label="Tytuł zadania" required>
-          <Input value={d.tytul} onChange={(e) => set({ tytul: e.target.value })} placeholder="np. Pomiar u klienta – ul. Piotrkowska" autoFocus />
+          <Input
+            value={d.tytul}
+            onChange={(e) => set({ tytul: e.target.value })}
+            placeholder="np. Pomiar u klienta – ul. Piotrkowska"
+            autoFocus
+          />
         </Field>
         <Field label="Opis">
           <Textarea rows={2} value={d.opis || ''} onChange={(e) => set({ opis: e.target.value })} />
@@ -216,16 +272,20 @@ function EdytorZadania({
         <div className="grid grid-cols-2 gap-3">
           <Field label="Przypisz do">
             <Select value={d.przypisanyDo || ''} onChange={(e) => set({ przypisanyDo: e.target.value || undefined })}>
-              <option value="">— nikt —</option>
+              <option value="">– nikt –</option>
               {osoby.map((o) => (
-                <option key={o.id} value={o.id}>{o.nazwa}</option>
+                <option key={o.id} value={o.id}>
+                  {o.nazwa}
+                </option>
               ))}
             </Select>
           </Field>
           <Field label="Priorytet">
             <Select value={d.priorytet} onChange={(e) => set({ priorytet: e.target.value as ZadaniePriorytet })}>
               {PRIORYTETY.map((p) => (
-                <option key={p.k} value={p.k}>{p.label}</option>
+                <option key={p.k} value={p.k}>
+                  {p.label}
+                </option>
               ))}
             </Select>
           </Field>
@@ -237,24 +297,30 @@ function EdytorZadania({
           </Field>
           <Field label="Zlecenie">
             <Select value={d.zlecenieId || ''} onChange={(e) => set({ zlecenieId: e.target.value || undefined })}>
-              <option value="">— brak —</option>
+              <option value="">– brak –</option>
               {zlecenia.map((x) => (
-                <option key={x.id} value={x.id}>{x.label}</option>
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
               ))}
             </Select>
           </Field>
           <Field label="Klient">
             <Select value={d.klientId || ''} onChange={(e) => set({ klientId: e.target.value || undefined })}>
-              <option value="">— brak —</option>
+              <option value="">– brak –</option>
               {klienci.map((x) => (
-                <option key={x.id} value={x.id}>{x.label}</option>
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
               ))}
             </Select>
           </Field>
           <Field label="Status" className="col-span-2">
             <Select value={d.status} onChange={(e) => set({ status: e.target.value as ZadanieStatus })}>
               {STATUSY.map((s) => (
-                <option key={s.k} value={s.k}>{s.label}</option>
+                <option key={s.k} value={s.k}>
+                  {s.label}
+                </option>
               ))}
             </Select>
           </Field>
@@ -264,7 +330,15 @@ function EdytorZadania({
   )
 }
 
-function ZadaniaDruk({ zadania, nazwaOsoby, firma }: { zadania: Zadanie[]; nazwaOsoby: (id?: string) => string; firma: any }) {
+function ZadaniaDruk({
+  zadania,
+  nazwaOsoby,
+  firma,
+}: {
+  zadania: Zadanie[]
+  nazwaOsoby: (id?: string) => string
+  firma: any
+}) {
   return (
     <DocSheet firma={firma}>
       <h1 style={{ textAlign: 'center', fontSize: '15pt', fontWeight: 600, marginBottom: 12 }}>Lista zadań</h1>
@@ -293,5 +367,11 @@ function ZadaniaDruk({ zadania, nazwaOsoby, firma }: { zadania: Zadanie[]; nazwa
     </DocSheet>
   )
 }
-const cellH: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'left', fontWeight: 700, fontSize: '8pt' }
+const cellH: React.CSSProperties = {
+  border: '1px solid #d3cfc2',
+  padding: '4px 6px',
+  textAlign: 'left',
+  fontWeight: 700,
+  fontSize: '8pt',
+}
 const cell: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '4px 6px' }

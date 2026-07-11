@@ -271,7 +271,11 @@ function Login({ onLogin }: { onLogin: (id: string) => void }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <button type="button" onClick={() => setSel(null)} className="flex items-center gap-1.5 text-[12.5px] text-stone-500 hover:text-white">
+      <button
+        type="button"
+        onClick={() => setSel(null)}
+        className="flex items-center gap-1.5 text-[12.5px] text-stone-500 hover:text-white"
+      >
         <ArrowLeft size={14} /> Zmień użytkownika
       </button>
       <div className="flex items-center gap-3">
@@ -282,7 +286,13 @@ function Login({ onLogin }: { onLogin: (id: string) => void }) {
         </div>
       </div>
       <Field label="Hasło">
-        <Input type="password" value={haslo} onChange={(e) => setHaslo(e.target.value)} placeholder="Wpisz hasło" autoFocus />
+        <Input
+          type="password"
+          value={haslo}
+          onChange={(e) => setHaslo(e.target.value)}
+          placeholder="Wpisz hasło"
+          autoFocus
+        />
       </Field>
       {err && <p className="text-[12.5px] text-red-400">{err}</p>}
       <button className="btn-primary w-full btn-lg" disabled={busy}>
@@ -315,7 +325,7 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
           setProby(n)
           if (n >= 5) {
             setTrybHaslo(true)
-            setErr('Za dużo prób PIN — zaloguj się hasłem')
+            setErr('Za dużo prób PIN – zaloguj się hasłem')
             setPin('')
           } else {
             setErr(`Błędny PIN (próba ${n}/5)`)
@@ -384,7 +394,13 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
       {trybHaslo && (
         <form onSubmit={przezHaslo} className="space-y-3">
           <Field label="Hasło">
-            <Input type="password" value={haslo} onChange={(e) => setHaslo(e.target.value)} placeholder="Wpisz hasło" autoFocus />
+            <Input
+              type="password"
+              value={haslo}
+              onChange={(e) => setHaslo(e.target.value)}
+              placeholder="Wpisz hasło"
+              autoFocus
+            />
           </Field>
           {err && <p className="text-[12.5px] text-red-400">{err}</p>}
           <button className="btn-primary w-full">
@@ -395,7 +411,10 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
 
       <div className="flex items-center justify-center gap-4 text-[12.5px]">
         {!trybHaslo && (
-          <button onClick={() => setTrybHaslo(true)} className="flex items-center gap-1 text-stone-500 hover:text-white">
+          <button
+            onClick={() => setTrybHaslo(true)}
+            className="flex items-center gap-1 text-stone-500 hover:text-white"
+          >
             <KeyRound size={13} /> Zaloguj hasłem
           </button>
         )}
@@ -420,7 +439,11 @@ function PinPad({ onDigit, onBack }: { onDigit: (d: string) => void; onBack: () 
         k === '' ? (
           <span key={i} />
         ) : k === 'del' ? (
-          <button key={i} onClick={onBack} className="grid h-14 place-items-center rounded-xl border border-white/10 text-stone-400 hover:bg-white/[0.05]">
+          <button
+            key={i}
+            onClick={onBack}
+            className="grid h-14 place-items-center rounded-xl border border-white/10 text-stone-400 hover:bg-white/[0.05]"
+          >
             <Delete size={20} />
           </button>
         ) : (

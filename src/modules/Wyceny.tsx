@@ -123,7 +123,9 @@ function Lista() {
     .sort((a, c) => c.zaktualizowano.localeCompare(a.zaktualizowano))
     .filter((w) => !q || [w.numer, w.klientNazwa, w.nazwaMaterialu].filter(Boolean).join(' ').toLowerCase().includes(q))
 
-  const wartoscRazem = b.wyceny.filter((w) => w.status !== 'odrzucona').reduce((s, w) => s + podsumuj(w.pozycje).brutto, 0)
+  const wartoscRazem = b.wyceny
+    .filter((w) => w.status !== 'odrzucona')
+    .reduce((s, w) => s + podsumuj(w.pozycje).brutto, 0)
   const zaakceptowane = b.wyceny.filter((w) => w.status === 'zaakceptowana' || w.status === 'zrealizowana').length
 
   return (
@@ -140,7 +142,12 @@ function Lista() {
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <Stat label="Wycen łącznie" value={b.wyceny.length} icon={<Calculator size={18} />} sub={`${zaakceptowane} zaakceptowanych`} />
+        <Stat
+          label="Wycen łącznie"
+          value={b.wyceny.length}
+          icon={<Calculator size={18} />}
+          sub={`${zaakceptowane} zaakceptowanych`}
+        />
         <Stat label="Wartość ofert" value={fmtPLN(wartoscRazem)} tone="green" sub="brutto, bez odrzuconych" />
         <Stat label="Materiały w bazie" value={b.produkty.length} icon={<Package size={18} />} sub="katalog / cennik" />
       </div>
@@ -148,7 +155,10 @@ function Lista() {
       <Card>
         <CardBody>
           <div className="relative mb-4">
-            <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+            <Search
+              size={17}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+            />
             <input
               value={szukaj}
               onChange={(e) => setSzukaj(e.target.value)}
@@ -187,8 +197,8 @@ function Lista() {
                     return (
                       <tr key={w.id} className="row-hover cursor-pointer" onClick={() => navigate(`/wyceny/${w.id}`)}>
                         <td className="td font-medium text-ink">{w.numer}</td>
-                        <td className="td">{w.klientNazwa || <span className="text-stone-400">—</span>}</td>
-                        <td className="td text-stone-500">{w.nazwaMaterialu || '—'}</td>
+                        <td className="td">{w.klientNazwa || <span className="text-stone-400">–</span>}</td>
+                        <td className="td text-stone-500">{w.nazwaMaterialu || '–'}</td>
                         <td className="td text-right font-semibold">{fmtPLN(podsumuj(w.pozycje).brutto)}</td>
                         <td className="td text-stone-500">{fmtDate(w.zaktualizowano)}</td>
                         <td className="td">
@@ -336,7 +346,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
       zamawiajacyTelefon: w.klientTelefon,
       zamawiajacyEmail: w.klientEmail,
       adresRealizacji: w.miejsceAdres || w.klientAdres,
-      przedmiot: [w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' — '),
+      przedmiot: [w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' – '),
       wynagrodzenieBrutto: sum.brutto,
       pola: {},
       status: 'szkic',
@@ -356,7 +366,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
       numer: kolejnyNumer('ZL'),
       firmaId: w.firmaId,
       klientId: w.klientId,
-      tytul: [w.nazwaMaterialu, w.klientNazwa].filter(Boolean).join(' — ') || `Zlecenie ${w.numer}`,
+      tytul: [w.nazwaMaterialu, w.klientNazwa].filter(Boolean).join(' – ') || `Zlecenie ${w.numer}`,
       adres: w.miejsceAdres || w.klientAdres,
       osoby: {},
       etap: 'wycena',
@@ -392,7 +402,9 @@ function EdytorInner({ rec }: { rec: Wycena }) {
               <Save size={16} /> Zapisz
             </button>
             <PrintSendBar
-              getPrintNode={() => <WycenaDoc w={w} firma={firma} uwagi={uwagiDoc} logoDataUrl={b.ustawienia.logoDataUrl} />}
+              getPrintNode={() => (
+                <WycenaDoc w={w} firma={firma} uwagi={uwagiDoc} logoDataUrl={b.ustawienia.logoDataUrl} />
+              )}
               share={{ title: `Wstępna wycena ${w.numer}`, text: shareText, to: w.klientEmail, phone: w.klientTelefon }}
             />
           </div>
@@ -406,7 +418,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Wybierz z bazy klientów" className="sm:col-span-2">
                 <Select value={w.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                  <option value="">— wpis ręczny / brak —</option>
+                  <option value="">– wpis ręczny / brak –</option>
                   {b.klienci.map((k) => (
                     <option key={k.id} value={k.id}>
                       {klientNazwa(k)} {k.telefon ? `· ${k.telefon}` : ''}
@@ -415,7 +427,11 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                 </Select>
               </Field>
               <Field label="Nazwa / imię i nazwisko" className="sm:col-span-2">
-                <Input value={w.klientNazwa || ''} onChange={(e) => set('klientNazwa', e.target.value)} placeholder="np. Jan Kowalski" />
+                <Input
+                  value={w.klientNazwa || ''}
+                  onChange={(e) => set('klientNazwa', e.target.value)}
+                  placeholder="np. Jan Kowalski"
+                />
               </Field>
               <Field label="Adres" className="sm:col-span-2">
                 <Input value={w.klientAdres || ''} onChange={(e) => set('klientAdres', e.target.value)} />
@@ -427,7 +443,11 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                 <Input value={w.klientEmail || ''} onChange={(e) => set('klientEmail', e.target.value)} />
               </Field>
               <div className="sm:col-span-2">
-                <Toggle checked={w.osobaFizyczna} onChange={(v) => set('osobaFizyczna', v)} label="Umowa na osobę fizyczną" />
+                <Toggle
+                  checked={w.osobaFizyczna}
+                  onChange={(v) => set('osobaFizyczna', v)}
+                  label="Umowa na osobę fizyczną"
+                />
               </div>
             </div>
           </SectionCard>
@@ -458,7 +478,11 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                 />
               </Field>
               <Field label="Nazwa materiału">
-                <Input value={w.nazwaMaterialu || ''} onChange={(e) => set('nazwaMaterialu', e.target.value)} placeholder="np. Granit Steel Grey 3 cm" />
+                <Input
+                  value={w.nazwaMaterialu || ''}
+                  onChange={(e) => set('nazwaMaterialu', e.target.value)}
+                  placeholder="np. Granit Steel Grey 3 cm"
+                />
               </Field>
             </div>
           </SectionCard>
@@ -522,7 +546,11 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                   {w.pozycje.map((p) => (
                     <tr key={p.id} className="align-top">
                       <td className="td">
-                        <Input value={p.nazwa} onChange={(e) => setPoz(p.id, { nazwa: e.target.value })} placeholder="Nazwa pozycji" />
+                        <Input
+                          value={p.nazwa}
+                          onChange={(e) => setPoz(p.id, { nazwa: e.target.value })}
+                          placeholder="Nazwa pozycji"
+                        />
                       </td>
                       <td className="td">
                         <Input
@@ -533,7 +561,10 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                         />
                       </td>
                       <td className="td">
-                        <Select value={p.jednostka} onChange={(e) => setPoz(p.id, { jednostka: e.target.value as Unit })}>
+                        <Select
+                          value={p.jednostka}
+                          onChange={(e) => setPoz(p.id, { jednostka: e.target.value as Unit })}
+                        >
                           {JEDNOSTKI.map((u) => (
                             <option key={u} value={u}>
                               {u}
@@ -551,7 +582,10 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                       </td>
                       <td className="td">
                         <div className="flex items-center gap-1">
-                          <Select value={p.vat} onChange={(e) => setPoz(p.id, { vat: Number(e.target.value) as VatRate })}>
+                          <Select
+                            value={p.vat}
+                            onChange={(e) => setPoz(p.id, { vat: Number(e.target.value) as VatRate })}
+                          >
                             <option value={23}>23%</option>
                             <option value={8}>8%</option>
                           </Select>
@@ -567,7 +601,10 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                       </td>
                       <td className="td text-right font-medium">{fmtPLN(pozycjaNetto(p))}</td>
                       <td className="td text-center">
-                        <button className="btn-ghost !px-1.5 text-stone-400 hover:text-red-600" onClick={() => delPoz(p.id)}>
+                        <button
+                          className="btn-ghost !px-1.5 text-stone-400 hover:text-red-600"
+                          onClick={() => delPoz(p.id)}
+                        >
                           <Trash2 size={16} />
                         </button>
                       </td>
@@ -576,7 +613,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                   {w.pozycje.length === 0 && (
                     <tr>
                       <td className="td text-center text-stone-400" colSpan={7}>
-                        Brak pozycji — dodaj z katalogu lub ręcznie.
+                        Brak pozycji – dodaj z katalogu lub ręcznie.
                       </td>
                     </tr>
                   )}
@@ -588,8 +625,9 @@ function EdytorInner({ rec }: { rec: Wycena }) {
               <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-[12.5px] text-amber-200">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                 <span>
-                  Zastosowano stawkę <b>8% na blacie</b>. To potencjalne ryzyko podatkowe — standardem dla blatów kuchennych jest{' '}
-                  <b>23%</b>. Stawkę 8% stosuj wyłącznie dla budownictwa objętego społecznym programem mieszkaniowym.
+                  Zastosowano stawkę <b>8% na blacie</b>. To potencjalne ryzyko podatkowe – standardem dla blatów
+                  kuchennych jest <b>23%</b>. Stawkę 8% stosuj wyłącznie dla budownictwa objętego społecznym programem
+                  mieszkaniowym.
                 </span>
               </div>
             )}
@@ -619,10 +657,18 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                 <Input value={w.warunkiPlatnosci || ''} onChange={(e) => set('warunkiPlatnosci', e.target.value)} />
               </Field>
               <Field label="Zaliczka">
-                <Input value={w.zaliczka || ''} onChange={(e) => set('zaliczka', e.target.value)} placeholder="np. 30% przy zamówieniu" />
+                <Input
+                  value={w.zaliczka || ''}
+                  onChange={(e) => set('zaliczka', e.target.value)}
+                  placeholder="np. 30% przy zamówieniu"
+                />
               </Field>
               <Field label="Dopłata">
-                <Input value={w.doplata || ''} onChange={(e) => set('doplata', e.target.value)} placeholder="np. przed montażem" />
+                <Input
+                  value={w.doplata || ''}
+                  onChange={(e) => set('doplata', e.target.value)}
+                  placeholder="np. przed montażem"
+                />
               </Field>
               <Field label="Ważność wyceny">
                 <Input type="date" value={w.waznosc || ''} onChange={(e) => set('waznosc', e.target.value)} />
@@ -634,12 +680,11 @@ function EdytorInner({ rec }: { rec: Wycena }) {
           </SectionCard>
 
           {/* Standardowe uwagi */}
-          <SectionCard title="Dodatkowe informacje / standardowe uwagi" desc="Każda linia to osobny punkt na wydruku. Możesz edytować dla tej wyceny.">
-            <Textarea
-              rows={7}
-              value={uwagi.join('\n')}
-              onChange={(e) => setUwagi(e.target.value.split('\n'))}
-            />
+          <SectionCard
+            title="Dodatkowe informacje / standardowe uwagi"
+            desc="Każda linia to osobny punkt na wydruku. Możesz edytować dla tej wyceny."
+          >
+            <Textarea rows={7} value={uwagi.join('\n')} onChange={(e) => setUwagi(e.target.value.split('\n'))} />
             <div className="mt-2">
               <button
                 className="btn-ghost btn-sm"

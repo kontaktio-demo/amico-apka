@@ -1,16 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Navigate, Link } from 'react-router-dom'
-import {
-  FileSignature,
-  Plus,
-  Trash2,
-  ArrowLeft,
-  ChevronRight,
-  PenLine,
-  Building2,
-  User,
-  Eraser,
-} from 'lucide-react'
+import { FileSignature, Plus, Trash2, ArrowLeft, ChevronRight, PenLine, Building2, User, Eraser } from 'lucide-react'
 import { useStore } from '../lib/store'
 import {
   PageHeader,
@@ -77,9 +67,7 @@ function Lista() {
     .filter((u) => (filtrTyp === 'wszystkie' ? true : u.typ === filtrTyp))
     .filter((u) => (filtrStatus === 'wszystkie' ? true : u.status === filtrStatus))
     .filter((u) =>
-      !q
-        ? true
-        : [u.numer, u.zamawiajacyNazwa, typNazwa(u.typ)].filter(Boolean).join(' ').toLowerCase().includes(q),
+      !q ? true : [u.numer, u.zamawiajacyNazwa, typNazwa(u.typ)].filter(Boolean).join(' ').toLowerCase().includes(q),
     )
     .slice()
     .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
@@ -153,7 +141,7 @@ function Lista() {
         <EmptyState
           icon={<FileSignature size={26} />}
           title="Brak umów"
-          desc="Utwórz pierwszą umowę — wybierz typ, uzupełnij dane i zbierz podpisy."
+          desc="Utwórz pierwszą umowę – wybierz typ, uzupełnij dane i zbierz podpisy."
           action={
             <button className="btn-primary" onClick={() => setPickerOpen(true)}>
               <Plus size={17} /> Nowa umowa
@@ -179,17 +167,13 @@ function Lista() {
                 {lista.map((u) => {
                   const si = umowaStatusInfo(u.status)
                   return (
-                    <tr
-                      key={u.id}
-                      className="row-hover cursor-pointer"
-                      onClick={() => nav(`/umowy/${u.id}`)}
-                    >
+                    <tr key={u.id} className="row-hover cursor-pointer" onClick={() => nav(`/umowy/${u.id}`)}>
                       <td className="td font-semibold text-brand-700">{u.numer}</td>
                       <td className="td">{typNazwa(u.typ)}</td>
-                      <td className="td">{u.zamawiajacyNazwa || '—'}</td>
-                      <td className="td text-center whitespace-nowrap">{fmtDate(u.dataZawarcia) || '—'}</td>
+                      <td className="td">{u.zamawiajacyNazwa || '–'}</td>
+                      <td className="td text-center whitespace-nowrap">{fmtDate(u.dataZawarcia) || '–'}</td>
                       <td className="td text-right whitespace-nowrap">
-                        {u.wynagrodzenieBrutto != null ? fmtPLN(u.wynagrodzenieBrutto) : '—'}
+                        {u.wynagrodzenieBrutto != null ? fmtPLN(u.wynagrodzenieBrutto) : '–'}
                       </td>
                       <td className="td text-center">
                         <Badge tone={si.tone as any}>{si.label}</Badge>
@@ -213,7 +197,7 @@ function Lista() {
       )}
 
       {/* Wybor typu umowy */}
-      <Modal open={pickerOpen} onClose={() => setPickerOpen(false)} title="Nowa umowa — wybierz typ" size="lg">
+      <Modal open={pickerOpen} onClose={() => setPickerOpen(false)} title="Nowa umowa – wybierz typ" size="lg">
         <div className="grid gap-2 sm:grid-cols-2">
           {UMOWA_TYPY.map((t) => (
             <button
@@ -228,7 +212,7 @@ function Lista() {
                 <span className="block text-[14px] font-semibold text-ink">{t.nazwa}</span>
                 <span className="mt-0.5 block text-[12.5px] text-stone-500">{t.opis}</span>
               </span>
-              <ChevronRight size={18} className="ml-auto mt-1 shrink-0 text-stone-300" />
+              <ChevronRight size={18} className="ml-auto mt-1 shrink-0 text-stone-400" />
             </button>
           ))}
         </div>
@@ -245,7 +229,9 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       onClick={onClick}
       className={cx(
         'rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition',
-        active ? 'border-brand-700 bg-white/10 text-white' : 'border-white/10 bg-white/[0.03] text-stone-600 hover:bg-stone-50',
+        active
+          ? 'border-brand-700 bg-white/10 text-white'
+          : 'border-white/10 bg-white/[0.03] text-stone-600 hover:bg-stone-50',
       )}
     >
       {children}
@@ -316,7 +302,7 @@ function Edytor({ umowaId }: { umowaId: string }) {
     <div>
       <PageHeader
         title={`${typNazwa(u.typ)}`}
-        subtitle={`${u.numer} · zawarta ${fmtDate(u.dataZawarcia) || '—'}`}
+        subtitle={`${u.numer} · zawarta ${fmtDate(u.dataZawarcia) || '–'}`}
         icon={<FileSignature size={22} />}
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -371,7 +357,11 @@ function Edytor({ umowaId }: { umowaId: string }) {
                 />
               </Field>
               <Field label="Data zawarcia">
-                <Input type="date" value={u.dataZawarcia || ''} onChange={(e) => set({ dataZawarcia: e.target.value })} />
+                <Input
+                  type="date"
+                  value={u.dataZawarcia || ''}
+                  onChange={(e) => set({ dataZawarcia: e.target.value })}
+                />
               </Field>
             </div>
             <Field label="Podmiot (Wykonawca)" className="mt-3">
@@ -388,7 +378,7 @@ function Edytor({ umowaId }: { umowaId: string }) {
           <SectionCard title="Zamawiający" icon={<User size={17} />} desc="Uzupełnij z bazy klientów lub wpisz ręcznie">
             <Field label="Wybierz z bazy klientów">
               <Select value={u.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                <option value="">— wpis ręczny —</option>
+                <option value="">– wpis ręczny –</option>
                 {klienci.map((k) => (
                   <option key={k.id} value={k.id}>
                     {klientNazwa(k)}
@@ -419,7 +409,10 @@ function Edytor({ umowaId }: { umowaId: string }) {
                   <Input value={u.zamawiajacyNip || ''} onChange={(e) => set({ zamawiajacyNip: e.target.value })} />
                 </Field>
                 <Field label="Telefon">
-                  <Input value={u.zamawiajacyTelefon || ''} onChange={(e) => set({ zamawiajacyTelefon: e.target.value })} />
+                  <Input
+                    value={u.zamawiajacyTelefon || ''}
+                    onChange={(e) => set({ zamawiajacyTelefon: e.target.value })}
+                  />
                 </Field>
                 <Field label="E-mail">
                   <Input
@@ -572,9 +565,7 @@ function Edytor({ umowaId }: { umowaId: string }) {
       <SignatureModal
         open={sigOpen !== null}
         onClose={() => setSigOpen(null)}
-        onSave={(sig) =>
-          set(sigOpen === 'zamawiajacy' ? { podpisZamawiajacego: sig } : { podpisWykonawcy: sig })
-        }
+        onSave={(sig) => set(sigOpen === 'zamawiajacy' ? { podpisZamawiajacego: sig } : { podpisWykonawcy: sig })}
         rola={sigOpen === 'zamawiajacy' ? 'Zamawiający' : 'Wykonawca'}
         domyslnyPodpisujacy={sigOpen === 'zamawiajacy' ? u.zamawiajacyNazwa || '' : firmaUmowy.wlasciciel || ''}
         dokumentId={u.id}

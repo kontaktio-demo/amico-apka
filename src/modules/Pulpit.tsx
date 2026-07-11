@@ -13,7 +13,7 @@ import {
   Store,
 } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { PageHeader, Stat, Card, CardBody, Badge } from '../components/ui'
+import { PageHeader, Stat, Card, CardBody, Badge, BADGE_CLASS, type BadgeTone } from '../components/ui'
 import { fmtPLN, fmtDate, today } from '../lib/format'
 import { klientNazwa, etapInfo, PIPELINE } from '../lib/helpers'
 import { podsumuj } from '../lib/format'
@@ -38,10 +38,13 @@ export default function Pulpit() {
   const wartoscOfert = b.wyceny
     .filter((w) => w.status !== 'odrzucona')
     .reduce((sum, w) => sum + podsumuj(w.pozycje).brutto, 0)
-  const naleznosci = b.faktury.filter((f) => f.status !== 'oplacona').reduce((s, f) => s + podsumuj(f.pozycje).brutto - (f.zaplacono || 0), 0)
+  const naleznosci = b.faktury
+    .filter((f) => f.status !== 'oplacona')
+    .reduce((s, f) => s + podsumuj(f.pozycje).brutto - (f.zaplacono || 0), 0)
 
   const godzina = new Date().getHours()
-  const powitanie = godzina < 12 ? 'Dzień dobry' : godzina < 18 ? 'Dzień dobry' : 'Dobry wieczór'
+  const powitanie = godzina < 18 ? 'Dzień dobry' : 'Dobry wieczór'
+  const imieZalogowanego = (user?.imie || firma.wlasciciel || '').split(' ')[0]
 
   // rozklad pipeline
   const rozklad = PIPELINE.filter((p) => p.klucz !== 'utracony').map((p) => ({
@@ -53,7 +56,7 @@ export default function Pulpit() {
   return (
     <div>
       <PageHeader
-        title={`${powitanie}, ${firma.wlasciciel.split(' ')[0]}`}
+        title={imieZalogowanego ? `${powitanie}, ${imieZalogowanego}` : powitanie}
         subtitle={`Pulpit AMICO · ${fmtDate(t)} · podmiot: ${firma.nazwa}`}
         actions={
           <Link to="/wyceny" className="btn-primary">
@@ -63,10 +66,31 @@ export default function Pulpit() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Klienci" value={b.klienci.length} icon={<Users size={18} />} sub={`${aktywneZlecenia.length} aktywnych zleceń`} />
-        <Stat label="Wartość ofert" value={fmtPLN(wartoscOfert)} tone="green" icon={<Calculator size={18} />} sub={`${b.wyceny.length} wycen`} />
-        <Stat label="Umowy do podpisu" value={doPodpisu.length} icon={<FileSignature size={18} />} sub={`${b.umowy.length} umów łącznie`} />
-        <Stat label="Należności" value={fmtPLN(naleznosci)} icon={<Receipt size={18} />} sub={`${b.faktury.length} faktur`} />
+        <Stat
+          label="Klienci"
+          value={b.klienci.length}
+          icon={<Users size={18} />}
+          sub={`${aktywneZlecenia.length} aktywnych zleceń`}
+        />
+        <Stat
+          label="Wartość ofert"
+          value={fmtPLN(wartoscOfert)}
+          tone="green"
+          icon={<Calculator size={18} />}
+          sub={`${b.wyceny.length} wycen`}
+        />
+        <Stat
+          label="Umowy do podpisu"
+          value={doPodpisu.length}
+          icon={<FileSignature size={18} />}
+          sub={`${b.umowy.length} umów łącznie`}
+        />
+        <Stat
+          label="Należności"
+          value={fmtPLN(naleznosci)}
+          icon={<Receipt size={18} />}
+          sub={`${b.faktury.length} faktur`}
+        />
       </div>
 
       <WymagaDzialania b={b} />
@@ -153,7 +177,9 @@ export default function Pulpit() {
               </Link>
             </div>
             {b.klienci.length === 0 ? (
-              <p className="py-6 text-center text-[13px] text-stone-400">Brak klientów — dodaj pierwszego w zakładce Klienci CRM.</p>
+              <p className="py-6 text-center text-[13px] text-stone-400">
+                Brak klientów – dodaj pierwszego w zakładce Klienci CRM.
+              </p>
             ) : (
               <div className="divide-y divide-stone-100">
                 {b.klienci
@@ -163,13 +189,17 @@ export default function Pulpit() {
                   .map((k) => {
                     const ei = etapInfo(k.etap)
                     return (
-                      <Link key={k.id} to={`/klienci/${k.id}`} className="flex items-center gap-3 py-2.5 transition hover:bg-stone-50">
+                      <Link
+                        key={k.id}
+                        to={`/klienci/${k.id}`}
+                        className="flex items-center gap-3 py-2.5 transition hover:bg-stone-50"
+                      >
                         <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-[13px] font-semibold text-brand-700">
                           {klientNazwa(k).slice(0, 1)}
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-[14px] font-medium text-ink">{klientNazwa(k)}</div>
-                          <div className="text-[12px] text-stone-400">{k.telefon || k.email || '—'}</div>
+                          <div className="text-[12px] text-stone-400">{k.telefon || k.email || '–'}</div>
                         </div>
                         <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
                       </Link>
@@ -215,9 +245,24 @@ function WymagaDzialania({ b }: { b: ReturnType<typeof useStore.getState>['baza'
   const t = today()
   const chips = [
     { n: b.wyceny.filter((w) => w.status === 'szkic').length, label: 'ofert do wysłania', to: '/wyceny', tone: 'blue' },
-    { n: b.umowy.filter((u) => u.status === 'szkic' || u.status === 'do_podpisu').length, label: 'umów do podpisu', to: '/umowy', tone: 'amber' },
-    { n: b.zadania.filter((z) => z.status !== 'zrobione' && z.termin && z.termin <= t).length, label: 'zadań na dziś / zaległych', to: '/zadania', tone: 'amber' },
-    { n: b.faktury.filter((f) => f.status !== 'oplacona' && f.terminPlatnosci && f.terminPlatnosci < t).length, label: 'faktur po terminie', to: '/faktury', tone: 'red' },
+    {
+      n: b.umowy.filter((u) => u.status === 'szkic' || u.status === 'do_podpisu').length,
+      label: 'umów do podpisu',
+      to: '/umowy',
+      tone: 'amber',
+    },
+    {
+      n: b.zadania.filter((z) => z.status !== 'zrobione' && z.termin && z.termin <= t).length,
+      label: 'zadań na dziś / zaległych',
+      to: '/zadania',
+      tone: 'amber',
+    },
+    {
+      n: b.faktury.filter((f) => f.status !== 'oplacona' && f.terminPlatnosci && f.terminPlatnosci < t).length,
+      label: 'faktur po terminie',
+      to: '/faktury',
+      tone: 'red',
+    },
   ].filter((c) => c.n > 0)
   if (!chips.length) return null
   return (
@@ -228,7 +273,11 @@ function WymagaDzialania({ b }: { b: ReturnType<typeof useStore.getState>['baza'
         </h3>
         <div className="flex flex-wrap gap-2">
           {chips.map((c) => (
-            <Link key={c.label} to={c.to} className={`badge-${c.tone} !text-[13px] !px-3 !py-1.5 hover:opacity-80`}>
+            <Link
+              key={c.label}
+              to={c.to}
+              className={`${BADGE_CLASS[c.tone as BadgeTone]} !text-[13px] !px-3 !py-1.5 hover:opacity-80`}
+            >
               <b className="mr-1">{c.n}</b> {c.label}
             </Link>
           ))}
@@ -239,16 +288,27 @@ function WymagaDzialania({ b }: { b: ReturnType<typeof useStore.getState>['baza'
 }
 
 // ---------- Pulpit terenowy (montażysta) ----------
-function PulpitTeren({ b, t, imie, userId }: { b: ReturnType<typeof useStore.getState>['baza']; t: string; imie: string; userId: string }) {
+function PulpitTeren({
+  b,
+  t,
+  imie,
+  userId,
+}: {
+  b: ReturnType<typeof useStore.getState>['baza']
+  t: string
+  imie: string
+  userId: string
+}) {
   const wydarzeniaDzis = b.wydarzenia.filter((w) => w.data === t && !w.zrobione)
   const moje = b.zadania
     .filter((z) => z.przypisanyDo === userId && z.status !== 'zrobione')
     .sort((a, c) => (a.termin || '').localeCompare(c.termin || ''))
   const naDzis = moje.filter((z) => z.termin && z.termin <= t)
+  const powitanie = new Date().getHours() < 18 ? 'Dzień dobry' : 'Dobry wieczór'
 
   return (
     <div>
-      <PageHeader title={`Dzień dobry, ${imie.split(' ')[0]}`} subtitle={`Twój plan · ${fmtDate(t)}`} />
+      <PageHeader title={`${powitanie}, ${imie.split(' ')[0]}`} subtitle={`Twój plan · ${fmtDate(t)}`} />
 
       <Card className="mb-5">
         <CardBody>
@@ -261,20 +321,34 @@ function PulpitTeren({ b, t, imie, userId }: { b: ReturnType<typeof useStore.get
             <div className="space-y-2">
               {wydarzeniaDzis.map((w) => (
                 <div key={w.id} className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
-                  <span className="rounded-lg bg-white/[0.06] px-2.5 py-1 text-[13px] font-semibold text-white">{w.godzina || '—'}</span>
+                  <span className="rounded-lg bg-white/[0.06] px-2.5 py-1 text-[13px] font-semibold text-white">
+                    {w.godzina || '–'}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[14px] font-medium text-ink">{w.tytul}</div>
-                    <div className="truncate text-[12px] text-stone-400">{w.typ}{w.adres ? ` · ${w.adres}` : ''}</div>
+                    <div className="truncate text-[12px] text-stone-400">
+                      {w.typ}
+                      {w.adres ? ` · ${w.adres}` : ''}
+                    </div>
                   </div>
                   {w.adres && (
-                    <a href={`https://maps.google.com/?q=${encodeURIComponent(w.adres)}`} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.06] text-stone-300 hover:text-white">
+                    <a
+                      href={`https://maps.google.com/?q=${encodeURIComponent(w.adres)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.06] text-stone-400 hover:text-white"
+                    >
                       <MapPin size={16} />
                     </a>
                   )}
                 </div>
               ))}
               {naDzis.map((z) => (
-                <Link key={z.id} to="/zadania" className="flex items-center gap-3 rounded-xl border border-white/10 p-3 hover:bg-white/[0.03]">
+                <Link
+                  key={z.id}
+                  to="/zadania"
+                  className="flex items-center gap-3 rounded-xl border border-white/10 p-3 hover:bg-white/[0.03]"
+                >
                   <ListTodo size={17} className="text-amber-400" />
                   <span className="flex-1 text-[14px] text-ink">{z.tytul}</span>
                   <Badge tone="amber">na dziś</Badge>
@@ -297,10 +371,17 @@ function PulpitTeren({ b, t, imie, userId }: { b: ReturnType<typeof useStore.get
 
 function TerenTile({ to, icon, label, n }: { to: string; icon: React.ReactNode; label: string; n?: number }) {
   return (
-    <Link to={to} className="card relative flex flex-col items-center justify-center gap-2 py-7 text-center transition hover:border-white/20">
+    <Link
+      to={to}
+      className="card relative flex flex-col items-center justify-center gap-2 py-7 text-center transition hover:border-white/20"
+    >
       <span className="text-brand-400">{icon}</span>
-      <span className="text-[13.5px] font-medium text-stone-200">{label}</span>
-      {n !== undefined && n > 0 && <span className="absolute right-3 top-3 rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white">{n}</span>}
+      <span className="text-[13.5px] font-medium text-stone-700">{label}</span>
+      {n !== undefined && n > 0 && (
+        <span className="absolute right-3 top-3 rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+          {n}
+        </span>
+      )}
     </Link>
   )
 }

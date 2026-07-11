@@ -18,15 +18,22 @@ export type SyncStatus = 'off' | 'laczenie' | 'ok' | 'zapisywanie' | 'offline' |
 
 // Czy blad wynika z niewaznej sesji (usuniety user, zmienione haslo, wygasly/uniewazniony token)?
 function czyBladSesji(e: any): boolean {
-  const m = `${e?.message || ''} ${e?.code || ''} ${e?.hint || ''}`.toLowerCase()
+  const m = `${e?.message || ''} ${e?.details || ''} ${e?.hint || ''}`.toLowerCase()
+  const kod = String(e?.code || '')
+  // Konto usuniete w Supabase: token nadal "wazny", ale auth.uid() nie istnieje juz w auth.users
+  // -> proba wpisu do amico_members lamie klucz obcy (23503).
+  const usunieteKonto = kod === '23503' || (m.includes('foreign key') && m.includes('amico_members'))
   return (
+    usunieteKonto ||
+    kod === '401' ||
+    kod === '403' ||
     m.includes('jwt') ||
     m.includes('sub claim') ||
     m.includes('wymagane logowanie') ||
     m.includes('not authenticated') ||
     m.includes('invalid token') ||
     m.includes('token is expired') ||
-    m.includes('user from sub claim')
+    m.includes('refresh token')
   )
 }
 
@@ -42,7 +49,7 @@ async function obsluzWygaslaSesje() {
   useCloud.getState().ustaw({
     status: 'sesja',
     workspaceId: null,
-    blad: 'Sesja w chmurze wygasła — zaloguj się ponownie (Ustawienia → Chmura). Twoje dane są bezpieczne na urządzeniu.',
+    blad: 'Sesja w chmurze wygasła – zaloguj się ponownie (Ustawienia → Chmura). Twoje dane są bezpieczne na urządzeniu.',
   })
 }
 
@@ -322,15 +329,19 @@ function podlaczRealtime(ws: string) {
   kanal?.unsubscribe()
   kanal = supabase
     .channel(`amico_state_${ws}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'amico_state', filter: `workspace_id=eq.${ws}` }, async (payload: any) => {
-      const nowaRev = Number(payload?.new?.rev ?? 0)
-      if (nowaRev && nowaRev <= getRev(ws)) return // to nasz wlasny zapis
-      try {
-        await pobierzIScal(ws)
-      } catch {
-        /* ponowimy przy nastepnej zmianie */
-      }
-    })
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'amico_state', filter: `workspace_id=eq.${ws}` },
+      async (payload: any) => {
+        const nowaRev = Number(payload?.new?.rev ?? 0)
+        if (nowaRev && nowaRev <= getRev(ws)) return // to nasz wlasny zapis
+        try {
+          await pobierzIScal(ws)
+        } catch {
+          /* ponowimy przy nastepnej zmianie */
+        }
+      },
+    )
     .subscribe()
 }
 

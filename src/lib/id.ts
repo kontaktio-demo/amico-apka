@@ -7,7 +7,7 @@ export function uid(prefix = ''): string {
   return prefix ? `${prefix}_${rnd}` : rnd
 }
 
-// Numeracja dokumentow: PREFIX/kolejny/ROK  np. WYC/12/2026
+// Numeracja dokumentow: PREFIX/kolejny/ROK np. WYC/12/2026
 export function numerDokumentu(prefix: string, kolejny: number, rok: number): string {
   return `${prefix}/${kolejny}/${rok}`
 }

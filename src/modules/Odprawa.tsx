@@ -1,14 +1,5 @@
 import { useState } from 'react'
-import {
-  ClipboardList,
-  Plus,
-  Trash2,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  CalendarDays,
-  ListPlus,
-} from 'lucide-react'
+import { ClipboardList, Plus, Trash2, X, ChevronLeft, ChevronRight, CalendarDays, ListPlus } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { PageHeader, Card, CardBody, EmptyState, Input, Badge } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
@@ -21,7 +12,7 @@ import type { Odprawa as OdprawaT, OdprawaSekcja, Pracownik } from '../lib/types
 function domyslneSekcje(pracownicy: Pracownik[]): OdprawaSekcja[] {
   const monterzy = pracownicy.filter((p) => p.rola === 'montaz' && p.aktywny)
   const montaze: OdprawaSekcja[] = monterzy.length
-    ? monterzy.map((p) => ({ klucz: `montaz_${p.id}`, tytul: `MONTAŻ — ${p.imie}`, pozycje: [] }))
+    ? monterzy.map((p) => ({ klucz: `montaz_${p.id}`, tytul: `MONTAŻ – ${p.imie}`, pozycje: [] }))
     : [{ klucz: 'montaze', tytul: 'MONTAŻE', pozycje: [] }]
   return [
     ...montaze,
@@ -94,11 +85,11 @@ export default function Odprawa() {
   // Tresc do wyslania (SMS / e-mail / udostepnij)
   const shareText = odprawa
     ? [
-        `ODPRAWA — ${fmtDateLong(data)}`,
+        `ODPRAWA – ${fmtDateLong(data)}`,
         '',
         ...odprawa.sekcje.map((s) => {
           const poz = s.pozycje.filter((p) => p.trim())
-          return `${s.tytul}:\n${poz.length ? poz.map((p) => `  • ${p}`).join('\n') : '  —'}`
+          return `${s.tytul}:\n${poz.length ? poz.map((p) => ` • ${p}`).join('\n') : ' –'}`
         }),
       ].join('\n')
     : ''
@@ -107,7 +98,7 @@ export default function Odprawa() {
     <div>
       <PageHeader
         title="Odprawa dzienna"
-        subtitle="Dzienny plan pracy pracowni — montaże, pomiary, transport i rozliczenia"
+        subtitle="Dzienny plan pracy pracowni – montaże, pomiary, transport i rozliczenia"
         icon={<ClipboardList size={22} />}
         actions={
           odprawa && (
@@ -126,8 +117,16 @@ export default function Odprawa() {
             <ChevronLeft size={20} />
           </button>
           <div className="relative">
-            <CalendarDays size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-            <input type="date" value={data} onChange={(e) => setData(e.target.value || today())} className="input pl-10" />
+            <CalendarDays
+              size={17}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"
+            />
+            <input
+              type="date"
+              value={data}
+              onChange={(e) => setData(e.target.value || today())}
+              className="input pl-10"
+            />
           </div>
           <button className="btn-ghost !px-2" title="Następny dzień" onClick={() => setData(addDays(data, 1))}>
             <ChevronRight size={20} />
@@ -180,11 +179,11 @@ export default function Odprawa() {
 
                   <div className="space-y-1.5">
                     {s.pozycje.length === 0 && (
-                      <p className="px-1 py-2 text-[13px] text-stone-400">Brak pozycji — dodaj pierwszą linię.</p>
+                      <p className="px-1 py-2 text-[13px] text-stone-400">Brak pozycji – dodaj pierwszą linię.</p>
                     )}
                     {s.pozycje.map((p, li) => (
                       <div key={li} className="flex items-center gap-2">
-                        <span className="w-4 shrink-0 text-right text-[12px] text-stone-300">{li + 1}</span>
+                        <span className="w-4 shrink-0 text-right text-[12px] text-stone-400">{li + 1}</span>
                         <Input
                           value={p}
                           onChange={(e) => setLinia(idx, li, e.target.value)}
@@ -192,7 +191,7 @@ export default function Odprawa() {
                           className="!h-9 !py-1"
                         />
                         <button
-                          className="btn-ghost !px-2 text-stone-300 hover:text-red-600"
+                          className="btn-ghost !px-2 text-stone-400 hover:text-red-600"
                           title="Usuń linię"
                           onClick={() => usunLinie(idx, li)}
                         >

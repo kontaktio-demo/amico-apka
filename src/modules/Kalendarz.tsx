@@ -1,15 +1,5 @@
 import { useMemo, useState } from 'react'
-import {
-  CalendarDays,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  User,
-  Clock,
-  Trash2,
-  Pencil,
-} from 'lucide-react'
+import { CalendarDays, Plus, ChevronLeft, ChevronRight, MapPin, User, Clock, Trash2, Pencil } from 'lucide-react'
 import { useStore } from '../lib/store'
 import type { Wydarzenie, WydarzenieTyp } from '../lib/types'
 import {
@@ -35,14 +25,15 @@ import { today, nowISO, fmtDate, fmtMonthYear, toISO, dayName } from '../lib/for
 import { klientNazwa } from '../lib/helpers'
 
 // ---------- Metadane typow wydarzen (kolory + etykiety) ----------
-const TYPY: { typ: WydarzenieTyp; nazwa: string; kolor: string; tone: 'green' | 'stone' | 'amber' | 'blue' | 'red' }[] = [
-  { typ: 'pomiar', nazwa: 'Pomiar', kolor: '#2563eb', tone: 'blue' },
-  { typ: 'montaz', nazwa: 'Montaż', kolor: '#d97706', tone: 'amber' },
-  { typ: 'transport', nazwa: 'Transport', kolor: '#7c3aed', tone: 'stone' },
-  { typ: 'spotkanie', nazwa: 'Spotkanie', kolor: '#0891b2', tone: 'blue' },
-  { typ: 'odbior', nazwa: 'Odbiór', kolor: '#059669', tone: 'green' },
-  { typ: 'inne', nazwa: 'Inne', kolor: '#78716c', tone: 'stone' },
-]
+const TYPY: { typ: WydarzenieTyp; nazwa: string; kolor: string; tone: 'green' | 'stone' | 'amber' | 'blue' | 'red' }[] =
+  [
+    { typ: 'pomiar', nazwa: 'Pomiar', kolor: '#2563eb', tone: 'blue' },
+    { typ: 'montaz', nazwa: 'Montaż', kolor: '#d97706', tone: 'amber' },
+    { typ: 'transport', nazwa: 'Transport', kolor: '#7c3aed', tone: 'stone' },
+    { typ: 'spotkanie', nazwa: 'Spotkanie', kolor: '#0891b2', tone: 'blue' },
+    { typ: 'odbior', nazwa: 'Odbiór', kolor: '#059669', tone: 'green' },
+    { typ: 'inne', nazwa: 'Inne', kolor: '#78716c', tone: 'stone' },
+  ]
 function typInfo(t: WydarzenieTyp) {
   return TYPY.find((x) => x.typ === t) || TYPY[TYPY.length - 1]
 }
@@ -161,7 +152,7 @@ export default function Kalendarz() {
     push(edycja ? 'Zapisano zmiany' : 'Dodano wydarzenie')
   }
   async function usun(w: Wydarzenie) {
-    if (await confirm(`Usunąć wydarzenie „${w.tytul}"?`)) {
+    if (await confirm(`Usunąć wydarzenie „${w.tytul}”?`)) {
       remove('wydarzenia', w.id)
       push('Usunięto wydarzenie', 'info')
     }
@@ -183,7 +174,8 @@ export default function Kalendarz() {
 
   const shareText = useMemo(() => {
     const linie = dzienWydarzenia.map(
-      (w) => `${w.godzina ? w.godzina + ' ' : ''}${typInfo(w.typ).nazwa}: ${w.tytul}${w.adres ? ' (' + w.adres + ')' : ''}`,
+      (w) =>
+        `${w.godzina ? w.godzina + ' ' : ''}${typInfo(w.typ).nazwa}: ${w.tytul}${w.adres ? ' (' + w.adres + ')' : ''}`,
     )
     return `Plan dnia ${fmtDate(wybranyDzien)}\n${linie.length ? linie.join('\n') : 'Brak zaplanowanych wydarzeń.'}`
   }, [dzienWydarzenia, wybranyDzien])
@@ -251,7 +243,9 @@ export default function Kalendarz() {
         <Card className="lg:col-span-2">
           <CardBody>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-[16px] font-display font-semibold capitalize text-ink">{fmtMonthYear(`${rok}-${String(mies + 1).padStart(2, '0')}-01`)}</h3>
+              <h3 className="text-[16px] font-display font-semibold capitalize text-ink">
+                {fmtMonthYear(`${rok}-${String(mies + 1).padStart(2, '0')}-01`)}
+              </h3>
               <div className="flex items-center gap-1.5">
                 <button className="btn-ghost !px-2" onClick={poprzedni} aria-label="Poprzedni miesiąc">
                   <ChevronLeft size={18} />
@@ -267,7 +261,10 @@ export default function Kalendarz() {
 
             <div className="grid grid-cols-7 gap-1">
               {DNI_SKROT.map((d) => (
-                <div key={d} className="pb-1 text-center text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+                <div
+                  key={d}
+                  className="pb-1 text-center text-[11px] font-semibold uppercase tracking-wide text-stone-400"
+                >
                   {d}
                 </div>
               ))}
@@ -296,14 +293,19 @@ export default function Kalendarz() {
                       {ev.slice(0, 3).map((w) => (
                         <span
                           key={w.id}
-                          className={cx('truncate rounded px-1 py-0.5 text-[10.5px] font-medium text-white', w.zrobione && 'line-through opacity-60')}
+                          className={cx(
+                            'truncate rounded px-1 py-0.5 text-[10.5px] font-medium text-white',
+                            w.zrobione && 'line-through opacity-60',
+                          )}
                           style={{ background: typInfo(w.typ).kolor }}
                         >
                           {w.godzina ? `${w.godzina} ` : ''}
                           {w.tytul}
                         </span>
                       ))}
-                      {ev.length > 3 && <span className="px-1 text-[10px] text-stone-400">+{ev.length - 3} więcej</span>}
+                      {ev.length > 3 && (
+                        <span className="px-1 text-[10px] text-stone-400">+{ev.length - 3} więcej</span>
+                      )}
                     </div>
                   </button>
                 )
@@ -326,7 +328,11 @@ export default function Kalendarz() {
             </div>
 
             {dzienWydarzenia.length === 0 ? (
-              <EmptyState icon={<CalendarDays size={26} />} title="Brak wydarzeń" desc="Nie zaplanowano nic na ten dzień." />
+              <EmptyState
+                icon={<CalendarDays size={26} />}
+                title="Brak wydarzeń"
+                desc="Nie zaplanowano nic na ten dzień."
+              />
             ) : (
               <div className="space-y-2.5">
                 {dzienWydarzenia.map((w) => {
@@ -349,7 +355,9 @@ export default function Kalendarz() {
                               </span>
                             )}
                           </div>
-                          <div className={cx('mt-1 text-[14px] font-semibold text-ink', w.zrobione && 'line-through')}>{w.tytul}</div>
+                          <div className={cx('mt-1 text-[14px] font-semibold text-ink', w.zrobione && 'line-through')}>
+                            {w.tytul}
+                          </div>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
                           <button className="btn-ghost !px-1.5" onClick={() => edytuj(w)} aria-label="Edytuj">
@@ -411,7 +419,11 @@ export default function Kalendarz() {
             <Input type="date" value={draft.data} onChange={(e) => setDraft({ ...draft, data: e.target.value })} />
           </Field>
           <Field label="Godzina">
-            <Input type="time" value={draft.godzina || ''} onChange={(e) => setDraft({ ...draft, godzina: e.target.value })} />
+            <Input
+              type="time"
+              value={draft.godzina || ''}
+              onChange={(e) => setDraft({ ...draft, godzina: e.target.value })}
+            />
           </Field>
           <Field label="Typ" className="col-span-2">
             <Select value={draft.typ} onChange={(e) => setDraft({ ...draft, typ: e.target.value as WydarzenieTyp })}>
@@ -423,11 +435,15 @@ export default function Kalendarz() {
             </Select>
           </Field>
           <Field label="Tytuł" required className="col-span-2">
-            <Input value={draft.tytul} onChange={(e) => setDraft({ ...draft, tytul: e.target.value })} placeholder="np. Pomiar blatów – kuchnia" />
+            <Input
+              value={draft.tytul}
+              onChange={(e) => setDraft({ ...draft, tytul: e.target.value })}
+              placeholder="np. Pomiar blatów – kuchnia"
+            />
           </Field>
           <Field label="Klient" className="col-span-2">
             <Select value={draft.klientId || ''} onChange={(e) => setDraft({ ...draft, klientId: e.target.value })}>
-              <option value="">— brak —</option>
+              <option value="">– brak –</option>
               {b.klienci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {klientNazwa(k)}
@@ -436,8 +452,11 @@ export default function Kalendarz() {
             </Select>
           </Field>
           <Field label="Pracownik" className="col-span-2">
-            <Select value={draft.pracownikId || ''} onChange={(e) => setDraft({ ...draft, pracownikId: e.target.value })}>
-              <option value="">— brak —</option>
+            <Select
+              value={draft.pracownikId || ''}
+              onChange={(e) => setDraft({ ...draft, pracownikId: e.target.value })}
+            >
+              <option value="">– brak –</option>
               {b.pracownicy.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.imie}
@@ -446,7 +465,11 @@ export default function Kalendarz() {
             </Select>
           </Field>
           <Field label="Adres" className="col-span-2">
-            <Input value={draft.adres || ''} onChange={(e) => setDraft({ ...draft, adres: e.target.value })} placeholder="Adres realizacji / spotkania" />
+            <Input
+              value={draft.adres || ''}
+              onChange={(e) => setDraft({ ...draft, adres: e.target.value })}
+              placeholder="Adres realizacji / spotkania"
+            />
           </Field>
           <Field label="Notatki" className="col-span-2">
             <Textarea value={draft.notatki || ''} onChange={(e) => setDraft({ ...draft, notatki: e.target.value })} />
@@ -480,7 +503,15 @@ function PlanTygodniaDoc({
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 12 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '16pt', color: '#12233a', letterSpacing: '0.03em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '16pt',
+            color: '#12233a',
+            letterSpacing: '0.03em',
+          }}
+        >
           PLAN PRACY
         </div>
         <div style={{ fontSize: '9pt', color: '#6b6459', marginTop: 2 }}>
@@ -489,7 +520,11 @@ function PlanTygodniaDoc({
       </div>
 
       {dni.map((d) => (
-        <div key={d.iso} style={{ marginBottom: 8, border: '1px solid #d3cfc2', borderRadius: 8, overflow: 'hidden' }} className="avoid-break">
+        <div
+          key={d.iso}
+          style={{ marginBottom: 8, border: '1px solid #d3cfc2', borderRadius: 8, overflow: 'hidden' }}
+          className="avoid-break"
+        >
           <div
             style={{
               display: 'flex',
@@ -506,7 +541,7 @@ function PlanTygodniaDoc({
             <span>{fmtDate(d.iso)}</span>
           </div>
           {d.wydarzenia.length === 0 ? (
-            <div style={{ padding: '4px 9px', fontSize: '8pt', color: '#a9a496' }}>—</div>
+            <div style={{ padding: '4px 9px', fontSize: '8pt', color: '#a9a496' }}>–</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt' }}>
               <tbody>
@@ -516,7 +551,9 @@ function PlanTygodniaDoc({
                   const prac = b.pracownicy.find((x) => x.id === w.pracownikId)
                   return (
                     <tr key={w.id} style={{ borderTop: '1px solid #e6e2d8' }}>
-                      <td style={{ padding: '3px 6px', width: 42, fontWeight: 600, color: '#12233a' }}>{w.godzina || '—'}</td>
+                      <td style={{ padding: '3px 6px', width: 42, fontWeight: 600, color: '#12233a' }}>
+                        {w.godzina || '–'}
+                      </td>
                       <td style={{ padding: '3px 6px', width: 66 }}>
                         <span style={{ color: ti.kolor, fontWeight: 700 }}>{ti.nazwa}</span>
                       </td>
@@ -525,7 +562,7 @@ function PlanTygodniaDoc({
                         {k ? ` · ${klientNazwa(k)}` : ''}
                         {w.adres ? ` · ${w.adres}` : ''}
                         {prac ? ` · ${prac.imie}` : ''}
-                        {w.zrobione ? ' · ✓ zrobione' : ''}
+                        {w.zrobione ? ' · zrobione' : ''}
                       </td>
                     </tr>
                   )

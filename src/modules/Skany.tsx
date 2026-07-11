@@ -1,7 +1,20 @@
 import { useState, useMemo } from 'react'
 import { ScanLine, Search, FileText, Printer, Send, Download, Trash2, Link2, X, Plus } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { PageHeader, SearchInput, Select, EmptyState, Badge, Modal, Field, Input, Textarea, useToast, useConfirm, cx } from '../components/ui'
+import {
+  PageHeader,
+  SearchInput,
+  Select,
+  EmptyState,
+  Badge,
+  Modal,
+  Field,
+  Input,
+  Textarea,
+  useToast,
+  useConfirm,
+  cx,
+} from '../components/ui'
 import { Skaner } from '../components/Skaner'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { fmtDate } from '../lib/format'
@@ -38,7 +51,8 @@ export default function Skany() {
         if (!szukaj) return true
         const zl = b.zlecenia.find((z) => z.id === s.zlecenieId)
         const kl = b.klienci.find((k) => k.id === s.klientId)
-        const hay = `${s.nazwa} ${s.notatka || ''} ${zl?.numer || ''} ${zl?.tytul || ''} ${kl ? klientNazwa(kl) : ''}`.toLowerCase()
+        const hay =
+          `${s.nazwa} ${s.notatka || ''} ${zl?.numer || ''} ${zl?.tytul || ''} ${kl ? klientNazwa(kl) : ''}`.toLowerCase()
         return hay.includes(szukaj.toLowerCase())
       })
       .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
@@ -64,7 +78,9 @@ export default function Skany() {
         <Select className="w-auto" value={katFiltr} onChange={(e) => setKatFiltr(e.target.value)}>
           <option value="">Wszystkie kategorie</option>
           {Object.entries(KAT).map(([k, v]) => (
-            <option key={k} value={k}>{v}</option>
+            <option key={k} value={k}>
+              {v}
+            </option>
           ))}
         </Select>
       </div>
@@ -73,8 +89,12 @@ export default function Skany() {
         <EmptyState
           icon={<ScanLine size={28} />}
           title="Brak skanów"
-          desc="Zeskanuj dokument, umowę, protokół albo kartkę z pomiaru — jak w Adobe Scan. Zapisze się jako PDF i przypniesz do zlecenia."
-          action={<button className="btn-primary" onClick={() => setSkanerOtwarty(true)}><ScanLine size={16} /> Skanuj dokument</button>}
+          desc="Zeskanuj dokument, umowę, protokół albo kartkę z pomiaru – jak w Adobe Scan. Zapisze się jako PDF i przypniesz do zlecenia."
+          action={
+            <button className="btn-primary" onClick={() => setSkanerOtwarty(true)}>
+              <ScanLine size={16} /> Skanuj dokument
+            </button>
+          }
         />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -82,7 +102,11 @@ export default function Skany() {
             const zl = b.zlecenia.find((z) => z.id === s.zlecenieId)
             const kl = b.klienci.find((k) => k.id === s.klientId)
             return (
-              <button key={s.id} onClick={() => setPodglad(s)} className="card overflow-hidden text-left transition hover:border-white/20">
+              <button
+                key={s.id}
+                onClick={() => setPodglad(s)}
+                className="card overflow-hidden text-left transition hover:border-white/20"
+              >
                 <div className="relative aspect-[3/4] bg-white">
                   <img src={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" />
                   {s.strony.length > 1 && (
@@ -123,7 +147,7 @@ export default function Skany() {
             push('Zapisano zmiany')
           }}
           onUsun={async () => {
-            if (await confirm(`Usunąć skan „${podglad.nazwa}"?`)) {
+            if (await confirm(`Usunąć skan „${podglad.nazwa}”?`)) {
               remove('skany', podglad.id)
               setPodglad(null)
               push('Usunięto skan', 'info')
@@ -190,7 +214,9 @@ function PodgladSkanu({
           {d.strony.map((s, i) => (
             <div key={i} className="relative">
               <img src={s} alt={`Strona ${i + 1}`} className="w-full rounded-lg bg-white" />
-              <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-[11px] text-white">{i + 1} / {d.strony.length}</span>
+              <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-[11px] text-white">
+                {i + 1} / {d.strony.length}
+              </span>
             </div>
           ))}
         </div>
@@ -200,17 +226,21 @@ function PodgladSkanu({
           </Field>
           <Field label="Przypisz do zlecenia">
             <Select value={d.zlecenieId || ''} onChange={(e) => set({ zlecenieId: e.target.value || undefined })}>
-              <option value="">— brak —</option>
+              <option value="">– brak –</option>
               {zlecenia.map((z) => (
-                <option key={z.id} value={z.id}>{z.label}</option>
+                <option key={z.id} value={z.id}>
+                  {z.label}
+                </option>
               ))}
             </Select>
           </Field>
           <Field label="Przypisz do klienta">
             <Select value={d.klientId || ''} onChange={(e) => set({ klientId: e.target.value || undefined })}>
-              <option value="">— brak —</option>
+              <option value="">– brak –</option>
               {klienci.map((k) => (
-                <option key={k.id} value={k.id}>{k.label}</option>
+                <option key={k.id} value={k.id}>
+                  {k.label}
+                </option>
               ))}
             </Select>
           </Field>

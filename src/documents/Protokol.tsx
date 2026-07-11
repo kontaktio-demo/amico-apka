@@ -24,7 +24,9 @@ export function ProtokolDoc({ p, firma, logoDataUrl }: { p: Protokol; firma: Fir
       </DocSection>
 
       <DocSection title="Potwierdzenie odbioru">
-        <div style={{ fontSize: '9pt', color: '#12130f', marginBottom: 6 }}>Potwierdzam odbiór elementów kamiennych:</div>
+        <div style={{ fontSize: '9pt', color: '#12130f', marginBottom: 6 }}>
+          Potwierdzam odbiór elementów kamiennych:
+        </div>
         <div
           style={{
             minHeight: 54,

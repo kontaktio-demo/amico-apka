@@ -23,8 +23,34 @@ export function parseNum(s: string | number | undefined): number {
 }
 
 // ---------- Daty ----------
-const MIESIACE = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia']
-const MIESIACE_M = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień']
+const MIESIACE = [
+  'stycznia',
+  'lutego',
+  'marca',
+  'kwietnia',
+  'maja',
+  'czerwca',
+  'lipca',
+  'sierpnia',
+  'września',
+  'października',
+  'listopada',
+  'grudnia',
+]
+const MIESIACE_M = [
+  'styczeń',
+  'luty',
+  'marzec',
+  'kwiecień',
+  'maj',
+  'czerwiec',
+  'lipiec',
+  'sierpień',
+  'wrzesień',
+  'październik',
+  'listopad',
+  'grudzień',
+]
 const DNI = ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota']
 
 export function today(): string {
@@ -155,9 +181,42 @@ export function fmtNIP(s: string): string {
 
 // ---------- Kwota slownie (PLN) ----------
 const JEDNOSTKI = ['', 'jeden', 'dwa', 'trzy', 'cztery', 'pięć', 'sześć', 'siedem', 'osiem', 'dziewięć']
-const NASCIE = ['dziesięć', 'jedenaście', 'dwanaście', 'trzynaście', 'czternaście', 'piętnaście', 'szesnaście', 'siedemnaście', 'osiemnaście', 'dziewiętnaście']
-const DZIESIATKI = ['', '', 'dwadzieścia', 'trzydzieści', 'czterdzieści', 'pięćdziesiąt', 'sześćdziesiąt', 'siedemdziesiąt', 'osiemdziesiąt', 'dziewięćdziesiąt']
-const SETKI = ['', 'sto', 'dwieście', 'trzysta', 'czterysta', 'pięćset', 'sześćset', 'siedemset', 'osiemset', 'dziewięćset']
+const NASCIE = [
+  'dziesięć',
+  'jedenaście',
+  'dwanaście',
+  'trzynaście',
+  'czternaście',
+  'piętnaście',
+  'szesnaście',
+  'siedemnaście',
+  'osiemnaście',
+  'dziewiętnaście',
+]
+const DZIESIATKI = [
+  '',
+  '',
+  'dwadzieścia',
+  'trzydzieści',
+  'czterdzieści',
+  'pięćdziesiąt',
+  'sześćdziesiąt',
+  'siedemdziesiąt',
+  'osiemdziesiąt',
+  'dziewięćdziesiąt',
+]
+const SETKI = [
+  '',
+  'sto',
+  'dwieście',
+  'trzysta',
+  'czterysta',
+  'pięćset',
+  'sześćset',
+  'siedemset',
+  'osiemset',
+  'dziewięćset',
+]
 
 function grupaSlownie(n: number): string {
   const parts: string[] = []

@@ -29,7 +29,10 @@ export function PWAReloadPrompt() {
         <div className="flex items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-white shadow-pop animate-fade-in">
           <RefreshCw size={17} />
           <span className="text-[13.5px] font-medium">Dostępna nowa wersja aplikacji</span>
-          <button className="rounded-lg bg-brand-600 px-3 py-1.5 text-[13px] font-semibold hover:bg-brand-500" onClick={() => updateServiceWorker(true)}>
+          <button
+            className="rounded-lg bg-brand-600 px-3 py-1.5 text-[13px] font-semibold hover:bg-brand-500"
+            onClick={() => updateServiceWorker(true)}
+          >
             Odśwież
           </button>
           <button className="text-[13px] text-white/60 hover:text-white" onClick={() => setNeedRefresh(false)}>

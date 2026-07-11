@@ -6,9 +6,9 @@ const zm = (r: any): string => (r?._zm || r?.zaktualizowano || r?.utworzono || '
 
 /**
  * Scala dwie wersje bazy (lokalna + z serwera) tak, aby NIC nie zginelo:
- *  - rekordy laczone po id; wygrywa nowszy (znacznik _zm),
- *  - usuniecia propagowane przez tombstones (usuniete),
- *  - ustawienia: nowsze wygrywaja.
+ * - rekordy laczone po id; wygrywa nowszy (znacznik _zm),
+ * - usuniecia propagowane przez tombstones (usuniete),
+ * - ustawienia: nowsze wygrywaja.
  */
 export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
   const wzor = pustaBaza()
@@ -56,7 +56,7 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
     .filter((x) => x.t > granica)
 
   // 4) Ustawienia – nowsze wygrywaja, ALE licznik numeracji scalamy przez MAX.
-  //    (licznik jest monotoniczny – cofniecie = duplikaty numerow faktur/umow!)
+  // (licznik jest monotoniczny – cofniecie = duplikaty numerow faktur/umow!)
   const lu: any = lokalna.ustawienia
   const ru: any = zdalna.ustawienia
   const wygrany: any = !ru ? lu : !lu ? ru : zm(lu) >= zm(ru) ? lu : ru
@@ -68,7 +68,7 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
   out.ustawienia = { ...(wygrany || {}), numeracja }
 
   // 5) Sekrety lokalne (hash hasla, PIN, biometria) NIGDY nie ida do chmury,
-  //    wiec po scaleniu przywracamy je z wersji lokalnej.
+  // wiec po scaleniu przywracamy je z wersji lokalnej.
   const sekretyLokalne = new Map<string, any>()
   for (const u of (lokalna as any).uzytkownicy || []) sekretyLokalne.set(u.id, u)
   out.uzytkownicy = (out.uzytkownicy || []).map((u: any) => {

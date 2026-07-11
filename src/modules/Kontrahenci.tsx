@@ -1,16 +1,5 @@
 import { useMemo, useState } from 'react'
-import {
-  Handshake,
-  Plus,
-  Pencil,
-  Trash2,
-  Phone,
-  Mail,
-  Building2,
-  Coins,
-  Percent,
-  Check,
-} from 'lucide-react'
+import { Handshake, Plus, Pencil, Trash2, Phone, Mail, Building2, Coins, Percent, Check } from 'lucide-react'
 import { useStore } from '../lib/store'
 import {
   PageHeader,
@@ -77,10 +66,7 @@ export default function Kontrahenci() {
 
   const logoDataUrl = b.ustawienia.logoDataUrl
 
-  const wszyscyTypu = useMemo(
-    () => b.kontrahenci.filter((k) => k.typ === aktywnyTyp),
-    [b.kontrahenci, aktywnyTyp],
-  )
+  const wszyscyTypu = useMemo(() => b.kontrahenci.filter((k) => k.typ === aktywnyTyp), [b.kontrahenci, aktywnyTyp])
 
   const lista = useMemo(() => {
     const q = szukaj.trim().toLowerCase()
@@ -93,9 +79,7 @@ export default function Kontrahenci() {
             .includes(q),
         )
       : wszyscyTypu
-    return filtered
-      .slice()
-      .sort((a, c) => Number(c.aktywny) - Number(a.aktywny) || a.nazwa.localeCompare(c.nazwa))
+    return filtered.slice().sort((a, c) => Number(c.aktywny) - Number(a.aktywny) || a.nazwa.localeCompare(c.nazwa))
   }, [wszyscyTypu, szukaj])
 
   const typInfo = KONTRAHENT_TYPY.find((t) => t.typ === aktywnyTyp) || KONTRAHENT_TYPY[0]
@@ -111,7 +95,7 @@ export default function Kontrahenci() {
   }
 
   const usun = async (k: Kontrahent) => {
-    if (await confirm(`Usunąć kontrahenta „${k.nazwa}"? Operacja jest nieodwracalna.`)) {
+    if (await confirm(`Usunąć kontrahenta „${k.nazwa}”? Operacja jest nieodwracalna.`)) {
       remove('kontrahenci', k.id)
       push('Usunięto kontrahenta', 'info')
     }
@@ -146,11 +130,18 @@ export default function Kontrahenci() {
               onClick={() => setAktywnyTyp(t.typ)}
               className={cx(
                 'flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[13.5px] font-medium transition',
-                on ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-white/10 bg-white/[0.03] text-stone-600 hover:border-brand-200',
+                on
+                  ? 'border-brand-300 bg-brand-50 text-brand-700'
+                  : 'border-white/10 bg-white/[0.03] text-stone-600 hover:border-brand-200',
               )}
             >
               {t.lm}
-              <span className={cx('rounded-full px-1.5 py-0.5 text-[11px] font-semibold', on ? 'bg-white/10 text-white' : 'bg-stone-100 text-stone-500')}>
+              <span
+                className={cx(
+                  'rounded-full px-1.5 py-0.5 text-[11px] font-semibold',
+                  on ? 'bg-white/10 text-white' : 'bg-stone-100 text-stone-500',
+                )}
+              >
                 {n}
               </span>
             </button>
@@ -161,9 +152,20 @@ export default function Kontrahenci() {
       {/* Statystyki prowizji (tylko dla kategorii prowizyjnych) */}
       {maProwizje(aktywnyTyp) && (
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Stat label="Kontrahenci" value={wszyscyTypu.length} icon={<Building2 size={18} />} sub={`${wszyscyTypu.filter((k) => k.aktywny).length} aktywnych`} />
+          <Stat
+            label="Kontrahenci"
+            value={wszyscyTypu.length}
+            icon={<Building2 size={18} />}
+            sub={`${wszyscyTypu.filter((k) => k.aktywny).length} aktywnych`}
+          />
           <Stat label="Prowizje należne" value={fmtPLN(sumaNaleznych)} icon={<Coins size={18} />} sub="do wypłaty" />
-          <Stat label="Prowizje wypłacone" value={fmtPLN(sumaWyplaconych)} tone="green" icon={<Check size={18} />} sub={`${wszystkieProwizje.length} pozycji łącznie`} />
+          <Stat
+            label="Prowizje wypłacone"
+            value={fmtPLN(sumaWyplaconych)}
+            tone="green"
+            icon={<Check size={18} />}
+            sub={`${wszystkieProwizje.length} pozycji łącznie`}
+          />
         </div>
       )}
 
@@ -172,11 +174,13 @@ export default function Kontrahenci() {
           <SearchInput value={szukaj} onChange={setSzukaj} placeholder={`Szukaj w: ${typInfo.lm}…`} />
         </div>
         <PrintSendBar
-          getPrintNode={() => <KontrahenciDoc firma={firma} typNazwa={typInfo.lm} lista={lista} logoDataUrl={logoDataUrl} />}
+          getPrintNode={() => (
+            <KontrahenciDoc firma={firma} typNazwa={typInfo.lm} lista={lista} logoDataUrl={logoDataUrl} />
+          )}
           share={{
-            title: `Kontakty — ${typInfo.lm}`,
+            title: `Kontakty – ${typInfo.lm}`,
             text: lista
-              .map((k) => `${k.nazwa}${k.firma ? ` (${k.firma})` : ''} — tel. ${k.telefon || '—'} — ${k.email || '—'}`)
+              .map((k) => `${k.nazwa}${k.firma ? ` (${k.firma})` : ''} – tel. ${k.telefon || '–'} – ${k.email || '–'}`)
               .join('\n'),
           }}
         />
@@ -203,12 +207,7 @@ export default function Kontrahenci() {
       )}
 
       {edytowany && (
-        <EdycjaModal
-          key={edytowany.id}
-          poczatek={edytowany}
-          onClose={() => setEdytowany(null)}
-          onSave={zapisz}
-        />
+        <EdycjaModal key={edytowany.id} poczatek={edytowany} onClose={() => setEdytowany(null)} onSave={zapisz} />
       )}
       {confirmNode}
     </div>
@@ -281,7 +280,15 @@ function KartaKontrahenta({ k, onEdit, onDelete }: { k: Kontrahent; onEdit: () =
 }
 
 // ---------- Modal edycji ----------
-function EdycjaModal({ poczatek, onClose, onSave }: { poczatek: Kontrahent; onClose: () => void; onSave: (k: Kontrahent) => void }) {
+function EdycjaModal({
+  poczatek,
+  onClose,
+  onSave,
+}: {
+  poczatek: Kontrahent
+  onClose: () => void
+  onSave: (k: Kontrahent) => void
+}) {
   const [k, setK] = useState<Kontrahent>(poczatek)
   const set = <F extends keyof Kontrahent>(pole: F, wartosc: Kontrahent[F]) => setK((s) => ({ ...s, [pole]: wartosc }))
 
@@ -331,7 +338,11 @@ function EdycjaModal({ poczatek, onClose, onSave }: { poczatek: Kontrahent; onCl
           </Field>
           <Field label="Aktywny">
             <div className="flex h-[42px] items-center">
-              <Toggle checked={k.aktywny} onChange={(v) => set('aktywny', v)} label={k.aktywny ? 'Współpraca aktywna' : 'Nieaktywny'} />
+              <Toggle
+                checked={k.aktywny}
+                onChange={(v) => set('aktywny', v)}
+                label={k.aktywny ? 'Współpraca aktywna' : 'Nieaktywny'}
+              />
             </div>
           </Field>
         </div>
@@ -341,31 +352,58 @@ function EdycjaModal({ poczatek, onClose, onSave }: { poczatek: Kontrahent; onCl
             <Input value={k.nazwa} onChange={(e) => set('nazwa', e.target.value)} placeholder="np. Anna Kowalska" />
           </Field>
           <Field label="Firma">
-            <Input value={k.firma || ''} onChange={(e) => set('firma', e.target.value)} placeholder="Nazwa firmy / pracowni" />
+            <Input
+              value={k.firma || ''}
+              onChange={(e) => set('firma', e.target.value)}
+              placeholder="Nazwa firmy / pracowni"
+            />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Telefon">
-            <Input value={k.telefon || ''} onChange={(e) => set('telefon', e.target.value)} placeholder="+48 600 000 000" inputMode="tel" />
+            <Input
+              value={k.telefon || ''}
+              onChange={(e) => set('telefon', e.target.value)}
+              placeholder="+48 600 000 000"
+              inputMode="tel"
+            />
           </Field>
           <Field label="E-mail">
-            <Input value={k.email || ''} onChange={(e) => set('email', e.target.value)} placeholder="kontakt@firma.pl" type="email" />
+            <Input
+              value={k.email || ''}
+              onChange={(e) => set('email', e.target.value)}
+              placeholder="kontakt@firma.pl"
+              type="email"
+            />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Specjalizacja">
-            <Input value={k.specjalizacja || ''} onChange={(e) => set('specjalizacja', e.target.value)} placeholder="np. kuchnie premium, łazienki" />
+            <Input
+              value={k.specjalizacja || ''}
+              onChange={(e) => set('specjalizacja', e.target.value)}
+              placeholder="np. kuchnie premium, łazienki"
+            />
           </Field>
           <Field label="Branża" hint="np. glazurnik, elektryk, hydraulik">
-            <Input value={k.branza || ''} onChange={(e) => set('branza', e.target.value)} placeholder="Branża wykonawcza" />
+            <Input
+              value={k.branza || ''}
+              onChange={(e) => set('branza', e.target.value)}
+              placeholder="Branża wykonawcza"
+            />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Field label="NIP" error={nipOk ? undefined : 'Nieprawidłowy NIP'}>
-            <Input value={k.nip || ''} onChange={(e) => set('nip', e.target.value)} placeholder="000-000-00-00" inputMode="numeric" />
+            <Input
+              value={k.nip || ''}
+              onChange={(e) => set('nip', e.target.value)}
+              placeholder="000-000-00-00"
+              inputMode="numeric"
+            />
           </Field>
           <Field label="Data kontaktu">
             <Input type="date" value={k.dataKontaktu || ''} onChange={(e) => set('dataKontaktu', e.target.value)} />
@@ -381,11 +419,19 @@ function EdycjaModal({ poczatek, onClose, onSave }: { poczatek: Kontrahent; onCl
         </div>
 
         <Field label="Adres">
-          <Input value={k.adres || ''} onChange={(e) => set('adres', e.target.value)} placeholder="ul. Przykładowa 1, 00-000 Miasto" />
+          <Input
+            value={k.adres || ''}
+            onChange={(e) => set('adres', e.target.value)}
+            placeholder="ul. Przykładowa 1, 00-000 Miasto"
+          />
         </Field>
 
         <Field label="Notatki">
-          <Textarea value={k.notatki || ''} onChange={(e) => set('notatki', e.target.value)} placeholder="Ustalenia, warunki współpracy, uwagi…" />
+          <Textarea
+            value={k.notatki || ''}
+            onChange={(e) => set('notatki', e.target.value)}
+            placeholder="Ustalenia, warunki współpracy, uwagi…"
+          />
         </Field>
 
         {/* Sekcja prowizji – tylko dla kategorii prowizyjnych */}
@@ -408,25 +454,50 @@ function EdycjaModal({ poczatek, onClose, onSave }: { poczatek: Kontrahent; onCl
                   <div key={p.id} className="rounded-xl border border-stone-200 p-3">
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                       <Field label="Kwota (zł)">
-                        <Input value={p.kwota || ''} onChange={(e) => zmienProwizje(p.id, { kwota: parseNum(e.target.value) })} inputMode="decimal" />
+                        <Input
+                          value={p.kwota || ''}
+                          onChange={(e) => zmienProwizje(p.id, { kwota: parseNum(e.target.value) })}
+                          inputMode="decimal"
+                        />
                       </Field>
                       <Field label="Nr zlecenia">
-                        <Input value={p.numerZlecenia || ''} onChange={(e) => zmienProwizje(p.id, { numerZlecenia: e.target.value })} placeholder="ZL 1/2026" />
+                        <Input
+                          value={p.numerZlecenia || ''}
+                          onChange={(e) => zmienProwizje(p.id, { numerZlecenia: e.target.value })}
+                          placeholder="ZL 1/2026"
+                        />
                       </Field>
                       <Field label="Data naliczenia">
-                        <Input type="date" value={p.dataNaliczenia || ''} onChange={(e) => zmienProwizje(p.id, { dataNaliczenia: e.target.value })} />
+                        <Input
+                          type="date"
+                          value={p.dataNaliczenia || ''}
+                          onChange={(e) => zmienProwizje(p.id, { dataNaliczenia: e.target.value })}
+                        />
                       </Field>
                       <Field label="Data wypłaty">
-                        <Input type="date" value={p.dataWyplaty || ''} onChange={(e) => zmienProwizje(p.id, { dataWyplaty: e.target.value })} />
+                        <Input
+                          type="date"
+                          value={p.dataWyplaty || ''}
+                          onChange={(e) => zmienProwizje(p.id, { dataWyplaty: e.target.value })}
+                        />
                       </Field>
                     </div>
                     <div className="mt-2.5 flex items-center justify-between gap-3">
                       <Toggle
                         checked={p.wyplacona}
-                        onChange={(v) => zmienProwizje(p.id, { wyplacona: v, dataWyplaty: v && !p.dataWyplaty ? today() : p.dataWyplaty })}
+                        onChange={(v) =>
+                          zmienProwizje(p.id, {
+                            wyplacona: v,
+                            dataWyplaty: v && !p.dataWyplaty ? today() : p.dataWyplaty,
+                          })
+                        }
                         label={p.wyplacona ? 'Wypłacona' : 'Do wypłaty'}
                       />
-                      <button className="btn-ghost !px-2 text-red-600" title="Usuń prowizję" onClick={() => usunProwizje(p.id)}>
+                      <button
+                        className="btn-ghost !px-2 text-red-600"
+                        title="Usuń prowizję"
+                        onClick={() => usunProwizje(p.id)}
+                      >
                         <Trash2 size={15} />
                       </button>
                     </div>
@@ -461,11 +532,25 @@ export function KontrahenciDoc({
   lista: Kontrahent[]
   logoDataUrl?: string
 }) {
-  const th: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '5px 7px', fontSize: '8pt', fontWeight: 700, textAlign: 'left', background: '#f0ede6' }
-  const td: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '5px 7px', fontSize: '9pt', verticalAlign: 'top' }
+  const th: React.CSSProperties = {
+    border: '1px solid #d3cfc2',
+    padding: '5px 7px',
+    fontSize: '8pt',
+    fontWeight: 700,
+    textAlign: 'left',
+    background: '#f0ede6',
+  }
+  const td: React.CSSProperties = {
+    border: '1px solid #d3cfc2',
+    padding: '5px 7px',
+    fontSize: '9pt',
+    verticalAlign: 'top',
+  }
   return (
     <DocSheet firma={firma} logoDataUrl={logoDataUrl}>
-      <DocTitle sub={`Wygenerowano: ${fmtDate(today())} · pozycji: ${lista.length}`}>Lista kontaktów — {typNazwa}</DocTitle>
+      <DocTitle sub={`Wygenerowano: ${fmtDate(today())} · pozycji: ${lista.length}`}>
+        Lista kontaktów – {typNazwa}
+      </DocTitle>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 8 }}>
         <thead>
           <tr>
@@ -485,10 +570,10 @@ export function KontrahenciDoc({
                 {k.nazwa}
                 {k.nip ? <div style={{ fontSize: '7.5pt', color: '#6b6459' }}>NIP: {fmtNIP(k.nip)}</div> : null}
               </td>
-              <td style={td}>{k.firma || '—'}</td>
-              <td style={td}>{k.telefon || '—'}</td>
-              <td style={td}>{k.email || '—'}</td>
-              <td style={td}>{[k.specjalizacja, k.branza].filter(Boolean).join(' · ') || '—'}</td>
+              <td style={td}>{k.firma || '–'}</td>
+              <td style={td}>{k.telefon || '–'}</td>
+              <td style={td}>{k.email || '–'}</td>
+              <td style={td}>{[k.specjalizacja, k.branza].filter(Boolean).join(' · ') || '–'}</td>
             </tr>
           ))}
           {lista.length === 0 && (
@@ -501,7 +586,7 @@ export function KontrahenciDoc({
         </tbody>
       </table>
       <div style={{ marginTop: 10, fontSize: '8pt', color: '#6b6459' }}>
-        Kategoria kontrahentów: <b>{typNazwa}</b>. Dokument informacyjny — {firma.nazwa}.
+        Kategoria kontrahentów: <b>{typNazwa}</b>. Dokument informacyjny – {firma.nazwa}.
       </div>
     </DocSheet>
   )

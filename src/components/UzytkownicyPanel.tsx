@@ -35,7 +35,7 @@ export function UzytkownicyPanel() {
     const sol = losowaSol()
     upsert('uzytkownicy', { ...user, pinHash: await hashPin(pin, sol), pinSalt: sol })
     setPin('')
-    push('PIN ustawiony — możesz odblokowywać aplikację PIN-em')
+    push('PIN ustawiony – możesz odblokowywać aplikację PIN-em')
   }
   function usunPin() {
     if (!user) return
@@ -69,11 +69,18 @@ export function UzytkownicyPanel() {
   return (
     <>
       {/* Twoje konto i zabezpieczenia */}
-      <SectionCard title="Twoje konto i zabezpieczenia" icon={<UserCog size={18} />} desc="Szybkie odblokowanie aplikacji na tym urządzeniu — jak w telefonie.">
+      <SectionCard
+        title="Twoje konto i zabezpieczenia"
+        icon={<UserCog size={18} />}
+        desc="Szybkie odblokowanie aplikacji na tym urządzeniu – jak w telefonie."
+      >
         {user && (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-xl text-[14px] font-semibold text-white" style={{ background: user.kolor || '#3a4a7a' }}>
+              <span
+                className="grid h-11 w-11 place-items-center rounded-xl text-[14px] font-semibold text-white"
+                style={{ background: user.kolor || '#3a4a7a' }}
+              >
                 {initials(user.imie)}
               </span>
               <div>
@@ -135,7 +142,12 @@ export function UzytkownicyPanel() {
             {/* Zmiana hasla */}
             <div className="flex flex-wrap items-end gap-2">
               <Field label="Zmień hasło" className="flex-1">
-                <Input type="password" placeholder="Nowe hasło" value={noweHaslo} onChange={(e) => setNoweHaslo(e.target.value)} />
+                <Input
+                  type="password"
+                  placeholder="Nowe hasło"
+                  value={noweHaslo}
+                  onChange={(e) => setNoweHaslo(e.target.value)}
+                />
               </Field>
               <button className="btn-outline" onClick={zmienHaslo}>
                 <ShieldCheck size={16} /> Zmień hasło
@@ -161,7 +173,7 @@ export function UzytkownicyPanel() {
                 onZmien={(patch) => upsert('uzytkownicy', { ...us, ...patch })}
                 onUsun={async () => {
                   if (us.id === user?.id) return push('Nie można usunąć własnego konta', 'err')
-                  if (await confirm(`Usunąć użytkownika „${us.imie}"?`)) remove('uzytkownicy', us.id)
+                  if (await confirm(`Usunąć użytkownika „${us.imie}”?`)) remove('uzytkownicy', us.id)
                 }}
               />
             ))}
@@ -187,7 +199,10 @@ function UserRow({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 p-2.5">
-      <span className="grid h-9 w-9 place-items-center rounded-lg text-[12px] font-semibold text-white" style={{ background: us.kolor || '#3a4a7a' }}>
+      <span
+        className="grid h-9 w-9 place-items-center rounded-lg text-[12px] font-semibold text-white"
+        style={{ background: us.kolor || '#3a4a7a' }}
+      >
         {initials(us.imie)}
       </span>
       <div className="min-w-[140px] flex-1">
@@ -196,7 +211,12 @@ function UserRow({
         </div>
         <div className="text-[12px] text-stone-500">{us.email}</div>
       </div>
-      <Select className="w-auto" value={us.rola} onChange={(e) => onZmien({ rola: e.target.value as Rola })} disabled={czyJa}>
+      <Select
+        className="w-auto"
+        value={us.rola}
+        onChange={(e) => onZmien({ rola: e.target.value as Rola })}
+        disabled={czyJa}
+      >
         {ROLE.map((r) => (
           <option key={r.rola} value={r.rola}>
             {r.nazwa}
@@ -259,13 +279,18 @@ function DodajUzytkownika({ onAdd }: { onAdd: (u: Uzytkownik) => void }) {
           <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Bogdan" autoFocus />
         </Field>
         <Field label="E-mail">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e-mail (opcjonalnie)" />
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="e-mail (opcjonalnie)"
+          />
         </Field>
         <Field label="Rola">
           <Select value={rola} onChange={(e) => setRola(e.target.value as Rola)}>
             {ROLE.map((r) => (
               <option key={r.rola} value={r.rola}>
-                {r.nazwa} — {r.opis}
+                {r.nazwa} – {r.opis}
               </option>
             ))}
           </Select>

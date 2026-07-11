@@ -12,7 +12,15 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.06em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#12233a',
+            letterSpacing: '0.06em',
+          }}
+        >
           RAPORT KASOWY
         </div>
         {r.numer && <div style={{ fontSize: '8.5pt', color: '#0f5c3f', fontWeight: 700, marginTop: 3 }}>{r.numer}</div>}
@@ -35,11 +43,11 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <span>
             <b style={{ color: '#4a463f' }}>OD:</b>{' '}
-            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.od) || '—'}</span>
+            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.od) || '–'}</span>
           </span>
           <span>
             <b style={{ color: '#4a463f' }}>DO:</b>{' '}
-            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.do) || '—'}</span>
+            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.do) || '–'}</span>
           </span>
         </div>
         <span>
@@ -95,13 +103,23 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
         </tfoot>
       </table>
       <div style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 4 }}>
-        SALDO = saldo początkowe {fmtPLN(r.saldoPoczatkowe)} + przychody {fmtPLN(sumaPrzychod)} − rozchody {fmtPLN(sumaRozchod)}
+        SALDO = saldo początkowe {fmtPLN(r.saldoPoczatkowe)} + przychody {fmtPLN(sumaPrzychod)} − rozchody{' '}
+        {fmtPLN(sumaRozchod)}
       </div>
 
       {/* Stopka: data + podpis */}
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 40, marginTop: 34 }} className="avoid-break">
         <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ height: 56, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontSize: '10pt', color: '#12130f' }}>
+          <div
+            style={{
+              height: 56,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              fontSize: '10pt',
+              color: '#12130f',
+            }}
+          >
             {fmtDate(r.data)}
           </div>
           <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>DATA</div>

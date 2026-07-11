@@ -161,10 +161,17 @@ function RoleNav() {
       <nav className="mt-3 flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         {grupy.map((g) => (
           <div key={g.grupa}>
-            <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-400">{g.grupa}</div>
+            <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+              {g.grupa}
+            </div>
             <div className="space-y-0.5">
               {g.items.map((it) => (
-                <NavLink key={it.to} to={it.to} end={it.to === '/'} className={({ isActive }) => cx('nav-link', isActive && 'nav-link-active')}>
+                <NavLink
+                  key={it.to}
+                  to={it.to}
+                  end={it.to === '/'}
+                  className={({ isActive }) => cx('nav-link', isActive && 'nav-link-active')}
+                >
                   {it.icon}
                   {it.label}
                 </NavLink>
@@ -207,10 +214,18 @@ function UserFooter() {
         <div className="truncate text-[13px] font-semibold text-ink">{user.imie}</div>
         <div className="text-[11px] text-stone-500">{nazwaRoli(user.rola)}</div>
       </div>
-      <button onClick={lock} title="Zablokuj" className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-white">
+      <button
+        onClick={lock}
+        title="Zablokuj"
+        className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-white"
+      >
         <Lock size={16} />
       </button>
-      <button onClick={logout} title="Wyloguj" className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-white">
+      <button
+        onClick={logout}
+        title="Wyloguj"
+        className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-white"
+      >
         <LogOut size={16} />
       </button>
     </div>
@@ -233,7 +248,10 @@ function FirmaSwitcher({ compact }: { compact?: boolean }) {
           compact && 'w-auto',
         )}
       >
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white" style={{ background: aktywna?.kolor || '#0f5c3f' }}>
+        <span
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white"
+          style={{ background: aktywna?.kolor || '#0f5c3f' }}
+        >
           <span className="text-[12px] font-bold">{aktywna?.wlasciciel?.[0] || 'A'}</span>
         </span>
         {!compact && (
@@ -257,7 +275,10 @@ function FirmaSwitcher({ compact }: { compact?: boolean }) {
                 }}
                 className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left transition hover:bg-stone-100"
               >
-                <span className="grid h-6 w-6 place-items-center rounded-md text-white" style={{ background: f.kolor || '#0f5c3f' }}>
+                <span
+                  className="grid h-6 w-6 place-items-center rounded-md text-white"
+                  style={{ background: f.kolor || '#0f5c3f' }}
+                >
                   <span className="text-[11px] font-bold">{f.wlasciciel[0]}</span>
                 </span>
                 <span className="flex-1 text-[13px] font-medium text-stone-700">{f.nazwa}</span>
@@ -302,7 +323,7 @@ function StorageStatus() {
         </button>
       )}
       <div className="flex items-center gap-1.5 px-1 text-[11px] text-stone-400">
-        <ShieldCheck size={13} className={persisted ? 'text-brand-600' : 'text-stone-300'} />
+        <ShieldCheck size={13} className={persisted ? 'text-brand-600' : 'text-stone-400'} />
         {persisted ? 'Dane zabezpieczone lokalnie' : 'Pamięć lokalna'}
       </div>
     </div>

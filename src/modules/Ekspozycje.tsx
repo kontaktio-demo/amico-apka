@@ -153,9 +153,7 @@ export default function Ekspozycje() {
     )
   }
   const zmienRozliczenie = (id: string, patch: Partial<RozliczenieEkspozycji>) => {
-    setEdit((e) =>
-      e ? { ...e, rozliczenia: e.rozliczenia.map((r) => (r.id === id ? { ...r, ...patch } : r)) } : e,
-    )
+    setEdit((e) => (e ? { ...e, rozliczenia: e.rozliczenia.map((r) => (r.id === id ? { ...r, ...patch } : r)) } : e))
   }
   const usunRozliczenie = (id: string) => {
     setEdit((e) => (e ? { ...e, rozliczenia: e.rozliczenia.filter((r) => r.id !== id) } : e))
@@ -235,7 +233,7 @@ export default function Ekspozycje() {
                     })
                   }}
                 >
-                  <option value="">— wybierz z kontrahentów —</option>
+                  <option value="">– wybierz z kontrahentów –</option>
                   {sprzedawcy.map((k) => (
                     <option key={k.id} value={k.id}>
                       {k.nazwa}
@@ -252,13 +250,21 @@ export default function Ekspozycje() {
                 />
               </Field>
               <Field label="Data podpisania umowy">
-                <Input type="date" value={edit.dataPodpisania || ''} onChange={(ev) => set({ dataPodpisania: ev.target.value })} />
+                <Input
+                  type="date"
+                  value={edit.dataPodpisania || ''}
+                  onChange={(ev) => set({ dataPodpisania: ev.target.value })}
+                />
               </Field>
               <Field label="Data obowiązywania (do)">
                 <Input type="date" value={edit.dataDo || ''} onChange={(ev) => set({ dataDo: ev.target.value })} />
               </Field>
               <Field label="Numer zlecenia" className="sm:col-span-2">
-                <Input value={edit.numerZlecenia || ''} onChange={(ev) => set({ numerZlecenia: ev.target.value })} placeholder="np. Z 12/2026" />
+                <Input
+                  value={edit.numerZlecenia || ''}
+                  onChange={(ev) => set({ numerZlecenia: ev.target.value })}
+                  placeholder="np. Z 12/2026"
+                />
               </Field>
             </div>
 
@@ -280,11 +286,11 @@ export default function Ekspozycje() {
             <div className="rounded-2xl bg-stone-50 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2 text-[13px]">
                 <span className="text-stone-500">
-                  Zobowiązanie ({edit.krotnosc || 0}× netto):{' '}
-                  <b className="text-ink">{fmtPLN(zobowiazanieOf(edit))}</b>
+                  Zobowiązanie ({edit.krotnosc || 0}× netto): <b className="text-ink">{fmtPLN(zobowiazanieOf(edit))}</b>
                 </span>
                 <span className="text-stone-500">
-                  Zrealizowano: <b className="text-brand-700">{fmtPLN(zrealizowanoOf(edit))}</b> ({procentOf(edit).toFixed(1)}%)
+                  Zrealizowano: <b className="text-brand-700">{fmtPLN(zrealizowanoOf(edit))}</b> (
+                  {procentOf(edit).toFixed(1)}%)
                 </span>
               </div>
             </div>
@@ -318,11 +324,15 @@ export default function Ekspozycje() {
                     <tbody>
                       {edit.rozliczenia.map((r) => (
                         <tr key={r.id} className="row-hover">
-                          <td className="td text-stone-300">
+                          <td className="td text-stone-400">
                             <GripVertical size={15} />
                           </td>
                           <td className="td">
-                            <Input type="date" value={r.data || ''} onChange={(ev) => zmienRozliczenie(r.id, { data: ev.target.value })} />
+                            <Input
+                              type="date"
+                              value={r.data || ''}
+                              onChange={(ev) => zmienRozliczenie(r.id, { data: ev.target.value })}
+                            />
                           </td>
                           <td className="td">
                             <Input
@@ -339,10 +349,17 @@ export default function Ekspozycje() {
                             />
                           </td>
                           <td className="td">
-                            <NumInput value={r.kwotaNetto} onChange={(n) => zmienRozliczenie(r.id, { kwotaNetto: n })} />
+                            <NumInput
+                              value={r.kwotaNetto}
+                              onChange={(n) => zmienRozliczenie(r.id, { kwotaNetto: n })}
+                            />
                           </td>
                           <td className="td">
-                            <button className="btn-ghost !px-2 text-red-600" onClick={() => usunRozliczenie(r.id)} title="Usuń pozycję">
+                            <button
+                              className="btn-ghost !px-2 text-red-600"
+                              onClick={() => usunRozliczenie(r.id)}
+                              title="Usuń pozycję"
+                            >
                               <X size={16} />
                             </button>
                           </td>
@@ -470,7 +487,7 @@ function KartaEkspozycji({
             getPrintNode={() => <RozliczenieEkspozycjiDoc e={e} firma={firma} logoDataUrl={logoDataUrl} />}
             share={{
               title: `Rozliczenie ekspozycji ${e.numer}`,
-              text: `Rozliczenie ekspozycji ${e.numer} — ${tytul}. Zobowiązanie: ${fmtPLN(zob)}, zrealizowano: ${fmtPLN(zreal)} (${procent.toFixed(
+              text: `Rozliczenie ekspozycji ${e.numer} – ${tytul}. Zobowiązanie: ${fmtPLN(zob)}, zrealizowano: ${fmtPLN(zreal)} (${procent.toFixed(
                 1,
               )}%).`,
               to: shareTo,

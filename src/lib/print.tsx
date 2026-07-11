@@ -65,7 +65,11 @@ export function canShareFiles(): boolean {
   return typeof navigator !== 'undefined' && 'canShare' in navigator
 }
 
-export async function shareContent(opts: { title: string; text: string; url?: string }): Promise<'shared' | 'unsupported' | 'error'> {
+export async function shareContent(opts: {
+  title: string
+  text: string
+  url?: string
+}): Promise<'shared' | 'unsupported' | 'error'> {
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
       await navigator.share({ title: opts.title, text: opts.text, url: opts.url })
@@ -115,6 +119,31 @@ export function safeFilename(s: string): string {
   return s
     .replace(/[\/\\:*?"<>|]+/g, '-')
     .replace(/\s+/g, '_')
-    .replace(/[ąćęłńóśźż]/gi, (c) => ({ ą: 'a', ć: 'c', ę: 'e', ł: 'l', ń: 'n', ó: 'o', ś: 's', ź: 'z', ż: 'z', Ą: 'A', Ć: 'C', Ę: 'E', Ł: 'L', Ń: 'N', Ó: 'O', Ś: 'S', Ź: 'Z', Ż: 'Z' } as any)[c] || c)
+    .replace(
+      /[ąćęłńóśźż]/gi,
+      (c) =>
+        (
+          ({
+            ą: 'a',
+            ć: 'c',
+            ę: 'e',
+            ł: 'l',
+            ń: 'n',
+            ó: 'o',
+            ś: 's',
+            ź: 'z',
+            ż: 'z',
+            Ą: 'A',
+            Ć: 'C',
+            Ę: 'E',
+            Ł: 'L',
+            Ń: 'N',
+            Ó: 'O',
+            Ś: 'S',
+            Ź: 'Z',
+            Ż: 'Z',
+          }) as any
+        )[c] || c,
+    )
     .slice(0, 80)
 }

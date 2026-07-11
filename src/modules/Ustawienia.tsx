@@ -18,7 +18,19 @@ import {
 } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { requestPersistence, storageInfo } from '../lib/db'
-import { PageHeader, SectionCard, Field, Input, Textarea, Select, Toggle, Badge, useToast, useConfirm, cx } from '../components/ui'
+import {
+  PageHeader,
+  SectionCard,
+  Field,
+  Input,
+  Textarea,
+  Select,
+  Toggle,
+  Badge,
+  useToast,
+  useConfirm,
+  cx,
+} from '../components/ui'
 import { downloadFile } from '../lib/print'
 import { today, validNRB, fmtKonto, validNIP, fmtNIP } from '../lib/format'
 import { uid } from '../lib/id'
@@ -38,7 +50,7 @@ const ROLE: { rola: Pracownik['rola']; nazwa: string }[] = [
 ]
 
 function fmtBytes(n?: number): string {
-  if (n === undefined || n === null) return '—'
+  if (n === undefined || n === null) return '–'
   const mb = n / (1024 * 1024)
   if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`
   if (mb >= 1) return `${mb.toFixed(1)} MB`
@@ -53,7 +65,6 @@ export default function Ustawienia() {
   const remove = useStore((s) => s.remove)
   const eksportJSON = useStore((s) => s.eksportJSON)
   const importJSON = useStore((s) => s.importJSON)
-  const resetDemo = useStore((s) => s.resetDemo)
   const wyczyscWszystko = useStore((s) => s.wyczyscWszystko)
 
   const { push } = useToast()
@@ -65,7 +76,9 @@ export default function Ustawienia() {
 
   const [info, setInfo] = useState<{ persisted: boolean; usage?: number; quota?: number } | null>(null)
   useEffect(() => {
-    storageInfo().then(setInfo).catch(() => {})
+    storageInfo()
+      .then(setInfo)
+      .catch(() => {})
   }, [])
 
   // ---------- Logo ----------
@@ -98,7 +111,7 @@ export default function Ustawienia() {
     const reader = new FileReader()
     reader.onload = () => {
       const ok = importJSON(String(reader.result))
-      push(ok ? 'Kopia wczytana — dane zostały zastąpione' : 'Nieprawidłowy plik kopii', ok ? 'ok' : 'err')
+      push(ok ? 'Kopia wczytana – dane zostały zastąpione' : 'Nieprawidłowy plik kopii', ok ? 'ok' : 'err')
     }
     reader.onerror = () => push('Nie udało się odczytać pliku', 'err')
     reader.readAsText(file)
@@ -108,17 +121,19 @@ export default function Ustawienia() {
   async function onPersist() {
     const ok = await requestPersistence()
     push(ok ? 'Pamięć trwała włączona' : 'Przeglądarka nie potwierdziła pamięci trwałej', ok ? 'ok' : 'info')
-    storageInfo().then(setInfo).catch(() => {})
+    storageInfo()
+      .then(setInfo)
+      .catch(() => {})
   }
 
   // ---------- Dane ----------
-  async function onDemo() {
-    if (!(await confirm('Załadować dane demonstracyjne? Bieżące dane zostaną zastąpione przykładowymi.'))) return
-    await resetDemo()
-    push('Załadowano dane demo')
-  }
   async function onWyczysc() {
-    if (!(await confirm('Wyczyścić wszystkie dane? Ta operacja jest nieodwracalna. Zalecane jest wcześniejsze zrobienie kopii zapasowej.'))) return
+    if (
+      !(await confirm(
+        'Wyczyścić wszystkie dane? Ta operacja jest nieodwracalna. Zalecane jest wcześniejsze zrobienie kopii zapasowej.',
+      ))
+    )
+      return
     await wyczyscWszystko()
     push('Wyczyszczono wszystkie dane', 'info')
   }
@@ -143,11 +158,19 @@ export default function Ustawienia() {
 
   return (
     <div>
-      <PageHeader title="Ustawienia" subtitle="Podmioty, zespół, teksty i kopia zapasowa" icon={<Settings size={22} />} />
+      <PageHeader
+        title="Ustawienia"
+        subtitle="Podmioty, zespół, teksty i kopia zapasowa"
+        icon={<Settings size={22} />}
+      />
 
       <div className="space-y-6">
         {/* 1. Podmioty */}
-        <SectionCard title="Podmioty (firmy)" icon={<Building2 size={18} />} desc="Dane obu firm wykorzystywane na dokumentach. Zaznacz podmiot aktywny.">
+        <SectionCard
+          title="Podmioty (firmy)"
+          icon={<Building2 size={18} />}
+          desc="Dane obu firm wykorzystywane na dokumentach. Zaznacz podmiot aktywny."
+        >
           <div className="grid gap-4 lg:grid-cols-2">
             {b.firmy.map((f) => (
               <FirmaEditor
@@ -176,7 +199,7 @@ export default function Ustawienia() {
           }
         >
           {b.pracownicy.length === 0 ? (
-            <p className="py-6 text-center text-[13px] text-stone-400">Brak osób — dodaj pierwszą.</p>
+            <p className="py-6 text-center text-[13px] text-stone-400">Brak osób – dodaj pierwszą.</p>
           ) : (
             <div className="space-y-2">
               {b.pracownicy.map((p) => (
@@ -204,8 +227,16 @@ export default function Ustawienia() {
                     value={p.telefon || ''}
                     onChange={(e) => upsert('pracownicy', { ...p, telefon: e.target.value })}
                   />
-                  <Toggle checked={p.aktywny} onChange={(v) => upsert('pracownicy', { ...p, aktywny: v })} label="Aktywny" />
-                  <button className="btn-ghost !px-2 text-red-600" onClick={() => remove('pracownicy', p.id)} title="Usuń">
+                  <Toggle
+                    checked={p.aktywny}
+                    onChange={(v) => upsert('pracownicy', { ...p, aktywny: v })}
+                    label="Aktywny"
+                  />
+                  <button
+                    className="btn-ghost !px-2 text-red-600"
+                    onClick={() => remove('pracownicy', p.id)}
+                    title="Usuń"
+                  >
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -251,13 +282,25 @@ export default function Ustawienia() {
         </SectionCard>
 
         {/* 4. Teksty i klauzule */}
-        <SectionCard title="Teksty i klauzule" icon={<FileText size={18} />} desc="Klauzule oraz standardowe uwagi wstawiane do wycen i umów.">
+        <SectionCard
+          title="Teksty i klauzule"
+          icon={<FileText size={18} />}
+          desc="Klauzule oraz standardowe uwagi wstawiane do wycen i umów."
+        >
           <div className="space-y-4">
             <Field label="Klauzula RODO">
-              <Textarea rows={5} value={u.klauzulaRodo} onChange={(e) => updateUstawienia({ klauzulaRodo: e.target.value })} />
+              <Textarea
+                rows={5}
+                value={u.klauzulaRodo}
+                onChange={(e) => updateUstawienia({ klauzulaRodo: e.target.value })}
+              />
             </Field>
             <Field label="Klauzula pod podpisem">
-              <Textarea rows={4} value={u.klauzulaPodpis} onChange={(e) => updateUstawienia({ klauzulaPodpis: e.target.value })} />
+              <Textarea
+                rows={4}
+                value={u.klauzulaPodpis}
+                onChange={(e) => updateUstawienia({ klauzulaPodpis: e.target.value })}
+              />
             </Field>
             <div>
               <div className="mb-2 flex items-center justify-between">
@@ -286,7 +329,11 @@ export default function Ustawienia() {
         </SectionCard>
 
         {/* 5. Kopia zapasowa */}
-        <SectionCard title="Kopia zapasowa" icon={<Database size={18} />} desc="Eksportuj dane do pliku lub przywróć z wcześniejszej kopii.">
+        <SectionCard
+          title="Kopia zapasowa"
+          icon={<Database size={18} />}
+          desc="Eksportuj dane do pliku lub przywróć z wcześniejszej kopii."
+        >
           <div className="flex flex-wrap gap-2">
             <button className="btn-primary" onClick={onExport}>
               <Download size={16} /> Eksportuj kopię
@@ -298,21 +345,24 @@ export default function Ustawienia() {
           </div>
           <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-[13px] text-amber-200">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-            <span>Wczytanie kopii nadpisuje wszystkie bieżące dane. Zrób najpierw eksport, jeśli chcesz zachować obecny stan.</span>
+            <span>
+              Wczytanie kopii nadpisuje wszystkie bieżące dane. Zrób najpierw eksport, jeśli chcesz zachować obecny
+              stan.
+            </span>
           </div>
         </SectionCard>
 
         {/* 6. Pamiec i instalacja */}
-        <SectionCard title="Pamięć i instalacja" icon={<HardDrive size={18} />} desc="Aplikacja działa offline, dane są zapisywane lokalnie w przeglądarce.">
+        <SectionCard
+          title="Pamięć i instalacja"
+          icon={<HardDrive size={18} />}
+          desc="Aplikacja działa offline, dane są zapisywane lokalnie w przeglądarce."
+        >
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-stone-200 p-3">
               <div className="text-[12px] uppercase tracking-wide text-stone-500">Pamięć trwała</div>
               <div className="mt-1">
-                {info?.persisted ? (
-                  <Badge tone="green">Włączona</Badge>
-                ) : (
-                  <Badge tone="amber">Wyłączona</Badge>
-                )}
+                {info?.persisted ? <Badge tone="green">Włączona</Badge> : <Badge tone="amber">Wyłączona</Badge>}
               </div>
             </div>
             <div className="rounded-xl border border-stone-200 p-3">
@@ -328,20 +378,24 @@ export default function Ustawienia() {
             <ShieldCheck size={16} /> Włącz pamięć trwałą
           </button>
           <p className="mt-2 text-[12px] text-stone-400">
-            Pamięć trwała chroni dane przed automatycznym czyszczeniem przez przeglądarkę. Dodatkowo zalecamy regularny eksport kopii.
+            Pamięć trwała chroni dane przed automatycznym czyszczeniem przez przeglądarkę. Dodatkowo zalecamy regularny
+            eksport kopii.
           </p>
         </SectionCard>
 
         {/* 7. Dane */}
-        <SectionCard title="Dane aplikacji" icon={<Database size={18} />} desc="Operacje na całej bazie danych.">
-          <div className="flex flex-wrap gap-2">
-            <button className="btn-outline" onClick={onDemo}>
-              <Database size={16} /> Załaduj dane demo
-            </button>
-            <button className="btn-danger" onClick={onWyczysc}>
-              <Trash2 size={16} /> Wyczyść wszystko
-            </button>
-          </div>
+        <SectionCard
+          title="Dane aplikacji"
+          icon={<Database size={18} />}
+          desc="Kopię zapasową zrobisz przyciskiem Eksport powyżej."
+        >
+          <button className="btn-danger" onClick={onWyczysc}>
+            <Trash2 size={16} /> Wyczyść wszystko
+          </button>
+          <p className="mt-2 text-[12.5px] text-stone-500">
+            Kasuje wszystkie dane z tego urządzenia. Operacja jest nieodwracalna – używaj tylko wtedy, gdy naprawdę
+            chcesz zacząć od zera.
+          </p>
         </SectionCard>
       </div>
 
@@ -393,7 +447,11 @@ function FirmaEditor({
         <Field label="Właściciel">
           <Input value={firma.wlasciciel} onChange={(e) => set({ wlasciciel: e.target.value })} />
         </Field>
-        <Field label="NIP" error={!nipOk ? 'Niepoprawny NIP' : undefined} hint={nipOk && firma.nip ? fmtNIP(firma.nip) : undefined}>
+        <Field
+          label="NIP"
+          error={!nipOk ? 'Niepoprawny NIP' : undefined}
+          hint={nipOk && firma.nip ? fmtNIP(firma.nip) : undefined}
+        >
           <Input value={firma.nip} onChange={(e) => set({ nip: e.target.value })} />
         </Field>
         <Field label="Ulica" className="sm:col-span-2">
@@ -418,7 +476,10 @@ function FirmaEditor({
           <Input value={firma.bank || ''} onChange={(e) => set({ bank: e.target.value })} />
         </Field>
         <Field label="Domyślny VAT">
-          <Select value={String(firma.domyslnyVat)} onChange={(e) => set({ domyslnyVat: Number(e.target.value) as VatRate })}>
+          <Select
+            value={String(firma.domyslnyVat)}
+            onChange={(e) => set({ domyslnyVat: Number(e.target.value) as VatRate })}
+          >
             {VAT_STAWKI.map((v) => (
               <option key={v} value={v}>
                 {v}%

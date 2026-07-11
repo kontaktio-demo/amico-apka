@@ -48,18 +48,10 @@ import { klientNazwa, klientAdres, etapInfo, PIPELINE } from '../lib/helpers'
 import { fmtDate, fmtDateTime, nowISO, validNIP, fmtNIP } from '../lib/format'
 import { mailtoLink, smsLink } from '../lib/print'
 import { uid } from '../lib/id'
-import type {
-  Klient,
-  KlientTyp,
-  PipelineEtap,
-  WpisHistorii,
-  OsobyProjektu,
-  KontrahentTyp,
-  Firma,
-} from '../lib/types'
+import type { Klient, KlientTyp, PipelineEtap, WpisHistorii, OsobyProjektu, KontrahentTyp, Firma } from '../lib/types'
 
 // ============================================================================
-// KLIENCI — CRM. Lista (/klienci) + Karta klienta (/klienci/:id)
+// KLIENCI – CRM. Lista (/klienci) + Karta klienta (/klienci/:id)
 // ============================================================================
 
 export default function Klienci() {
@@ -70,7 +62,7 @@ export default function Klienci() {
 
 // ---------- Maskowanie PESEL (RODO) ----------
 function maskPesel(p?: string): string {
-  if (!p) return '—'
+  if (!p) return '–'
   const c = p.replace(/\D/g, '')
   if (c.length < 2) return '•••••••••••'
   return `•••••••••${c.slice(-2)}`
@@ -178,7 +170,7 @@ function ListaKlientow() {
                     </div>
                   </div>
                   <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
-                  <ChevronRight size={18} className="text-stone-300" />
+                  <ChevronRight size={18} className="text-stone-400" />
                 </Link>
               )
             })}
@@ -289,7 +281,9 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
               onClick={() => set('typ', t)}
               className={cx(
                 'flex-1 rounded-xl border px-3 py-2.5 text-[14px] font-medium transition',
-                f.typ === t ? 'border-brand-600 bg-brand-50 text-brand-700' : 'border-stone-200 text-stone-500 hover:bg-stone-50',
+                f.typ === t
+                  ? 'border-brand-600 bg-brand-50 text-brand-700'
+                  : 'border-stone-200 text-stone-500 hover:bg-stone-50',
               )}
             >
               <span className="inline-flex items-center gap-2">
@@ -306,7 +300,11 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
               <Input value={f.imie || ''} onChange={(e) => set('imie', e.target.value)} placeholder="np. Jan" />
             </Field>
             <Field label="Nazwisko">
-              <Input value={f.nazwisko || ''} onChange={(e) => set('nazwisko', e.target.value)} placeholder="np. Kowalski" />
+              <Input
+                value={f.nazwisko || ''}
+                onChange={(e) => set('nazwisko', e.target.value)}
+                placeholder="np. Kowalski"
+              />
             </Field>
             <Field
               label="PESEL (opcjonalnie)"
@@ -316,7 +314,7 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
               <Input
                 value={f.pesel || ''}
                 onChange={(e) => set('pesel', e.target.value.replace(/\D/g, '').slice(0, 11))}
-                placeholder="—"
+                placeholder="–"
                 inputMode="numeric"
               />
             </Field>
@@ -324,20 +322,39 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Nazwa firmy" className="sm:col-span-2">
-              <Input value={f.nazwaFirmy || ''} onChange={(e) => set('nazwaFirmy', e.target.value)} placeholder="np. Kuchnie Studio Sp. z o.o." />
+              <Input
+                value={f.nazwaFirmy || ''}
+                onChange={(e) => set('nazwaFirmy', e.target.value)}
+                placeholder="np. Kuchnie Studio Sp. z o.o."
+              />
             </Field>
             <Field label="NIP" error={nipZly ? 'Nieprawidłowy NIP (suma kontrolna).' : undefined}>
-              <Input value={f.nip || ''} onChange={(e) => set('nip', e.target.value)} placeholder="0000000000" inputMode="numeric" />
+              <Input
+                value={f.nip || ''}
+                onChange={(e) => set('nip', e.target.value)}
+                placeholder="0000000000"
+                inputMode="numeric"
+              />
             </Field>
           </div>
         )}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Telefon">
-            <Input value={f.telefon || ''} onChange={(e) => set('telefon', e.target.value)} placeholder="+48 …" inputMode="tel" />
+            <Input
+              value={f.telefon || ''}
+              onChange={(e) => set('telefon', e.target.value)}
+              placeholder="+48 …"
+              inputMode="tel"
+            />
           </Field>
           <Field label="E-mail">
-            <Input value={f.email || ''} onChange={(e) => set('email', e.target.value)} placeholder="klient@example.com" inputMode="email" />
+            <Input
+              value={f.email || ''}
+              onChange={(e) => set('email', e.target.value)}
+              placeholder="klient@example.com"
+              inputMode="email"
+            />
           </Field>
         </div>
 
@@ -355,7 +372,11 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Źródło">
-            <Input value={f.zrodlo || ''} onChange={(e) => set('zrodlo', e.target.value)} placeholder="polecenie, Google, deweloper…" />
+            <Input
+              value={f.zrodlo || ''}
+              onChange={(e) => set('zrodlo', e.target.value)}
+              placeholder="polecenie, Google, deweloper…"
+            />
           </Field>
           <Field label="Etap">
             <Select value={f.etap} onChange={(e) => set('etap', e.target.value as PipelineEtap)}>
@@ -470,7 +491,7 @@ function KartaKlienta({ id }: { id: string }) {
   }
 
   const usunKlienta = async () => {
-    if (await confirm(`Usunąć klienta „${klientNazwa(k)}" wraz z historią? Operacja jest nieodwracalna.`)) {
+    if (await confirm(`Usunąć klienta „${klientNazwa(k)}” wraz z historią? Operacja jest nieodwracalna.`)) {
       remove('klienci', k.id)
       push('Usunięto klienta', 'ok')
       nav('/klienci')
@@ -497,7 +518,7 @@ function KartaKlienta({ id }: { id: string }) {
             <PrintSendBar
               getPrintNode={() => <KartaKlientaDoc k={k} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />}
               share={{
-                title: `Karta klienta — ${klientNazwa(k)}`,
+                title: `Karta klienta – ${klientNazwa(k)}`,
                 text: `${klientNazwa(k)}\n${k.telefon || ''}\n${k.email || ''}\n${adres}`,
                 to: k.email,
                 phone: k.telefon,
@@ -536,7 +557,9 @@ function KartaKlienta({ id }: { id: string }) {
               onClick={() => zmienEtap('utracony')}
               className={cx(
                 'ml-auto rounded-xl px-3 py-1.5 text-[12.5px] font-medium transition',
-                k.etap === 'utracony' ? 'bg-red-600 text-white' : 'border border-stone-200 text-stone-400 hover:bg-red-500/15 hover:text-red-600',
+                k.etap === 'utracony'
+                  ? 'bg-red-600 text-white'
+                  : 'border border-stone-200 text-stone-400 hover:bg-red-500/15 hover:text-red-600',
               )}
             >
               Utracony
@@ -563,7 +586,10 @@ function KartaKlienta({ id }: { id: string }) {
           <Link to="/dokumenty" className="akcja">
             <FileCheck2 size={18} /> Protokół odbioru
           </Link>
-          <a href={mailtoLink({ to: k.email, subject: `Wiadomość od ${firma.marka}`, body: mailBody })} className="akcja">
+          <a
+            href={mailtoLink({ to: k.email, subject: `Wiadomość od ${firma.marka}`, body: mailBody })}
+            className="akcja"
+          >
             <Mail size={18} /> Wyślij maila
           </a>
           {k.telefon ? (
@@ -579,7 +605,7 @@ function KartaKlienta({ id }: { id: string }) {
             <Trash2 size={18} /> Usuń klienta
           </button>
         </div>
-        <style>{`.akcja{display:flex;align-items:center;gap:.5rem;justify-content:center;border:1px solid #e5e1d8;border-radius:.75rem;padding:.6rem .75rem;font-size:13px;font-weight:500;color:#57534e;transition:all .15s}.akcja:hover{border-color:#7bb899;background:#f0f7f2;color:#0f5c3f}`}</style>
+        <style>{`.akcja{display:flex;align-items:center;gap:.5rem;justify-content:center;border:1px solid #e5e1d8;border-radius:.75rem;padding:.6rem.75rem;font-size:13px;font-weight:500;color:#57534e;transition:all.15s}.akcja:hover{border-color:#7bb899;background:#f0f7f2;color:#0f5c3f}`}</style>
       </SectionCard>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -588,7 +614,12 @@ function KartaKlienta({ id }: { id: string }) {
           {/* Dane podstawowe */}
           <SectionCard title="Dane podstawowe" icon={<UserRound size={18} />}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <EdytPole label="Telefon" value={k.telefon} onSave={(v) => zapisz({ telefon: v })} icon={<Phone size={14} />} />
+              <EdytPole
+                label="Telefon"
+                value={k.telefon}
+                onSave={(v) => zapisz({ telefon: v })}
+                icon={<Phone size={14} />}
+              />
               <EdytPole label="E-mail" value={k.email} onSave={(v) => zapisz({ email: v })} icon={<Mail size={14} />} />
               <EdytPole label="Ulica i nr" value={k.ulica} onSave={(v) => zapisz({ ulica: v })} />
               <EdytPole label="Kod pocztowy" value={k.kod} onSave={(v) => zapisz({ kod: v })} />
@@ -598,9 +629,12 @@ function KartaKlienta({ id }: { id: string }) {
                 <div>
                   <div className="label">NIP</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[14px] text-ink">{k.nip ? fmtNIP(k.nip) : '—'}</span>
+                    <span className="text-[14px] text-ink">{k.nip ? fmtNIP(k.nip) : '–'}</span>
                     {k.nip && !validNIP(k.nip) && (
-                      <span className="inline-flex items-center gap-1 text-[11.5px] text-amber-600" title="NIP nie przechodzi walidacji sumy kontrolnej">
+                      <span
+                        className="inline-flex items-center gap-1 text-[11.5px] text-amber-600"
+                        title="NIP nie przechodzi walidacji sumy kontrolnej"
+                      >
                         <AlertTriangle size={12} /> sprawdź NIP
                       </span>
                     )}
@@ -611,10 +645,10 @@ function KartaKlienta({ id }: { id: string }) {
                   <div className="label">PESEL</div>
                   <button
                     className="text-[14px] text-ink underline decoration-dotted underline-offset-2"
-                    title={peselWidoczny ? 'Kliknij, aby ukryć' : 'Dane wrażliwe — kliknij, aby pokazać'}
+                    title={peselWidoczny ? 'Kliknij, aby ukryć' : 'Dane wrażliwe – kliknij, aby pokazać'}
                     onClick={() => setPeselWidoczny((v) => !v)}
                   >
-                    {k.pesel ? (peselWidoczny ? k.pesel : maskPesel(k.pesel)) : '—'}
+                    {k.pesel ? (peselWidoczny ? k.pesel : maskPesel(k.pesel)) : '–'}
                   </button>
                 </div>
               )}
@@ -666,7 +700,7 @@ function KartaKlienta({ id }: { id: string }) {
                         })
                       }
                     >
-                      <option value="">— nie przypisano —</option>
+                      <option value="">– nie przypisano –</option>
                       {opcje.map((kn) => (
                         <option key={kn.id} value={kn.id}>
                           {kn.nazwa}
@@ -709,11 +743,16 @@ function KartaKlienta({ id }: { id: string }) {
             </div>
 
             {k.historia.length === 0 ? (
-              <p className="py-4 text-center text-[13px] text-stone-400">Brak wpisów. Dodaj pierwszą notatkę powyżej.</p>
+              <p className="py-4 text-center text-[13px] text-stone-400">
+                Brak wpisów. Dodaj pierwszą notatkę powyżej.
+              </p>
             ) : (
               <div className="space-y-2">
                 {k.historia.map((h) => (
-                  <div key={h.id} className="group flex items-start gap-3 rounded-xl border border-stone-100 px-3 py-2.5">
+                  <div
+                    key={h.id}
+                    className="group flex items-start gap-3 rounded-xl border border-stone-100 px-3 py-2.5"
+                  >
                     <span className="mt-0.5 shrink-0">
                       <Badge tone="stone">{h.typ}</Badge>
                     </span>
@@ -725,7 +764,7 @@ function KartaKlienta({ id }: { id: string }) {
                     </div>
                     <button
                       onClick={() => usunWpis(h.id)}
-                      className="shrink-0 text-stone-300 opacity-0 transition hover:text-red-500 group-hover:opacity-100"
+                      className="shrink-0 text-stone-400 opacity-0 transition hover:text-red-500 group-hover:opacity-100"
                       title="Usuń wpis"
                     >
                       <Trash2 size={15} />
@@ -842,7 +881,7 @@ function EdytPole({
           className="w-full rounded-lg px-1 py-1 text-left text-[14px] text-ink transition hover:bg-stone-50"
           title="Kliknij, aby edytować"
         >
-          {value || <span className="text-stone-300">— dodaj —</span>}
+          {value || <span className="text-stone-400">– dodaj –</span>}
         </button>
       )}
     </div>
@@ -861,14 +900,17 @@ function TagiEdytor({ tagi, onChange }: { tagi: string[]; onChange: (t: string[]
     <div>
       <div className="flex flex-wrap gap-1.5">
         {tagi.map((t) => (
-          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-700">
+          <span
+            key={t}
+            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-700"
+          >
             {t}
             <button onClick={() => onChange(tagi.filter((x) => x !== t))} className="text-brand-400 hover:text-red-500">
               ×
             </button>
           </span>
         ))}
-        {tagi.length === 0 && <span className="text-[13px] text-stone-300">brak tagów</span>}
+        {tagi.length === 0 && <span className="text-[13px] text-stone-400">brak tagów</span>}
       </div>
       <div className="mt-2 flex gap-2">
         <Input
@@ -909,7 +951,15 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 12 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#0f5c3f', letterSpacing: '0.03em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#0f5c3f',
+            letterSpacing: '0.03em',
+          }}
+        >
           KARTA KLIENTA
         </div>
         <div style={{ fontSize: '9pt', color: '#4a463f', marginTop: 2 }}>
@@ -952,10 +1002,26 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
             <tbody>
               {k.historia.slice(0, 12).map((h) => (
                 <tr key={h.id}>
-                  <td style={{ padding: '3px 6px', color: '#6b6459', whiteSpace: 'nowrap', verticalAlign: 'top', borderBottom: '1px solid #e6e2d8' }}>
+                  <td
+                    style={{
+                      padding: '3px 6px',
+                      color: '#6b6459',
+                      whiteSpace: 'nowrap',
+                      verticalAlign: 'top',
+                      borderBottom: '1px solid #e6e2d8',
+                    }}
+                  >
                     {fmtDate(h.data)}
                   </td>
-                  <td style={{ padding: '3px 6px', color: '#6b6459', whiteSpace: 'nowrap', verticalAlign: 'top', borderBottom: '1px solid #e6e2d8' }}>
+                  <td
+                    style={{
+                      padding: '3px 6px',
+                      color: '#6b6459',
+                      whiteSpace: 'nowrap',
+                      verticalAlign: 'top',
+                      borderBottom: '1px solid #e6e2d8',
+                    }}
+                  >
                     {h.typ}
                   </td>
                   <td style={{ padding: '3px 6px', color: '#12130f', borderBottom: '1px solid #e6e2d8' }}>{h.tresc}</td>
@@ -968,7 +1034,8 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
 
       <div style={{ marginTop: 10, fontSize: '8pt', color: '#8a8478' }}>
         Zgoda RODO: <b>{k.zgodaRodo ? 'TAK' : 'NIE'}</b>
-        {k.zgodaRodo && k.zgodaRodoData ? ` (${fmtDate(k.zgodaRodoData)})` : ''} · Karta utworzona {fmtDate(k.utworzono)}
+        {k.zgodaRodo && k.zgodaRodoData ? ` (${fmtDate(k.zgodaRodoData)})` : ''} · Karta utworzona{' '}
+        {fmtDate(k.utworzono)}
       </div>
     </DocSheet>
   )
@@ -978,7 +1045,11 @@ function DRow({ l, v }: { l: string; v?: string }) {
   return (
     <div style={{ display: 'flex', gap: 5, marginBottom: 3, alignItems: 'baseline' }}>
       <span style={{ color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
-      <span style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}>{v || ' '}</span>
+      <span
+        style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}
+      >
+        {v || ' '}
+      </span>
     </div>
   )
 }

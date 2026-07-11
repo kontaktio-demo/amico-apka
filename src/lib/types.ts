@@ -69,21 +69,23 @@ export interface Pracownik {
 // ---------- Klient (CRM) ----------
 export type KlientTyp = 'osoba' | 'firma'
 export type PipelineEtap =
-  | 'nowy'
-  | 'kontakt'
-  | 'wycena'
-  | 'umowa'
-  | 'pomiar'
-  | 'produkcja'
-  | 'montaz'
-  | 'odbior'
-  | 'zakonczone'
-  | 'utracony'
+  'nowy' | 'kontakt' | 'wycena' | 'umowa' | 'pomiar' | 'produkcja' | 'montaz' | 'odbior' | 'zakonczone' | 'utracony'
 
 export interface WpisHistorii {
   id: ID
   data: ISODateTime
-  typ: 'notatka' | 'telefon' | 'email' | 'sms' | 'pomiar' | 'oferta' | 'umowa' | 'zlecenie' | 'protokol' | 'platnosc' | 'status'
+  typ:
+    | 'notatka'
+    | 'telefon'
+    | 'email'
+    | 'sms'
+    | 'pomiar'
+    | 'oferta'
+    | 'umowa'
+    | 'zlecenie'
+    | 'protokol'
+    | 'platnosc'
+    | 'status'
   tresc: string
 }
 
@@ -131,7 +133,8 @@ export interface Klient {
 }
 
 // ---------- Kontrahenci (projektanci / stolarze / wykonawcy / deweloperzy / sprzedawcy) ----------
-export type KontrahentTyp = 'projektant' | 'stolarz' | 'studio_kuchenne' | 'wykonawca' | 'deweloper' | 'sprzedawca' | 'dostawca'
+export type KontrahentTyp =
+  'projektant' | 'stolarz' | 'studio_kuchenne' | 'wykonawca' | 'deweloper' | 'sprzedawca' | 'dostawca'
 
 export interface Prowizja {
   id: ID
@@ -164,16 +167,7 @@ export interface Kontrahent {
 
 // ---------- Produkty / cennik ----------
 export type ProduktKategoria =
-  | 'granit'
-  | 'marmur'
-  | 'trawertyn'
-  | 'onyks'
-  | 'kwarc'
-  | 'spiek'
-  | 'dekton'
-  | 'konglomerat'
-  | 'usluga'
-  | 'akcesorium'
+  'granit' | 'marmur' | 'trawertyn' | 'onyks' | 'kwarc' | 'spiek' | 'dekton' | 'konglomerat' | 'usluga' | 'akcesorium'
 
 export interface Produkt {
   id: ID
@@ -251,13 +245,7 @@ export interface Zalacznik {
 }
 
 // ---------- Umowy ----------
-export type UmowaTyp =
-  | 'dzielo_8'
-  | 'dzielo_23'
-  | 'dzielo_8_23'
-  | 'prowizyjna'
-  | 'wspolpracy'
-  | 'oswiadczenie'
+export type UmowaTyp = 'dzielo_8' | 'dzielo_23' | 'dzielo_8_23' | 'prowizyjna' | 'wspolpracy' | 'oswiadczenie'
 
 export type UmowaStatus = 'szkic' | 'do_podpisu' | 'podpisana' | 'anulowana'
 

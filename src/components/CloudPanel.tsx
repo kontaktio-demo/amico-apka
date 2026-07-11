@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Cloud, CloudOff, RefreshCw, LogOut, Copy, Check, LogIn, UserPlus, Users, AlertTriangle } from 'lucide-react'
-import { SectionCard, Field, Input, Select, Badge, useToast, cx } from './ui'
+import { SectionCard, Field, Input, Select, Badge, useToast, cx, BADGE_CLASS, type BadgeTone } from './ui'
 import {
   useCloud,
   zalogujChmura,
@@ -17,7 +17,13 @@ import { fmtDateTime } from '../lib/format'
 
 type Tryb = 'logowanie' | 'rejestracja' | 'dolacz'
 
-export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId: string) => void; bezRamki?: boolean }) {
+export function CloudPanel({
+  onZalogowano,
+  bezRamki,
+}: {
+  onZalogowano?: (userId: string) => void
+  bezRamki?: boolean
+}) {
   const c = useCloud()
   const { push } = useToast()
   const [maSesje, setMaSesje] = useState<boolean | null>(null)
@@ -44,10 +50,9 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
       else await zalogujChmura(email.trim(), haslo)
 
       const sesja = await sesjaChmury()
-      if (!sesja) throw new Error('Brak sesji — sprawdź e-mail lub hasło')
+      if (!sesja) throw new Error('Brak sesji – sprawdź e-mail lub hasło')
 
-      const wynik =
-        tryb === 'dolacz' ? await dolaczDoFirmy(kod.trim(), imie.trim()) : await bootstrapFirmy(imie.trim())
+      const wynik = tryb === 'dolacz' ? await dolaczDoFirmy(kod.trim(), imie.trim()) : await bootstrapFirmy(imie.trim())
 
       // KOLEJNOSC MA ZNACZENIE: najpierw pobranie/scalenie stanu firmy z chmury
       // (moze podmienic lokalna baze), dopiero potem zakladamy lokalne konto,
@@ -62,7 +67,7 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
         haslo,
       })
 
-      push('Połączono z chmurą — dane będą synchronizowane')
+      push('Połączono z chmurą – dane będą synchronizowane')
       onZalogowano?.(userId)
     } catch (e: any) {
       const m: string = e?.message || 'Nie udało się połączyć'
@@ -72,11 +77,11 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
           : /Invalid login/i.test(m)
             ? 'Nieprawidłowy e-mail lub hasło'
             : /already registered|User already/i.test(m)
-              ? 'Ten e-mail ma już konto — wybierz „Zaloguj się”'
+              ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”'
               : /Wymagane logowanie/i.test(m)
-                ? 'Sesja wygasła — zaloguj się ponownie'
+                ? 'Sesja wygasła – zaloguj się ponownie'
                 : /amico_bootstrap|amico_join|does not exist|schema cache|PGRST202/i.test(m)
-                  ? 'Baza w chmurze nie jest przygotowana — uruchom skrypt SQL (supabase/amico-schema.sql)'
+                  ? 'Baza w chmurze nie jest przygotowana – uruchom skrypt SQL (supabase/amico-schema.sql)'
                   : m,
       )
     } finally {
@@ -103,11 +108,13 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Ostatni zapis</div>
-          <div className="mt-1 text-[14px] font-semibold text-ink">{c.ostatniZapis ? fmtDateTime(c.ostatniZapis) : '—'}</div>
+          <div className="mt-1 text-[14px] font-semibold text-ink">
+            {c.ostatniZapis ? fmtDateTime(c.ostatniZapis) : '–'}
+          </div>
         </div>
         <div className="rounded-xl border border-white/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Rozmiar bazy</div>
-          <div className="mt-1 text-[14px] font-semibold text-ink">{c.rozmiarKB ? `${c.rozmiarKB} KB` : '—'}</div>
+          <div className="mt-1 text-[14px] font-semibold text-ink">{c.rozmiarKB ? `${c.rozmiarKB} KB` : '–'}</div>
         </div>
         <div className="rounded-xl border border-white/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Kod firmy (dla zespołu)</div>
@@ -120,14 +127,19 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
               setTimeout(() => setSkopiowano(false), 1500)
             }}
           >
-            {c.joinCode || '—'} {skopiowano ? <Check size={14} className="text-emerald-400" /> : <Copy size={13} className="text-stone-500" />}
+            {c.joinCode || '–'}{' '}
+            {skopiowano ? (
+              <Check size={14} className="text-emerald-400" />
+            ) : (
+              <Copy size={13} className="text-stone-500" />
+            )}
           </button>
         </div>
       </div>
 
       {c.rozmiarKB > 4000 && (
         <p className="text-[12px] text-amber-300">
-          Baza jest duża ({c.rozmiarKB} KB) — głównie przez skany. Rozważ archiwizowanie starych skanów.
+          Baza jest duża ({c.rozmiarKB} KB) – głównie przez skany. Rozważ archiwizowanie starych skanów.
         </p>
       )}
 
@@ -148,8 +160,8 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
       </div>
 
       <p className="text-[12px] text-stone-500">
-        Dane zapisują się automatycznie w chmurze i lokalnie. Zaloguj się tym samym e-mailem na innym urządzeniu, aby zobaczyć
-        te same dane. Pracownik dołącza do firmy <b>kodem</b> powyżej.
+        Dane zapisują się automatycznie w chmurze i lokalnie. Zaloguj się tym samym e-mailem na innym urządzeniu, aby
+        zobaczyć te same dane. Pracownik dołącza do firmy <b>kodem</b> powyżej.
       </p>
     </div>
   ) : (
@@ -205,12 +217,24 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
       {err && <p className="text-[12.5px] text-red-400">{err}</p>}
 
       <button className="btn-primary w-full" disabled={busy}>
-        {tryb === 'rejestracja' ? <UserPlus size={16} /> : tryb === 'dolacz' ? <Users size={16} /> : <LogIn size={16} />}
-        {busy ? 'Łączenie…' : tryb === 'rejestracja' ? 'Załóż konto i połącz' : tryb === 'dolacz' ? 'Dołącz do firmy' : 'Zaloguj i synchronizuj'}
+        {tryb === 'rejestracja' ? (
+          <UserPlus size={16} />
+        ) : tryb === 'dolacz' ? (
+          <Users size={16} />
+        ) : (
+          <LogIn size={16} />
+        )}
+        {busy
+          ? 'Łączenie…'
+          : tryb === 'rejestracja'
+            ? 'Załóż konto i połącz'
+            : tryb === 'dolacz'
+              ? 'Dołącz do firmy'
+              : 'Zaloguj i synchronizuj'}
       </button>
       <p className="text-[12px] text-stone-500">
-        Logowanie w chmurze pozwala korzystać z <b>tego samego konta na wielu urządzeniach</b>. Aplikacja nadal działa offline —
-        zmiany dosynchronizują się po odzyskaniu internetu.
+        Logowanie w chmurze pozwala korzystać z <b>tego samego konta na wielu urządzeniach</b>. Aplikacja nadal działa
+        offline – zmiany dosynchronizują się po odzyskaniu internetu.
       </p>
     </form>
   )
@@ -229,18 +253,18 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
 
 export function StatusChip() {
   const { status } = useCloud()
-  const map: Record<string, { l: string; tone: 'green' | 'amber' | 'stone' | 'red' | 'blue'; ikona: React.ReactNode }> = {
+  const map: Record<string, { l: string; tone: BadgeTone; ikona: React.ReactNode }> = {
     off: { l: 'Tylko lokalnie', tone: 'stone', ikona: <CloudOff size={13} /> },
     laczenie: { l: 'Łączenie…', tone: 'blue', ikona: <RefreshCw size={13} className="animate-spin" /> },
     zapisywanie: { l: 'Zapisywanie…', tone: 'blue', ikona: <RefreshCw size={13} className="animate-spin" /> },
     ok: { l: 'Zsynchronizowano', tone: 'green', ikona: <Cloud size={13} /> },
-    offline: { l: 'Offline — zapisze się później', tone: 'amber', ikona: <CloudOff size={13} /> },
+    offline: { l: 'Offline – zapisze się później', tone: 'amber', ikona: <CloudOff size={13} /> },
     blad: { l: 'Błąd zapisu', tone: 'red', ikona: <AlertTriangle size={13} /> },
     sesja: { l: 'Zaloguj ponownie do chmury', tone: 'amber', ikona: <AlertTriangle size={13} /> },
   }
   const s = map[status] || map.off
   return (
-    <span className={`badge-${s.tone}`}>
+    <span className={BADGE_CLASS[s.tone]}>
       {s.ikona} {s.l}
     </span>
   )

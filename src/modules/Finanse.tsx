@@ -211,7 +211,9 @@ function RaportyTab({ firma }: { firma: Firma }) {
                   <div className="flex items-center gap-2">
                     <PrintSendBar
                       size="sm"
-                      getPrintNode={() => <RaportKasowyDoc r={r} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />}
+                      getPrintNode={() => (
+                        <RaportKasowyDoc r={r} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />
+                      )}
                       share={{
                         title: `Raport kasowy ${r.numer}`,
                         text: `Raport kasowy ${r.numer} (${fmtDate(r.od)}–${fmtDate(r.do)})\nPrzychody: ${fmtPLN(
@@ -272,11 +274,9 @@ function RaportEditor({
   const setWiersz = (id: string, p: Partial<RaportKasowyRow>) =>
     setDraft((d) => ({ ...d, wiersze: d.wiersze.map((w) => (w.id === id ? { ...w, ...p } : w)) }))
 
-  const dodajWiersz = () =>
-    setDraft((d) => ({ ...d, wiersze: [...d.wiersze, { id: uid('rkw') }] }))
+  const dodajWiersz = () => setDraft((d) => ({ ...d, wiersze: [...d.wiersze, { id: uid('rkw') }] }))
 
-  const usunWiersz = (id: string) =>
-    setDraft((d) => ({ ...d, wiersze: d.wiersze.filter((w) => w.id !== id) }))
+  const usunWiersz = (id: string) => setDraft((d) => ({ ...d, wiersze: d.wiersze.filter((w) => w.id !== id) }))
 
   return (
     <Modal
@@ -343,7 +343,7 @@ function RaportEditor({
                 {draft.wiersze.length === 0 && (
                   <tr>
                     <td className="td text-center text-stone-400" colSpan={6}>
-                      Brak wierszy — dodaj pierwszy obrót.
+                      Brak wierszy – dodaj pierwszy obrót.
                     </td>
                   </tr>
                 )}
@@ -497,7 +497,12 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
     <div className="space-y-5">
       {confirmNode}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <Stat label="Do zapłaty" value={fmtPLN(sumaDoZaplaty)} icon={<Banknote size={18} />} sub={`${przelewy.filter((p) => p.status === 'do_zaplaty').length} przelewów`} />
+        <Stat
+          label="Do zapłaty"
+          value={fmtPLN(sumaDoZaplaty)}
+          icon={<Banknote size={18} />}
+          sub={`${przelewy.filter((p) => p.status === 'do_zaplaty').length} przelewów`}
+        />
         <Stat label="Zapłacone" value={fmtPLN(sumaZaplacone)} tone="green" icon={<Landmark size={18} />} />
         <Stat label="Razem" value={przelewy.length} sub="wszystkich przelewów" />
       </div>
@@ -505,13 +510,21 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
       <SectionCard title="Nowy przelew" icon={<Plus size={16} />}>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Odbiorca">
-            <Input value={form.odbiorca} onChange={(e) => setF({ odbiorca: e.target.value })} placeholder="Nazwa odbiorcy" />
+            <Input
+              value={form.odbiorca}
+              onChange={(e) => setF({ odbiorca: e.target.value })}
+              placeholder="Nazwa odbiorcy"
+            />
           </Field>
           <Field label="Numer konta (NRB)" error={kontoBlad ? 'Nieprawidłowy numer rachunku (NRB)' : undefined}>
             <Input value={form.konto} onChange={(e) => setF({ konto: e.target.value })} placeholder="26 cyfr" />
           </Field>
           <Field label="Tytuł przelewu">
-            <Input value={form.tytul} onChange={(e) => setF({ tytul: e.target.value })} placeholder="np. Faktura FV 12/2026" />
+            <Input
+              value={form.tytul}
+              onChange={(e) => setF({ tytul: e.target.value })}
+              placeholder="np. Faktura FV 12/2026"
+            />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Kwota">
@@ -536,7 +549,7 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
         </div>
         {kontoBlad && (
           <p className="mt-2 flex items-center gap-1.5 text-[12.5px] text-amber-700">
-            <AlertTriangle size={14} /> Numer rachunku nie przechodzi walidacji NRB — sprawdź przed wysłaniem.
+            <AlertTriangle size={14} /> Numer rachunku nie przechodzi walidacji NRB – sprawdź przed wysłaniem.
           </p>
         )}
       </SectionCard>
@@ -547,7 +560,9 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
             <h3 className="text-[15px] font-semibold text-ink">Lista przelewów</h3>
             <PrintSendBar
               size="sm"
-              getPrintNode={() => <PrzelewyDoc firma={firma} przelewy={przelewy} logoDataUrl={b.ustawienia.logoDataUrl} />}
+              getPrintNode={() => (
+                <PrzelewyDoc firma={firma} przelewy={przelewy} logoDataUrl={b.ustawienia.logoDataUrl} />
+              )}
               share={{
                 title: 'Zestawienie przelewów',
                 text: `Zestawienie przelewów (${przelewy.length}) · Do zapłaty: ${fmtPLN(sumaDoZaplaty)}`,
@@ -555,7 +570,11 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
             />
           </div>
           {przelewy.length === 0 ? (
-            <EmptyState icon={<ArrowRightLeft size={26} />} title="Brak przelewów" desc="Dodaj pierwszy przelew powyżej." />
+            <EmptyState
+              icon={<ArrowRightLeft size={26} />}
+              title="Brak przelewów"
+              desc="Dodaj pierwszy przelew powyżej."
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px]">
@@ -581,8 +600,8 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
                           </span>
                         )}
                       </td>
-                      <td className="td font-mono text-[13px] text-stone-500">{p.konto ? fmtKonto(p.konto) : '—'}</td>
-                      <td className="td">{p.tytul || '—'}</td>
+                      <td className="td font-mono text-[13px] text-stone-500">{p.konto ? fmtKonto(p.konto) : '–'}</td>
+                      <td className="td">{p.tytul || '–'}</td>
                       <td className="td text-right font-semibold">{fmtPLN(p.kwota)}</td>
                       <td className="td">{fmtDate(p.data)}</td>
                       <td className="td">
@@ -629,7 +648,15 @@ function PrzelewyDoc({ firma, przelewy, logoDataUrl }: { firma: Firma; przelewy:
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.05em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#12233a',
+            letterSpacing: '0.05em',
+          }}
+        >
           ZESTAWIENIE PRZELEWÓW
         </div>
         <div style={{ fontSize: '8.5pt', color: '#6b6459', marginTop: 3 }}>Data zestawienia: {fmtDate(today())}</div>
@@ -809,10 +836,14 @@ function ObrotTab({ firma }: { firma: Firma }) {
                 <tbody className="divide-y divide-stone-100">
                   {pozycje.map((p) => (
                     <tr key={p.id} className="row-hover">
-                      <td className="td text-right font-semibold text-brand-700">{p.przychod ? fmtPLN(p.przychod) : '—'}</td>
-                      <td className="td text-right font-semibold text-red-600">{p.rozchod ? fmtPLN(p.rozchod) : '—'}</td>
-                      <td className="td">{p.zaCo || '—'}</td>
-                      <td className="td">{p.kto || '—'}</td>
+                      <td className="td text-right font-semibold text-brand-700">
+                        {p.przychod ? fmtPLN(p.przychod) : '–'}
+                      </td>
+                      <td className="td text-right font-semibold text-red-600">
+                        {p.rozchod ? fmtPLN(p.rozchod) : '–'}
+                      </td>
+                      <td className="td">{p.zaCo || '–'}</td>
+                      <td className="td">{p.kto || '–'}</td>
                       <td className="td">{fmtDate(p.data)}</td>
                       <td className="td">
                         <button className="btn-ghost !px-2 text-red-600" onClick={() => usun(p)}>
@@ -848,7 +879,15 @@ function ObrotDoc({ firma, pozycje, logoDataUrl }: { firma: Firma; pozycje: Obro
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.05em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#12233a',
+            letterSpacing: '0.05em',
+          }}
+        >
           OBRÓT PIENIĘŻNY
         </div>
         <div style={{ fontSize: '8.5pt', color: '#6b6459', marginTop: 3 }}>Data zestawienia: {fmtDate(today())}</div>

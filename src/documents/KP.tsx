@@ -13,12 +13,24 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       {/* Nagłówek */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+      <div
+        style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}
+      >
         <div>
-          <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.02em' }}>
+          <div
+            style={{
+              fontFamily: "'Fraunces Variable', serif",
+              fontWeight: 600,
+              fontSize: '17pt',
+              color: '#12233a',
+              letterSpacing: '0.02em',
+            }}
+          >
             KASOWY DOWÓD WPŁATY
           </div>
-          <div style={{ fontSize: '11pt', color: '#12233a', letterSpacing: '0.28em', fontWeight: 700, marginTop: 1 }}>KP</div>
+          <div style={{ fontSize: '11pt', color: '#12233a', letterSpacing: '0.28em', fontWeight: 700, marginTop: 1 }}>
+            KP
+          </div>
         </div>
         <div style={{ textAlign: 'right', fontSize: '9pt', color: '#12130f', lineHeight: 1.6 }}>
           <div style={{ fontSize: '8.5pt', color: '#0f5c3f', fontWeight: 700 }}>{kp.numer}</div>
@@ -46,7 +58,9 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ ...box, marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span style={{ ...lab, fontWeight: 700 }}>Od kogo (wpłacający):</span>
-          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val }}>{kp.odKogo || ' '}</span>
+          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val }}>
+            {kp.odKogo || ' '}
+          </span>
         </div>
       </div>
 
@@ -70,7 +84,16 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 8 }}>
           <span style={{ ...lab, fontWeight: 700 }}>Słownie:</span>
-          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val, fontStyle: 'italic', textTransform: 'capitalize' }}>
+          <span
+            style={{
+              flex: 1,
+              borderBottom: '1px dotted #a9a496',
+              minHeight: '1.15em',
+              ...val,
+              fontStyle: 'italic',
+              textTransform: 'capitalize',
+            }}
+          >
             {slownie}
           </span>
         </div>
@@ -80,7 +103,9 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ ...box, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span style={{ ...lab, fontWeight: 700 }}>Tytułem:</span>
-          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val }}>{kp.tytul || ' '}</span>
+          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val }}>
+            {kp.tytul || ' '}
+          </span>
         </div>
       </div>
 
@@ -88,13 +113,19 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginTop: 26 }} className="avoid-break">
         <div style={{ textAlign: 'center' }}>
           <div style={{ height: 70, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} />
-          <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>Wpłacił</div>
+          <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>
+            Wpłacił
+          </div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ height: 70, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
             {kp.podpisPrzyjmujacy && <SignatureView sig={kp.podpisPrzyjmujacy} label="Przyjął" />}
           </div>
-          {!kp.podpisPrzyjmujacy && <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>Przyjął</div>}
+          {!kp.podpisPrzyjmujacy && (
+            <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>
+              Przyjął
+            </div>
+          )}
         </div>
       </div>
 

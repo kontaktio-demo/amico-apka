@@ -41,7 +41,15 @@ export function DocLetterhead({ firma, logoDataUrl }: { firma: Firma; logoDataUr
               <AmicoWordmark height={30} />
             </div>
           )}
-          <div style={{ fontSize: '6.6pt', letterSpacing: '0.24em', textTransform: 'uppercase', color: '#6b6459', marginTop: 5 }}>
+          <div
+            style={{
+              fontSize: '6.6pt',
+              letterSpacing: '0.24em',
+              textTransform: 'uppercase',
+              color: '#6b6459',
+              marginTop: 5,
+            }}
+          >
             Pracownia Kamieniarska
           </div>
         </div>
@@ -61,7 +69,16 @@ export function DocLetterhead({ firma, logoDataUrl }: { firma: Firma; logoDataUr
 
 export function DocFooter({ firma }: { firma: Firma }) {
   return (
-    <div style={{ marginTop: 24, borderTop: '1px solid #d8d4c8', paddingTop: 8, textAlign: 'center', fontSize: '7.6pt', color: '#8a8478' }}>
+    <div
+      style={{
+        marginTop: 24,
+        borderTop: '1px solid #d8d4c8',
+        paddingTop: 8,
+        textAlign: 'center',
+        fontSize: '7.6pt',
+        color: '#8a8478',
+      }}
+    >
       {firma.marka} · {firma.ulica}, {firma.kod} {firma.miasto} · tel. {firma.telefon} · {firma.email}
       {firma.www ? ` · ${firma.www}` : ''}
     </div>
@@ -72,7 +89,16 @@ export function DocFooter({ firma }: { firma: Firma }) {
 export function DocTitle({ children, sub, numer }: { children: React.ReactNode; sub?: string; numer?: string }) {
   return (
     <div style={{ textAlign: 'center', margin: '10px 0 16px' }}>
-      <h1 style={{ fontFamily: "'Fraunces Variable', Fraunces, serif", fontWeight: 600, fontSize: '16pt', letterSpacing: '0.02em', color: '#12130f', margin: 0 }}>
+      <h1
+        style={{
+          fontFamily: "'Fraunces Variable', Fraunces, serif",
+          fontWeight: 600,
+          fontSize: '16pt',
+          letterSpacing: '0.02em',
+          color: '#12130f',
+          margin: 0,
+        }}
+      >
         {children}
       </h1>
       {sub && <div style={{ fontSize: '9pt', color: '#6b6459', marginTop: 2 }}>{sub}</div>}
@@ -82,14 +108,45 @@ export function DocTitle({ children, sub, numer }: { children: React.ReactNode; 
 }
 
 // ---------- Sekcja z numerkiem/naglowkiem ----------
-export function DocSection({ n, title, children, style }: { n?: string | number; title: string; children?: React.ReactNode; style?: React.CSSProperties }) {
+export function DocSection({
+  n,
+  title,
+  children,
+  style,
+}: {
+  n?: string | number
+  title: string
+  children?: React.ReactNode
+  style?: React.CSSProperties
+}) {
   return (
     <div style={{ marginTop: 12, ...style }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         {n !== undefined && (
-          <span style={{ background: '#0f5c3f', color: '#fff', fontSize: '8pt', fontWeight: 700, borderRadius: 6, padding: '2px 7px' }}>{n}</span>
+          <span
+            style={{
+              background: '#0f5c3f',
+              color: '#fff',
+              fontSize: '8pt',
+              fontWeight: 700,
+              borderRadius: 6,
+              padding: '2px 7px',
+            }}
+          >
+            {n}
+          </span>
         )}
-        <span style={{ fontSize: '9.5pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#12130f' }}>{title}</span>
+        <span
+          style={{
+            fontSize: '9.5pt',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: '#12130f',
+          }}
+        >
+          {title}
+        </span>
       </div>
       {children}
     </div>
@@ -101,7 +158,16 @@ export function DocLine({ label, value, width }: { label: string; value?: React.
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, width }}>
       <span style={{ color: '#4a463f', whiteSpace: 'nowrap', fontSize: '9pt' }}>{label}</span>
-      <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1em', fontWeight: 500, color: '#12130f', fontSize: '9.5pt' }}>
+      <span
+        style={{
+          flex: 1,
+          borderBottom: '1px dotted #a9a496',
+          minHeight: '1em',
+          fontWeight: 500,
+          color: '#12130f',
+          fontSize: '9.5pt',
+        }}
+      >
         {value || ' '}
       </span>
     </div>
@@ -109,7 +175,17 @@ export function DocLine({ label, value, width }: { label: string; value?: React.
 }
 
 // ---------- Blok podpisow ----------
-export function DocSignatures({ left, right, labelLeft, labelRight }: { left?: React.ReactNode; right?: React.ReactNode; labelLeft: string; labelRight: string }) {
+export function DocSignatures({
+  left,
+  right,
+  labelLeft,
+  labelRight,
+}: {
+  left?: React.ReactNode
+  right?: React.ReactNode
+  labelLeft: string
+  labelRight: string
+}) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 40, marginTop: 34 }} className="avoid-break">
       <SigBlock node={left} label={labelLeft} />

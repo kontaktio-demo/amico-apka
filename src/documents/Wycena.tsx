@@ -4,7 +4,17 @@ import { podsumuj, fmtPLN, fmtDate, pozycjaNetto } from '../lib/format'
 import { SignatureView } from '../components/SignaturePad'
 
 // Odwzorowanie formularza "WSTĘPNA WYCENA PRAC KAMIENIARSKICH"
-export function WycenaDoc({ w, firma, uwagi, logoDataUrl }: { w: Wycena; firma: Firma; uwagi: string[]; logoDataUrl?: string }) {
+export function WycenaDoc({
+  w,
+  firma,
+  uwagi,
+  logoDataUrl,
+}: {
+  w: Wycena
+  firma: Firma
+  uwagi: string[]
+  logoDataUrl?: string
+}) {
   const sum = podsumuj(w.pozycje)
   const box: React.CSSProperties = { border: '1px solid #c9c4b6', borderRadius: 10, padding: '9px 11px' }
   const secHead: React.CSSProperties = {
@@ -22,10 +32,20 @@ export function WycenaDoc({ w, firma, uwagi, logoDataUrl }: { w: Wycena; firma: 
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 12 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.03em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#12233a',
+            letterSpacing: '0.03em',
+          }}
+        >
           WSTĘPNA WYCENA
         </div>
-        <div style={{ fontSize: '11pt', color: '#12233a', letterSpacing: '0.12em', fontWeight: 600 }}>PRAC KAMIENIARSKICH</div>
+        <div style={{ fontSize: '11pt', color: '#12233a', letterSpacing: '0.12em', fontWeight: 600 }}>
+          PRAC KAMIENIARSKICH
+        </div>
         {w.numer && <div style={{ fontSize: '8.5pt', color: '#0f5c3f', fontWeight: 700, marginTop: 3 }}>{w.numer}</div>}
       </div>
 
@@ -48,7 +68,7 @@ export function WycenaDoc({ w, firma, uwagi, logoDataUrl }: { w: Wycena; firma: 
       <div style={{ ...box, marginTop: 10 }}>
         <div style={secHead}>3 · ZAKRES PRAC I NAZWA MATERIAŁU</div>
         <div style={{ minHeight: 26, fontSize: '9.5pt', color: '#12130f' }}>
-          {[w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' — ') || ' '}
+          {[w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' – ') || ' '}
         </div>
       </div>
 
@@ -106,7 +126,9 @@ export function WycenaDoc({ w, firma, uwagi, logoDataUrl }: { w: Wycena; firma: 
           <Row l="Dopłata:" v={w.doplata} />
           <Row l="Ważność wyceny:" v={fmtDate(w.waznosc)} />
           <Row l="Uwagi:" v={w.uwagi} />
-          <div style={{ fontSize: '8pt', color: '#6b6459', marginTop: 4 }}>Wycena będzie skorygowana po obmiarze z natury.</div>
+          <div style={{ fontSize: '8pt', color: '#6b6459', marginTop: 4 }}>
+            Wycena będzie skorygowana po obmiarze z natury.
+          </div>
         </div>
         <div style={box}>
           <div style={secHead}>6 · DODATKOWE INFORMACJE</div>
@@ -148,27 +170,76 @@ function Row({ l, v }: { l: string; v?: string }) {
   return (
     <div style={{ display: 'flex', gap: 5, marginBottom: 3, alignItems: 'baseline' }}>
       <span style={{ color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
-      <span style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}>{v || ' '}</span>
+      <span
+        style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}
+      >
+        {v || ' '}
+      </span>
     </div>
   )
 }
 function Check({ v, children }: { v?: boolean; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: '8.5pt', marginBottom: 2 }}>
-      <span style={{ width: 11, height: 11, border: '1px solid #12233a', borderRadius: 2, display: 'inline-grid', placeItems: 'center', fontSize: '8pt', lineHeight: 1 }}>
+      <span
+        style={{
+          width: 11,
+          height: 11,
+          border: '1px solid #12233a',
+          borderRadius: 2,
+          display: 'inline-grid',
+          placeItems: 'center',
+          fontSize: '8pt',
+          lineHeight: 1,
+        }}
+      >
         {v ? '✓' : ''}
       </span>
       {children}
     </div>
   )
 }
-const cellH = (w?: number): React.CSSProperties => ({ border: '1px solid #d3cfc2', padding: '4px 6px', fontSize: '7.6pt', fontWeight: 700, textAlign: 'center', width: w })
-const cell = (center?: boolean): React.CSSProperties => ({ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: center ? 'center' : undefined })
+const cellH = (w?: number): React.CSSProperties => ({
+  border: '1px solid #d3cfc2',
+  padding: '4px 6px',
+  fontSize: '7.6pt',
+  fontWeight: 700,
+  textAlign: 'center',
+  width: w,
+})
+const cell = (center?: boolean): React.CSSProperties => ({
+  border: '1px solid #d3cfc2',
+  padding: '4px 6px',
+  textAlign: center ? 'center' : undefined,
+})
 function SumRow({ l, v, bold }: { l: string; v: string; bold?: boolean }) {
   return (
     <tr>
-      <td style={{ padding: '3px 8px', textAlign: 'right', color: '#4a463f', fontWeight: bold ? 700 : 400, background: bold ? '#12233a' : '#f0ede6', border: '1px solid #d3cfc2', ...(bold ? { color: '#fff' } : {}) }}>{l}</td>
-      <td style={{ padding: '3px 8px', textAlign: 'right', fontWeight: 700, border: '1px solid #d3cfc2', minWidth: 90, ...(bold ? { background: '#12233a', color: '#fff' } : {}) }}>{v}</td>
+      <td
+        style={{
+          padding: '3px 8px',
+          textAlign: 'right',
+          color: '#4a463f',
+          fontWeight: bold ? 700 : 400,
+          background: bold ? '#12233a' : '#f0ede6',
+          border: '1px solid #d3cfc2',
+          ...(bold ? { color: '#fff' } : {}),
+        }}
+      >
+        {l}
+      </td>
+      <td
+        style={{
+          padding: '3px 8px',
+          textAlign: 'right',
+          fontWeight: 700,
+          border: '1px solid #d3cfc2',
+          minWidth: 90,
+          ...(bold ? { background: '#12233a', color: '#fff' } : {}),
+        }}
+      >
+        {v}
+      </td>
     </tr>
   )
 }

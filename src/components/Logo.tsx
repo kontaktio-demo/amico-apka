@@ -14,7 +14,14 @@ const M_PATH =
 // Pełny znak słowny AMICO – kolor przez currentColor
 export function AmicoWordmark({ className, height = 26 }: { className?: string; height?: number }) {
   return (
-    <svg viewBox="181 205 474 145" height={height} className={className} role="img" aria-label="AMICO" style={{ display: 'block' }}>
+    <svg
+      viewBox="181 205 474 145"
+      height={height}
+      className={className}
+      role="img"
+      aria-label="AMICO"
+      style={{ display: 'block' }}
+    >
       {WORDMARK_PATHS.map((d, i) => (
         <path key={i} d={d} fill="currentColor" />
       ))}
@@ -22,7 +29,7 @@ export function AmicoWordmark({ className, height = 26 }: { className?: string; 
   )
 }
 
-// Kafelek-ikona (granatowe tło + białe „M") – jak favicon
+// Kafelek-ikona (granatowe tło + białe „M”) – jak favicon
 export function LogoMark({ size = 40, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="263.4 191.4 172.9 172.9" className={className} aria-hidden>
@@ -49,7 +56,9 @@ export function Logo({
       <div className="leading-none">
         <AmicoWordmark height={variant === 'full' ? 20 : 17} className={color} />
         {variant === 'full' && (
-          <div className={clsx('mt-1.5 text-[9px] font-medium uppercase tracking-[0.24em]', sub)}>Pracownia Kamieniarska</div>
+          <div className={clsx('mt-1.5 text-[9px] font-medium uppercase tracking-[0.24em]', sub)}>
+            Pracownia Kamieniarska
+          </div>
         )}
       </div>
     </div>

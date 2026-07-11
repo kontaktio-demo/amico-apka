@@ -36,7 +36,14 @@ function StoneDefs({ id, p }: { id: string; p: StonePreset }) {
         <stop offset="1" stopColor="#000000" stopOpacity="0.12" />
       </linearGradient>
       <filter id={`${id}-tex`} x="0" y="0" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency={`${p.freqX} ${p.freqY}`} numOctaves={p.octaves} seed="7" stitchTiles="stitch" result="n" />
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency={`${p.freqX} ${p.freqY}`}
+          numOctaves={p.octaves}
+          seed="7"
+          stitchTiles="stitch"
+          result="n"
+        />
         <feColorMatrix in="n" type="saturate" values="0" result="g" />
         <feComposite in="g" in2="SourceAlpha" operator="in" />
       </filter>
@@ -47,12 +54,34 @@ function StonePath({ d, id, p }: { d: string; id: string; p: StonePreset }) {
   return (
     <g>
       <path d={d} fill={`url(#${id}-g)`} />
-      <path d={d} fill="#808080" filter={`url(#${id}-tex)`} opacity={p.kontrast} style={{ mixBlendMode: czyCiemny(p) ? 'screen' : 'overlay' }} />
+      <path
+        d={d}
+        fill="#808080"
+        filter={`url(#${id}-tex)`}
+        opacity={p.kontrast}
+        style={{ mixBlendMode: czyCiemny(p) ? 'screen' : 'overlay' }}
+      />
       <path d={d} fill={`url(#${id}-sheen)`} opacity={0.35 + p.polysk * 0.35} />
     </g>
   )
 }
-function StoneRect({ x, y, w, h, id, p, rx = 0 }: { x: number; y: number; w: number; h: number; id: string; p: StonePreset; rx?: number }) {
+function StoneRect({
+  x,
+  y,
+  w,
+  h,
+  id,
+  p,
+  rx = 0,
+}: {
+  x: number
+  y: number
+  w: number
+  h: number
+  id: string
+  p: StonePreset
+  rx?: number
+}) {
   const d = `M${x + rx},${y} h${w - 2 * rx} a${rx},${rx} 0 0 1 ${rx},${rx} v${h - 2 * rx} a${rx},${rx} 0 0 1 ${-rx},${rx} h${-(w - 2 * rx)} a${rx},${rx} 0 0 1 ${-rx},${-rx} v${-(h - 2 * rx)} a${rx},${rx} 0 0 1 ${rx},${-rx} z`
   return <StonePath d={rx ? d : `M${x},${y} h${w} v${h} h${-w} z`} id={id} p={p} />
 }
@@ -83,7 +112,8 @@ export default function Wizualizacja() {
   const idBase = 'stone'
 
   const pow = ksztalt === 'prosty' ? (a * b2) / 10000 : (a * b2 + a2 * b3) / 10000
-  const obwod = ksztalt === 'prosty' ? (2 * (a + b2)) / 100 : (a + b2 + a2 + b3 + Math.abs(a - a2) + Math.abs(b2 - b3)) / 100
+  const obwod =
+    ksztalt === 'prosty' ? (2 * (a + b2)) / 100 : (a + b2 + a2 + b3 + Math.abs(a - a2) + Math.abs(b2 - b3)) / 100
 
   async function zapiszDoArchiwum() {
     const svg = svgRef.current
@@ -111,7 +141,7 @@ export default function Wizualizacja() {
     <div>
       <PageHeader
         title="Wizualizacja projektu"
-        subtitle="Podgląd blatu w wybranym kamieniu — pokaż klientowi efekt „na żywo”"
+        subtitle="Podgląd blatu w wybranym kamieniu – pokaż klientowi efekt „na żywo”"
         icon={<Sparkles size={22} />}
         actions={
           <>
@@ -120,9 +150,28 @@ export default function Wizualizacja() {
             </button>
             <PrintSendBar
               getPrintNode={() => (
-                <WizualizacjaDoc firma={firma} nazwaKamienia={nazwaKamienia} kat={kat} preset={preset} ksztalt={ksztalt} a={a} b={b2} a2={a2} b3={b3} grubosc={grubosc} krawedz={krawedz} zlew={zlew} plyta={plyta} pow={pow} obwod={obwod} />
+                <WizualizacjaDoc
+                  firma={firma}
+                  nazwaKamienia={nazwaKamienia}
+                  kat={kat}
+                  preset={preset}
+                  ksztalt={ksztalt}
+                  a={a}
+                  b={b2}
+                  a2={a2}
+                  b3={b3}
+                  grubosc={grubosc}
+                  krawedz={krawedz}
+                  zlew={zlew}
+                  plyta={plyta}
+                  pow={pow}
+                  obwod={obwod}
+                />
               )}
-              share={{ title: `Wizualizacja – ${nazwaKamienia}`, text: `Wizualizacja blatu: ${nazwaKamienia}, ${fmtNum(pow, 2)} m², wykończenie krawędzi: ${krawedz}.` }}
+              share={{
+                title: `Wizualizacja – ${nazwaKamienia}`,
+                text: `Wizualizacja blatu: ${nazwaKamienia}, ${fmtNum(pow, 2)} m², wykończenie krawędzi: ${krawedz}.`,
+              }}
               size="sm"
             />
           </>
@@ -137,38 +186,65 @@ export default function Wizualizacja() {
               <Field label="Rodzaj kamienia">
                 <Select value={kat} onChange={(e) => setKat(e.target.value as ProduktKategoria)}>
                   {KATEGORIE.map((k) => (
-                    <option key={k.k} value={k.k}>{k.label}</option>
+                    <option key={k.k} value={k.k}>
+                      {k.label}
+                    </option>
                   ))}
                 </Select>
               </Field>
               <Field label="Nazwa / kolor">
-                <Input value={nazwaKamienia} onChange={(e) => setNazwaKamienia(e.target.value)} placeholder="np. Nero Assoluto" />
+                <Input
+                  value={nazwaKamienia}
+                  onChange={(e) => setNazwaKamienia(e.target.value)}
+                  placeholder="np. Nero Assoluto"
+                />
               </Field>
             </div>
             <Field label="Kształt blatu">
               <div className="flex gap-2">
                 {(['prosty', 'L'] as const).map((k) => (
-                  <button key={k} onClick={() => setKsztalt(k)} className={cx('flex-1 rounded-lg border px-3 py-2 text-[13px] font-medium', ksztalt === k ? 'border-white/20 bg-white/10 text-white' : 'border-white/10 text-stone-400 hover:bg-white/5')}>
+                  <button
+                    key={k}
+                    onClick={() => setKsztalt(k)}
+                    className={cx(
+                      'flex-1 rounded-lg border px-3 py-2 text-[13px] font-medium',
+                      ksztalt === k
+                        ? 'border-white/20 bg-white/10 text-white'
+                        : 'border-white/10 text-stone-400 hover:bg-white/5',
+                    )}
+                  >
                     {k === 'prosty' ? 'Prosty' : 'Kształt L'}
                   </button>
                 ))}
               </div>
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Długość A (cm)"><Input type="number" value={a} onChange={(e) => setA(+e.target.value)} /></Field>
-              <Field label="Głębokość (cm)"><Input type="number" value={b2} onChange={(e) => setB2(+e.target.value)} /></Field>
+              <Field label="Długość A (cm)">
+                <Input type="number" value={a} onChange={(e) => setA(+e.target.value)} />
+              </Field>
+              <Field label="Głębokość (cm)">
+                <Input type="number" value={b2} onChange={(e) => setB2(+e.target.value)} />
+              </Field>
             </div>
             {ksztalt === 'L' && (
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Ramię B (cm)"><Input type="number" value={a2} onChange={(e) => setA2(+e.target.value)} /></Field>
-                <Field label="Głębokość B (cm)"><Input type="number" value={b3} onChange={(e) => setB3(+e.target.value)} /></Field>
+                <Field label="Ramię B (cm)">
+                  <Input type="number" value={a2} onChange={(e) => setA2(+e.target.value)} />
+                </Field>
+                <Field label="Głębokość B (cm)">
+                  <Input type="number" value={b3} onChange={(e) => setB3(+e.target.value)} />
+                </Field>
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Grubość"><Input value={grubosc} onChange={(e) => setGrubosc(e.target.value)} /></Field>
+              <Field label="Grubość">
+                <Input value={grubosc} onChange={(e) => setGrubosc(e.target.value)} />
+              </Field>
               <Field label="Krawędź">
                 <Select value={krawedz} onChange={(e) => setKrawedz(e.target.value)}>
-                  {['prosta', 'fazowana', 'zaokrąglona', 'półwałek', 'skośna'].map((k) => <option key={k}>{k}</option>)}
+                  {['prosta', 'fazowana', 'zaokrąglona', 'półwałek', 'skośna'].map((k) => (
+                    <option key={k}>{k}</option>
+                  ))}
                 </Select>
               </Field>
             </div>
@@ -179,14 +255,22 @@ export default function Wizualizacja() {
             <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-3">
               <Field label="Klient">
                 <Select value={klientId} onChange={(e) => setKlientId(e.target.value)}>
-                  <option value="">— brak —</option>
-                  {b.klienci.map((k) => <option key={k.id} value={k.id}>{klientNazwa(k)}</option>)}
+                  <option value="">– brak –</option>
+                  {b.klienci.map((k) => (
+                    <option key={k.id} value={k.id}>
+                      {klientNazwa(k)}
+                    </option>
+                  ))}
                 </Select>
               </Field>
               <Field label="Zlecenie">
                 <Select value={zlecenieId} onChange={(e) => setZlecenieId(e.target.value)}>
-                  <option value="">— brak —</option>
-                  {b.zlecenia.map((z) => <option key={z.id} value={z.id}>{z.numer}</option>)}
+                  <option value="">– brak –</option>
+                  {b.zlecenia.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.numer}
+                    </option>
+                  ))}
                 </Select>
               </Field>
             </div>
@@ -196,15 +280,49 @@ export default function Wizualizacja() {
         {/* Podglad */}
         <div>
           <div className="mb-3 flex gap-2">
-            <button onClick={() => setWidok('kuchnia')} className={cx('inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium', widok === 'kuchnia' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5')}><Home size={15} /> Wizualizacja kuchni</button>
-            <button onClick={() => setWidok('blat')} className={cx('inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium', widok === 'blat' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5')}><SquareStack size={15} /> Rzut blatu</button>
+            <button
+              onClick={() => setWidok('kuchnia')}
+              className={cx(
+                'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium',
+                widok === 'kuchnia' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5',
+              )}
+            >
+              <Home size={15} /> Wizualizacja kuchni
+            </button>
+            <button
+              onClick={() => setWidok('blat')}
+              className={cx(
+                'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium',
+                widok === 'blat' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5',
+              )}
+            >
+              <SquareStack size={15} /> Rzut blatu
+            </button>
           </div>
           <Card className="overflow-hidden">
             <div className="bg-[#0e0f16] p-4">
               {widok === 'kuchnia' ? (
-                <SceneKuchnia refEl={svgRef} idBase={idBase} preset={preset} zlew={zlew} plyta={plyta} nazwa={nazwaKamienia} />
+                <SceneKuchnia
+                  refEl={svgRef}
+                  idBase={idBase}
+                  preset={preset}
+                  zlew={zlew}
+                  plyta={plyta}
+                  nazwa={nazwaKamienia}
+                />
               ) : (
-                <RzutBlatu refEl={svgRef} idBase={idBase} preset={preset} ksztalt={ksztalt} a={a} b={b2} a2={a2} b3={b3} zlew={zlew} plyta={plyta} />
+                <RzutBlatu
+                  refEl={svgRef}
+                  idBase={idBase}
+                  preset={preset}
+                  ksztalt={ksztalt}
+                  a={a}
+                  b={b2}
+                  a2={a2}
+                  b3={b3}
+                  zlew={zlew}
+                  plyta={plyta}
+                />
               )}
             </div>
           </Card>
@@ -231,7 +349,21 @@ function Info({ label, value }: { label: string; value: string }) {
 }
 
 // ---------- Scena kuchni ----------
-function SceneKuchnia({ refEl, idBase, preset, zlew, plyta, nazwa }: { refEl: React.Ref<SVGSVGElement>; idBase: string; preset: StonePreset; zlew: boolean; plyta: boolean; nazwa: string }) {
+function SceneKuchnia({
+  refEl,
+  idBase,
+  preset,
+  zlew,
+  plyta,
+  nazwa,
+}: {
+  refEl: React.Ref<SVGSVGElement>
+  idBase: string
+  preset: StonePreset
+  zlew: boolean
+  plyta: boolean
+  nazwa: string
+}) {
   return (
     <svg ref={refEl} viewBox="0 0 800 480" className="w-full" style={{ display: 'block' }}>
       <StoneDefs id={idBase} p={preset} />
@@ -251,7 +383,16 @@ function SceneKuchnia({ refEl, idBase, preset, zlew, plyta, nazwa }: { refEl: Re
       ))}
       {/* plyta ochronna (backsplash) */}
       <rect x="40" y="250" width="720" height="42" fill={`url(#${idBase}-g)`} opacity="0.9" />
-      <rect x="40" y="250" width="720" height="42" fill="#808080" filter={`url(#${idBase}-tex)`} opacity={preset.kontrast * 0.7} style={{ mixBlendMode: czyCiemny(preset) ? 'screen' : 'overlay' }} />
+      <rect
+        x="40"
+        y="250"
+        width="720"
+        height="42"
+        fill="#808080"
+        filter={`url(#${idBase}-tex)`}
+        opacity={preset.kontrast * 0.7}
+        style={{ mixBlendMode: czyCiemny(preset) ? 'screen' : 'overlay' }}
+      />
       {/* BLAT (hero) */}
       <g>
         <StoneRect x={40} y={292} w={720} h={26} id={idBase} p={preset} />
@@ -261,7 +402,16 @@ function SceneKuchnia({ refEl, idBase, preset, zlew, plyta, nazwa }: { refEl: Re
       <rect x="40" y="322" width="720" height="150" fill="#eae6de" />
       {[60, 190, 320, 450, 580, 665].map((x, i) => (
         <g key={x}>
-          <rect x={x} y="330" width={i === 5 ? 90 : 120} height="134" rx="4" fill="#f0ede6" stroke="#ddd8cf" strokeWidth="2" />
+          <rect
+            x={x}
+            y="330"
+            width={i === 5 ? 90 : 120}
+            height="134"
+            rx="4"
+            fill="#f0ede6"
+            stroke="#ddd8cf"
+            strokeWidth="2"
+          />
           <rect x={x + (i === 5 ? 40 : 54)} y="360" width="12" height="34" rx="4" fill="#c2bcb0" />
         </g>
       ))}
@@ -279,20 +429,46 @@ function SceneKuchnia({ refEl, idBase, preset, zlew, plyta, nazwa }: { refEl: Re
       {/* podpis materialu */}
       <g>
         <rect x="40" y="430" width="210" height="34" rx="8" fill="#12130f" opacity="0.85" />
-        <text x="56" y="452" fill="#fff" fontFamily="Inter, sans-serif" fontSize="15" fontWeight="600">{nazwa}</text>
+        <text x="56" y="452" fill="#fff" fontFamily="Inter, sans-serif" fontSize="15" fontWeight="600">
+          {nazwa}
+        </text>
       </g>
     </svg>
   )
 }
 
 // ---------- Rzut blatu z gory ----------
-function RzutBlatu({ refEl, idBase, preset, ksztalt, a, b, a2, b3, zlew, plyta }: { refEl: React.Ref<SVGSVGElement>; idBase: string; preset: StonePreset; ksztalt: 'prosty' | 'L'; a: number; b: number; a2: number; b3: number; zlew: boolean; plyta: boolean }) {
+function RzutBlatu({
+  refEl,
+  idBase,
+  preset,
+  ksztalt,
+  a,
+  b,
+  a2,
+  b3,
+  zlew,
+  plyta,
+}: {
+  refEl: React.Ref<SVGSVGElement>
+  idBase: string
+  preset: StonePreset
+  ksztalt: 'prosty' | 'L'
+  a: number
+  b: number
+  a2: number
+  b3: number
+  zlew: boolean
+  plyta: boolean
+}) {
   const pad = 70
-  const maxW = 660, maxH = 340
+  const maxW = 660,
+    maxH = 340
   const totalW = ksztalt === 'prosty' ? a : Math.max(a, b3)
   const totalH = ksztalt === 'prosty' ? b : Math.max(b, a2)
   const s = Math.min(maxW / totalW, maxH / totalH)
-  const W = totalW * s, H = totalH * s
+  const W = totalW * s,
+    H = totalH * s
   const ink = '#3a3a3a'
 
   let d: string
@@ -303,7 +479,12 @@ function RzutBlatu({ refEl, idBase, preset, ksztalt, a, b, a2, b3, zlew, plyta }
   }
 
   return (
-    <svg ref={refEl} viewBox={`0 0 ${W + pad * 2} ${H + pad * 2}`} className="mx-auto w-full max-w-[720px]" style={{ display: 'block' }}>
+    <svg
+      ref={refEl}
+      viewBox={`0 0 ${W + pad * 2} ${H + pad * 2}`}
+      className="mx-auto w-full max-w-[720px]"
+      style={{ display: 'block' }}
+    >
       <StoneDefs id={idBase} p={preset} />
       <rect x="0" y="0" width={W + pad * 2} height={H + pad * 2} fill="#0e0f16" />
       {/* cien */}
@@ -312,8 +493,30 @@ function RzutBlatu({ refEl, idBase, preset, ksztalt, a, b, a2, b3, zlew, plyta }
       <path d={d} fill="none" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="1.5" />
 
       {/* wyciecia */}
-      {zlew && <rect x={pad + 0.18 * a * s} y={pad + 0.28 * b * s} width={0.16 * a * s} height={0.42 * b * s} rx={8} fill="#0e0f16" stroke="#ffffff55" strokeWidth="1.5" />}
-      {plyta && <rect x={pad + 0.55 * a * s} y={pad + 0.28 * b * s} width={0.18 * a * s} height={0.42 * b * s} rx={4} fill="#0e0f16" stroke="#ffffff55" strokeWidth="1.5" />}
+      {zlew && (
+        <rect
+          x={pad + 0.18 * a * s}
+          y={pad + 0.28 * b * s}
+          width={0.16 * a * s}
+          height={0.42 * b * s}
+          rx={8}
+          fill="#0e0f16"
+          stroke="#ffffff55"
+          strokeWidth="1.5"
+        />
+      )}
+      {plyta && (
+        <rect
+          x={pad + 0.55 * a * s}
+          y={pad + 0.28 * b * s}
+          width={0.18 * a * s}
+          height={0.42 * b * s}
+          rx={4}
+          fill="#0e0f16"
+          stroke="#ffffff55"
+          strokeWidth="1.5"
+        />
+      )}
 
       {/* wymiary */}
       <Wymiar x1={pad} y1={pad - 22} x2={pad + a * s} y2={pad - 22} label={`${a} cm`} ink="#c9ccd6" />
@@ -322,14 +525,39 @@ function RzutBlatu({ refEl, idBase, preset, ksztalt, a, b, a2, b3, zlew, plyta }
   )
 }
 
-function Wymiar({ x1, y1, x2, y2, label, pion, ink }: { x1: number; y1: number; x2: number; y2: number; label: string; pion?: boolean; ink: string }) {
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2
+function Wymiar({
+  x1,
+  y1,
+  x2,
+  y2,
+  label,
+  pion,
+  ink,
+}: {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  label: string
+  pion?: boolean
+  ink: string
+}) {
+  const mx = (x1 + x2) / 2,
+    my = (y1 + y2) / 2
   return (
     <g stroke={ink} fill={ink} fontFamily="Inter, sans-serif" fontSize="12">
       <line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth="1" />
       <line x1={x1} y1={y1 - (pion ? 0 : 5)} x2={x1} y2={y1 + (pion ? 0 : 5)} />
       <line x1={x2} y1={y2 - (pion ? 0 : 5)} x2={x2} y2={y2 + (pion ? 0 : 5)} />
-      <text x={pion ? mx - 8 : mx} y={pion ? my : my - 6} textAnchor="middle" transform={pion ? `rotate(-90 ${mx - 8} ${my})` : undefined} stroke="none">{label}</text>
+      <text
+        x={pion ? mx - 8 : mx}
+        y={pion ? my : my - 6}
+        textAnchor="middle"
+        transform={pion ? `rotate(-90 ${mx - 8} ${my})` : undefined}
+        stroke="none"
+      >
+        {label}
+      </text>
     </g>
   )
 }
@@ -358,12 +586,39 @@ function svgNaPng(svg: SVGSVGElement, szer = 1400): Promise<string> {
 }
 
 // ---------- Dokument do druku ----------
-function WizualizacjaDoc({ firma, nazwaKamienia, preset, ksztalt, a, b, a2, b3, grubosc, krawedz, zlew, plyta, pow, obwod }: any) {
+function WizualizacjaDoc({
+  firma,
+  nazwaKamienia,
+  preset,
+  ksztalt,
+  a,
+  b,
+  a2,
+  b3,
+  grubosc,
+  krawedz,
+  zlew,
+  plyta,
+  pow,
+  obwod,
+}: any) {
   const id = 'stonep'
   return (
     <DocSheet firma={firma}>
-      <h1 style={{ textAlign: 'center', fontFamily: "'Inter Tight', serif", fontSize: '16pt', fontWeight: 600, margin: '4px 0 2px' }}>Wizualizacja projektu</h1>
-      <div style={{ textAlign: 'center', color: '#6b6459', fontSize: '9pt', marginBottom: 14 }}>Materiał: {nazwaKamienia}</div>
+      <h1
+        style={{
+          textAlign: 'center',
+          fontFamily: "'Inter Tight', serif",
+          fontSize: '16pt',
+          fontWeight: 600,
+          margin: '4px 0 2px',
+        }}
+      >
+        Wizualizacja projektu
+      </h1>
+      <div style={{ textAlign: 'center', color: '#6b6459', fontSize: '9pt', marginBottom: 14 }}>
+        Materiał: {nazwaKamienia}
+      </div>
       <div style={{ border: '1px solid #d3cfc2', borderRadius: 10, overflow: 'hidden', marginBottom: 14 }}>
         <svg viewBox="0 0 800 300" style={{ width: '100%', display: 'block' }}>
           <StoneDefs id={id} p={preset} />
@@ -371,7 +626,19 @@ function WizualizacjaDoc({ firma, nazwaKamienia, preset, ksztalt, a, b, a2, b3, 
           <rect x="40" y="150" width="720" height="26" fill={`url(#${id}-g)`} />
           <StoneRect x={40} y={176} w={720} h={26} id={id} p={preset} />
           <rect x="40" y="202" width="720" height="70" fill="#eae6de" />
-          {[60, 240, 420, 600].map((x) => <rect key={x} x={x} y="208" width="150" height="60" rx="4" fill="#f0ede6" stroke="#ddd8cf" strokeWidth="2" />)}
+          {[60, 240, 420, 600].map((x) => (
+            <rect
+              key={x}
+              x={x}
+              y="208"
+              width="150"
+              height="60"
+              rx="4"
+              fill="#f0ede6"
+              stroke="#ddd8cf"
+              strokeWidth="2"
+            />
+          ))}
         </svg>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9.5pt' }}>
@@ -383,17 +650,28 @@ function WizualizacjaDoc({ firma, nazwaKamienia, preset, ksztalt, a, b, a2, b3, 
             ['Obwód (obróbki)', `${fmtNum(obwod, 2)} mb`],
             ['Grubość', grubosc],
             ['Wykończenie krawędzi', krawedz],
-            ['Wycięcia', [zlew && 'zlew', plyta && 'płyta grzewcza'].filter(Boolean).join(', ') || '—'],
+            ['Wycięcia', [zlew && 'zlew', plyta && 'płyta grzewcza'].filter(Boolean).join(', ') || '–'],
           ].map(([k, v]) => (
             <tr key={k as string}>
-              <td style={{ border: '1px solid #d3cfc2', padding: '5px 8px', fontWeight: 600, width: 180, background: '#f5f3ee' }}>{k}</td>
+              <td
+                style={{
+                  border: '1px solid #d3cfc2',
+                  padding: '5px 8px',
+                  fontWeight: 600,
+                  width: 180,
+                  background: '#f5f3ee',
+                }}
+              >
+                {k}
+              </td>
               <td style={{ border: '1px solid #d3cfc2', padding: '5px 8px' }}>{v}</td>
             </tr>
           ))}
         </tbody>
       </table>
       <p style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 10 }}>
-        Wizualizacja poglądowa. Kamień naturalny cechuje niepowtarzalny rysunek i odcień — rzeczywisty wygląd może różnić się od podglądu.
+        Wizualizacja poglądowa. Kamień naturalny cechuje niepowtarzalny rysunek i odcień – rzeczywisty wygląd może
+        różnić się od podglądu.
       </p>
     </DocSheet>
   )

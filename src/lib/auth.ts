@@ -104,7 +104,11 @@ export async function zarejestrujBiometrie(userId: string, nazwa: string, email:
           { type: 'public-key', alg: -7 },
           { type: 'public-key', alg: -257 },
         ],
-        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          residentKey: 'preferred',
+        },
         timeout: 60000,
       },
     })) as PublicKeyCredential | null
@@ -151,9 +155,30 @@ export function nazwaRoli(r: Rola): string {
 export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
   if (rola === 'wlasciciel' || rola === 'kierownik') return 'all'
   if (rola === 'biuro')
-    return ['/', '/klienci', '/zlecenia', '/kalendarz', '/zadania', '/wyceny', '/umowy', '/faktury', '/dokumenty', '/skany', '/wizualizacja', '/kontrahenci', '/produkty', '/ekspozycje', '/finanse', '/odprawa', '/ustawienia', '/pomoc']
-  // montazysta – zakres wylacznie terenowy/operacyjny (bez cen, finansow, umow, klientow CRM)
-  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/wizualizacja', '/dokumenty', '/produkty', '/pomoc']
+    return [
+      '/',
+      '/klienci',
+      '/zlecenia',
+      '/kalendarz',
+      '/zadania',
+      '/wyceny',
+      '/umowy',
+      '/faktury',
+      '/dokumenty',
+      '/skany',
+      '/wizualizacja',
+      '/kontrahenci',
+      '/produkty',
+      '/ekspozycje',
+      '/finanse',
+      '/odprawa',
+      '/ustawienia',
+      '/pomoc',
+    ]
+  // montazysta – wylacznie zakres terenowy: bez CRM, wycen, umow, faktur, finansow,
+  // ekspozycji, ustawien i cennika (/produkty to lista cen). Wartosc wlasnego zlecenia
+  // pozostaje widoczna, bo montazysta wystawia na miejscu KP i musi wiedziec, ile pobrac.
+  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/wizualizacja', '/dokumenty', '/pomoc']
 }
 
 export function maSciezke(rola: Rola, sciezka: string): boolean {

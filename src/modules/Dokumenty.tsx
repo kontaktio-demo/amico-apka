@@ -134,7 +134,9 @@ export default function Dokumenty() {
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <TabBtn active={tab === 'protokoly'} onClick={() => setTab('protokoly')} icon={<FileCheck2 size={16} />}>
           Protokoły odbioru
-          <span className="ml-1.5 rounded-full bg-stone-100 px-1.5 text-[11px] text-stone-500">{b.protokoly.length}</span>
+          <span className="ml-1.5 rounded-full bg-stone-100 px-1.5 text-[11px] text-stone-500">
+            {b.protokoly.length}
+          </span>
         </TabBtn>
         <TabBtn active={tab === 'kp'} onClick={() => setTab('kp')} icon={<Receipt size={16} />}>
           KP – Kasa Przyjmie
@@ -179,11 +181,15 @@ export default function Dokumenty() {
                     return (
                       <tr key={p.id} className="row-hover">
                         <td className="td font-medium text-ink">{p.numer}</td>
-                        <td className="td">{nazwa || '—'}</td>
-                        <td className="td text-stone-500">{p.numerZamowienia || '—'}</td>
+                        <td className="td">{nazwa || '–'}</td>
+                        <td className="td text-stone-500">{p.numerZamowienia || '–'}</td>
                         <td className="td text-stone-500">{fmtDate(p.data)}</td>
                         <td className="td">
-                          {p.podpisKlienta ? <Badge tone="green">Podpisany</Badge> : <Badge tone="stone">Bez podpisu</Badge>}
+                          {p.podpisKlienta ? (
+                            <Badge tone="green">Podpisany</Badge>
+                          ) : (
+                            <Badge tone="stone">Bez podpisu</Badge>
+                          )}
                         </td>
                         <td className="td">
                           <div className="flex items-center justify-end gap-2">
@@ -192,7 +198,7 @@ export default function Dokumenty() {
                               getPrintNode={() => <ProtokolDoc p={p} firma={firma} logoDataUrl={logo} />}
                               share={{
                                 title: `Protokół odbioru ${p.numer}`,
-                                text: `Protokół odbioru ${p.numer} — ${nazwa}. Data: ${fmtDate(p.data)}.`,
+                                text: `Protokół odbioru ${p.numer} – ${nazwa}. Data: ${fmtDate(p.data)}.`,
                                 to: kl?.email,
                                 phone: p.klientTelefon || kl?.telefon,
                               }}
@@ -200,7 +206,11 @@ export default function Dokumenty() {
                             <button className="btn-ghost btn-sm" onClick={() => setEdytorP(p)} title="Edytuj">
                               <Pencil size={15} />
                             </button>
-                            <button className="btn-ghost btn-sm text-red-600" onClick={() => usunProtokol(p)} title="Usuń">
+                            <button
+                              className="btn-ghost btn-sm text-red-600"
+                              onClick={() => usunProtokol(p)}
+                              title="Usuń"
+                            >
                               <Trash2 size={15} />
                             </button>
                           </div>
@@ -248,8 +258,8 @@ export default function Dokumenty() {
                     return (
                       <tr key={kp.id} className="row-hover">
                         <td className="td font-medium text-ink">{kp.numer}</td>
-                        <td className="td">{nazwa || '—'}</td>
-                        <td className="td text-stone-500">{kp.tytul || '—'}</td>
+                        <td className="td">{nazwa || '–'}</td>
+                        <td className="td text-stone-500">{kp.tytul || '–'}</td>
                         <td className="td text-right font-semibold text-ink">{fmtPLN(kp.kwota)}</td>
                         <td className="td text-stone-500">{fmtDate(kp.data)}</td>
                         <td className="td">
@@ -318,7 +328,6 @@ export default function Dokumenty() {
   )
 }
 
-
 // ================= Zakładka =================
 function TabBtn({
   active,
@@ -336,7 +345,9 @@ function TabBtn({
       onClick={onClick}
       className={cx(
         'inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-[14px] font-medium transition',
-        active ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-white/10 bg-white/[0.03] text-stone-600 hover:bg-stone-50',
+        active
+          ? 'border-brand-300 bg-brand-50 text-brand-700'
+          : 'border-white/10 bg-white/[0.03] text-stone-600 hover:bg-stone-50',
       )}
     >
       {icon}
@@ -397,7 +408,7 @@ function ProtokolEditor({
             getPrintNode={() => <ProtokolDoc p={draft} firma={firma} logoDataUrl={logo} />}
             share={{
               title: `Protokół odbioru ${draft.numer}`,
-              text: `Protokół odbioru ${draft.numer} — ${nazwaKlienta}. Data: ${fmtDate(draft.data)}.`,
+              text: `Protokół odbioru ${draft.numer} – ${nazwaKlienta}. Data: ${fmtDate(draft.data)}.`,
               phone: draft.klientTelefon,
             }}
           />
@@ -414,7 +425,7 @@ function ProtokolEditor({
       <div className="space-y-4">
         <Field label="Klient z bazy (opcjonalnie)">
           <Select value={draft.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-            <option value="">— wpisz dane ręcznie —</option>
+            <option value="">– wpisz dane ręcznie –</option>
             {klienci.map((k) => (
               <option key={k.id} value={k.id}>
                 {klientNazwa(k)}
@@ -425,20 +436,36 @@ function ProtokolEditor({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Klient (nazwa)">
-            <Input value={draft.klientNazwa || ''} onChange={(e) => set('klientNazwa', e.target.value)} placeholder="Imię i nazwisko / firma" />
+            <Input
+              value={draft.klientNazwa || ''}
+              onChange={(e) => set('klientNazwa', e.target.value)}
+              placeholder="Imię i nazwisko / firma"
+            />
           </Field>
           <Field label="Telefon">
-            <Input value={draft.klientTelefon || ''} onChange={(e) => set('klientTelefon', e.target.value)} placeholder="np. 600 100 200" />
+            <Input
+              value={draft.klientTelefon || ''}
+              onChange={(e) => set('klientTelefon', e.target.value)}
+              placeholder="np. 600 100 200"
+            />
           </Field>
         </div>
 
         <Field label="Adres">
-          <Input value={draft.klientAdres || ''} onChange={(e) => set('klientAdres', e.target.value)} placeholder="ul. Przykładowa 1, 00-000 Miasto" />
+          <Input
+            value={draft.klientAdres || ''}
+            onChange={(e) => set('klientAdres', e.target.value)}
+            placeholder="ul. Przykładowa 1, 00-000 Miasto"
+          />
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Numer zamówienia">
-            <Input value={draft.numerZamowienia || ''} onChange={(e) => set('numerZamowienia', e.target.value)} placeholder="np. ZL 12/2026" />
+            <Input
+              value={draft.numerZamowienia || ''}
+              onChange={(e) => set('numerZamowienia', e.target.value)}
+              placeholder="np. ZL 12/2026"
+            />
           </Field>
           <Field label="Data odbioru">
             <Input type="date" value={draft.data || ''} onChange={(e) => set('data', e.target.value)} />
@@ -455,12 +482,22 @@ function ProtokolEditor({
         </Field>
 
         <Field label="Uwagi">
-          <Textarea value={draft.uwagi || ''} onChange={(e) => set('uwagi', e.target.value)} rows={2} placeholder="Uwagi do odbioru (opcjonalnie)" />
+          <Textarea
+            value={draft.uwagi || ''}
+            onChange={(e) => set('uwagi', e.target.value)}
+            rows={2}
+            placeholder="Uwagi do odbioru (opcjonalnie)"
+          />
         </Field>
 
         <div>
           <span className="label">Podpis klienta</span>
-          <SignatureField sig={draft.podpisKlienta} onSign={() => setSigOpen(true)} label="Czytelny podpis klienta" rola="Klient" />
+          <SignatureField
+            sig={draft.podpisKlienta}
+            onSign={() => setSigOpen(true)}
+            label="Czytelny podpis klienta"
+            rola="Klient"
+          />
         </div>
       </div>
 
@@ -541,7 +578,7 @@ function KPEditor({
       <div className="space-y-4">
         <Field label="Klient z bazy (opcjonalnie)">
           <Select value={draft.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-            <option value="">— wpisz dane ręcznie —</option>
+            <option value="">– wpisz dane ręcznie –</option>
             {klienci.map((k) => (
               <option key={k.id} value={k.id}>
                 {klientNazwa(k)}
@@ -552,7 +589,11 @@ function KPEditor({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Od kogo (wpłacający)">
-            <Input value={draft.odKogo || ''} onChange={(e) => set('odKogo', e.target.value)} placeholder="Imię i nazwisko / firma" />
+            <Input
+              value={draft.odKogo || ''}
+              onChange={(e) => set('odKogo', e.target.value)}
+              placeholder="Imię i nazwisko / firma"
+            />
           </Field>
           <Field label="Data wpłaty">
             <Input type="date" value={draft.data || ''} onChange={(e) => set('data', e.target.value)} />
@@ -572,13 +613,22 @@ function KPEditor({
             />
           </Field>
           <Field label="Tytułem">
-            <Input value={draft.tytul || ''} onChange={(e) => set('tytul', e.target.value)} placeholder="np. zaliczka do zlecenia ZL 12/2026" />
+            <Input
+              value={draft.tytul || ''}
+              onChange={(e) => set('tytul', e.target.value)}
+              placeholder="np. zaliczka do zlecenia ZL 12/2026"
+            />
           </Field>
         </div>
 
         <div>
           <span className="label">Podpis przyjmującego</span>
-          <SignatureField sig={draft.podpisPrzyjmujacy} onSign={() => setSigOpen(true)} label="Podpis osoby przyjmującej wpłatę" rola="Przyjął" />
+          <SignatureField
+            sig={draft.podpisPrzyjmujacy}
+            onSign={() => setSigOpen(true)}
+            label="Podpis osoby przyjmującej wpłatę"
+            rola="Przyjął"
+          />
         </div>
       </div>
 

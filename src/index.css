@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
   color-scheme: dark;
 }
@@ -23,7 +22,8 @@ body,
 
 body {
   @apply bg-stone-50 text-ink font-sans antialiased;
-  background-image: radial-gradient(1200px 600px at 80% -10%, rgba(14, 21, 51, 0.55), transparent 60%),
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(14, 21, 51, 0.55), transparent 60%),
     radial-gradient(900px 500px at 0% 0%, rgba(20, 22, 31, 0.6), transparent 55%);
   background-attachment: fixed;
   /* Zachowanie jak w natywnej apce: bez przyblizania gestem i bez "gumowego" przewijania */
@@ -65,7 +65,6 @@ h3,
   font-family: 'Inter Tight Variable', 'Inter Tight', 'Space Grotesk Variable', Inter, system-ui, sans-serif;
   letter-spacing: -0.015em;
 }
-
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -91,7 +90,7 @@ h3,
   /* Przyciski */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
-           transition-all select-none active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
+ transition-all select-none active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
   }
   .btn-primary {
     @apply btn text-[#0b0b10];
@@ -128,14 +127,13 @@ h3,
   .textarea,
   .select {
     @apply w-full rounded-lg border border-white/10 px-3.5 py-2.5 text-[15px] text-stone-700
-           placeholder:text-stone-400 outline-none transition
-           focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15;
+ placeholder:text-stone-400 outline-none transition
+ focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15;
     background-color: #10121a;
   }
   .textarea {
     @apply leading-relaxed;
   }
-
   .badge {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
   }
@@ -154,19 +152,16 @@ h3,
   .badge-red {
     @apply badge bg-red-500/15 text-red-300;
   }
-
   .nav-link {
     @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14.5px] font-medium text-stone-500
-           transition-colors hover:bg-white/[0.05] hover:text-white;
+ transition-colors hover:bg-white/[0.05] hover:text-white;
   }
   .nav-link-active {
     @apply bg-white/[0.09] text-white hover:bg-white/[0.09] hover:text-white;
   }
-
   .section-title {
     @apply text-[13px] font-semibold uppercase tracking-wider text-brand-700;
   }
-
   .th {
     @apply text-left text-[12px] font-semibold uppercase tracking-wide text-stone-400 px-3 py-2.5;
   }

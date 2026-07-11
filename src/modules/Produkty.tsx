@@ -44,7 +44,7 @@ function kategoriaInfo(k: ProduktKategoria) {
 const JEDNOSTKI: Unit[] = ['m²', 'mb', 'szt', 'kpl', 'usł', 'h']
 const VAT_STAWKI: VatRate[] = [8, 23]
 
-// Formularz — cena jako string dla wygody wpisywania
+// Formularz – cena jako string dla wygody wpisywania
 interface Form {
   id: string
   nazwa: string
@@ -155,7 +155,7 @@ export default function Produkty() {
   }
 
   async function usun(p: Produkt) {
-    if (await confirm(`Usunąć „${p.nazwa}" z katalogu?`)) {
+    if (await confirm(`Usunąć „${p.nazwa}” z katalogu?`)) {
       remove('produkty', p.id)
       push('Usunięto produkt', 'ok')
     }
@@ -170,9 +170,11 @@ export default function Produkty() {
         actions={
           <>
             <PrintSendBar
-              getPrintNode={() => <CennikDoc produkty={widoczne} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />}
+              getPrintNode={() => (
+                <CennikDoc produkty={widoczne} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />
+              )}
               share={{
-                title: `Cennik — ${firma.nazwa}`,
+                title: `Cennik – ${firma.nazwa}`,
                 text: cennikTekst(widoczne, firma),
               }}
               labelPrint="Drukuj cennik"
@@ -208,7 +210,7 @@ export default function Produkty() {
           title="Brak produktów"
           desc={
             produkty.length === 0
-              ? 'Dodaj pierwszą pozycję do katalogu — materiał, usługę lub akcesorium.'
+              ? 'Dodaj pierwszą pozycję do katalogu – materiał, usługę lub akcesorium.'
               : 'Żaden produkt nie pasuje do wybranych filtrów.'
           }
           action={
@@ -263,7 +265,10 @@ export default function Produkty() {
             </Field>
 
             <Field label="Kategoria">
-              <Select value={edit.kategoria} onChange={(e) => setEdit({ ...edit, kategoria: e.target.value as ProduktKategoria })}>
+              <Select
+                value={edit.kategoria}
+                onChange={(e) => setEdit({ ...edit, kategoria: e.target.value as ProduktKategoria })}
+              >
                 {KATEGORIE.map((k) => (
                   <option key={k.klucz} value={k.klucz}>
                     {k.nazwa}
@@ -302,23 +307,43 @@ export default function Produkty() {
             </Field>
 
             <Field label="Producent">
-              <Input value={edit.producent} onChange={(e) => setEdit({ ...edit, producent: e.target.value })} placeholder="np. Levantina" />
+              <Input
+                value={edit.producent}
+                onChange={(e) => setEdit({ ...edit, producent: e.target.value })}
+                placeholder="np. Levantina"
+              />
             </Field>
 
             <Field label="Kolor">
-              <Input value={edit.kolor} onChange={(e) => setEdit({ ...edit, kolor: e.target.value })} placeholder="np. Nero Assoluto" />
+              <Input
+                value={edit.kolor}
+                onChange={(e) => setEdit({ ...edit, kolor: e.target.value })}
+                placeholder="np. Nero Assoluto"
+              />
             </Field>
 
             <Field label="Grubość">
-              <Input value={edit.grubosc} onChange={(e) => setEdit({ ...edit, grubosc: e.target.value })} placeholder='np. "2/3 cm"' />
+              <Input
+                value={edit.grubosc}
+                onChange={(e) => setEdit({ ...edit, grubosc: e.target.value })}
+                placeholder='np. "2/3 cm"'
+              />
             </Field>
 
             <Field label="Opis" className="sm:col-span-2">
-              <Textarea value={edit.opis} onChange={(e) => setEdit({ ...edit, opis: e.target.value })} placeholder="Dodatkowe informacje, wykończenie krawędzi, uwagi…" />
+              <Textarea
+                value={edit.opis}
+                onChange={(e) => setEdit({ ...edit, opis: e.target.value })}
+                placeholder="Dodatkowe informacje, wykończenie krawędzi, uwagi…"
+              />
             </Field>
 
             <div className="sm:col-span-2">
-              <Toggle checked={edit.aktywny} onChange={(v) => setEdit({ ...edit, aktywny: v })} label="Produkt aktywny (widoczny w cenniku i wycenach)" />
+              <Toggle
+                checked={edit.aktywny}
+                onChange={(v) => setEdit({ ...edit, aktywny: v })}
+                label="Produkt aktywny (widoczny w cenniku i wycenach)"
+              />
             </div>
           </div>
         )}
@@ -336,11 +361,15 @@ function Chip({ active, onClick, label, n }: { active: boolean; onClick: () => v
       onClick={onClick}
       className={cx(
         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition',
-        active ? 'border-brand-700 bg-white/10 text-white' : 'border-white/10 bg-white/[0.03] text-stone-600 hover:border-brand-300 hover:bg-brand-50',
+        active
+          ? 'border-brand-700 bg-white/10 text-white'
+          : 'border-white/10 bg-white/[0.03] text-stone-600 hover:border-brand-300 hover:bg-brand-50',
       )}
     >
       {label}
-      <span className={cx('rounded-full px-1.5 text-[11px]', active ? 'bg-white/20' : 'bg-stone-100 text-stone-500')}>{n}</span>
+      <span className={cx('rounded-full px-1.5 text-[11px]', active ? 'bg-white/20' : 'bg-stone-100 text-stone-500')}>
+        {n}
+      </span>
     </button>
   )
 }
@@ -409,14 +438,28 @@ function cenaLub(p: Produkt): string {
 function cennikTekst(produkty: Produkt[], firma: Firma): string {
   const linie = produkty.map((p) => {
     const dod = [p.producent, p.kolor, p.grubosc].filter(Boolean).join(', ')
-    return `• ${p.nazwa}${dod ? ` (${dod})` : ''} — ${cenaLub(p)} (VAT ${p.vat}%)`
+    return `• ${p.nazwa}${dod ? ` (${dod})` : ''} – ${cenaLub(p)} (VAT ${p.vat}%)`
   })
-  return `Cennik — ${firma.nazwa}\n\n${linie.join('\n')}`
+  return `Cennik – ${firma.nazwa}\n\n${linie.join('\n')}`
 }
 
 // ---------- Dokument: Cennik (wydruk / PDF) ----------
-export function CennikDoc({ produkty, firma, logoDataUrl }: { produkty: Produkt[]; firma: Firma; logoDataUrl?: string }) {
-  const cellH: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '4px 6px', fontSize: '7.6pt', fontWeight: 700, background: '#f0ede6' }
+export function CennikDoc({
+  produkty,
+  firma,
+  logoDataUrl,
+}: {
+  produkty: Produkt[]
+  firma: Firma
+  logoDataUrl?: string
+}) {
+  const cellH: React.CSSProperties = {
+    border: '1px solid #d3cfc2',
+    padding: '4px 6px',
+    fontSize: '7.6pt',
+    fontWeight: 700,
+    background: '#f0ede6',
+  }
   const cell: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '4px 6px', fontSize: '8.5pt' }
 
   // grupowanie wg kategorii dla czytelnosci
@@ -428,7 +471,15 @@ export function CennikDoc({ produkty, firma, logoDataUrl }: { produkty: Produkt[
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
       <div style={{ textAlign: 'center', marginBottom: 12 }}>
-        <div style={{ fontFamily: "'Fraunces Variable', serif", fontWeight: 600, fontSize: '17pt', color: '#12233a', letterSpacing: '0.03em' }}>
+        <div
+          style={{
+            fontFamily: "'Fraunces Variable', serif",
+            fontWeight: 600,
+            fontSize: '17pt',
+            color: '#12233a',
+            letterSpacing: '0.03em',
+          }}
+        >
           CENNIK
         </div>
         <div style={{ fontSize: '9pt', color: '#6b6459', letterSpacing: '0.1em', fontWeight: 600 }}>
@@ -437,7 +488,9 @@ export function CennikDoc({ produkty, firma, logoDataUrl }: { produkty: Produkt[
       </div>
 
       {grupy.length === 0 ? (
-        <div style={{ fontSize: '9pt', color: '#6b6459', textAlign: 'center', padding: '12px 0' }}>Brak pozycji do wyświetlenia.</div>
+        <div style={{ fontSize: '9pt', color: '#6b6459', textAlign: 'center', padding: '12px 0' }}>
+          Brak pozycji do wyświetlenia.
+        </div>
       ) : (
         grupy.map((g) => (
           <div key={g.kat.klucz} style={{ marginBottom: 12 }}>
@@ -470,10 +523,14 @@ export function CennikDoc({ produkty, firma, logoDataUrl }: { produkty: Produkt[
                 {g.items.map((p) => (
                   <tr key={p.id}>
                     <td style={{ ...cell, textAlign: 'left', fontWeight: 500 }}>{p.nazwa}</td>
-                    <td style={{ ...cell, textAlign: 'left' }}>{[p.producent, p.kolor].filter(Boolean).join(' · ') || '—'}</td>
-                    <td style={{ ...cell, textAlign: 'center' }}>{p.grubosc || '—'}</td>
+                    <td style={{ ...cell, textAlign: 'left' }}>
+                      {[p.producent, p.kolor].filter(Boolean).join(' · ') || '–'}
+                    </td>
+                    <td style={{ ...cell, textAlign: 'center' }}>{p.grubosc || '–'}</td>
                     <td style={{ ...cell, textAlign: 'center' }}>{p.jednostka}</td>
-                    <td style={{ ...cell, textAlign: 'right', fontWeight: 600 }}>{p.cenaNetto > 0 ? fmtPLN(p.cenaNetto) : 'wg wyceny'}</td>
+                    <td style={{ ...cell, textAlign: 'right', fontWeight: 600 }}>
+                      {p.cenaNetto > 0 ? fmtPLN(p.cenaNetto) : 'wg wyceny'}
+                    </td>
                     <td style={{ ...cell, textAlign: 'center' }}>{p.vat}%</td>
                   </tr>
                 ))}
@@ -484,7 +541,8 @@ export function CennikDoc({ produkty, firma, logoDataUrl }: { produkty: Produkt[
       )}
 
       <div style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 6 }}>
-        Ceny netto, orientacyjne. Ostateczna wycena po obmiarze z natury. Ceny oznaczone „wg wyceny” ustalane indywidualnie.
+        Ceny netto, orientacyjne. Ostateczna wycena po obmiarze z natury. Ceny oznaczone „wg wyceny” ustalane
+        indywidualnie.
       </div>
     </DocSheet>
   )

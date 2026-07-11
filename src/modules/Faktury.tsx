@@ -38,7 +38,7 @@ const STATUS_INFO: Record<FakturaStatus, { label: string; tone: 'green' | 'stone
   szkic: { label: 'Szkic', tone: 'stone' },
   wystawiona: { label: 'Wystawiona', tone: 'blue' },
   oplacona: { label: 'Opłacona', tone: 'green' },
-  'zaległa': { label: 'Zaległa', tone: 'red' },
+  zaległa: { label: 'Zaległa', tone: 'red' },
 }
 const STATUSY = Object.keys(STATUS_INFO) as FakturaStatus[]
 
@@ -122,13 +122,9 @@ function Lista() {
                 const sum = podsumuj(f.pozycje)
                 const si = STATUS_INFO[f.status]
                 return (
-                  <tr
-                    key={f.id}
-                    className="row-hover cursor-pointer"
-                    onClick={() => navigate(`/faktury/${f.id}`)}
-                  >
-                    <td className="td font-semibold text-ink">{f.numer || '—'}</td>
-                    <td className="td">{f.nabywcaNazwa || '—'}</td>
+                  <tr key={f.id} className="row-hover cursor-pointer" onClick={() => navigate(`/faktury/${f.id}`)}>
+                    <td className="td font-semibold text-ink">{f.numer || '–'}</td>
+                    <td className="td">{f.nabywcaNazwa || '–'}</td>
                     <td className="td">{fmtDate(f.dataWystawienia)}</td>
                     <td className="td text-right font-semibold tabular-nums">{fmtPLN(sum.brutto)}</td>
                     <td className="td">
@@ -204,8 +200,7 @@ function Edytor({ id }: { id: string }) {
   const setPoz = (pid: string, patch: Partial<Pozycja>) =>
     setF((prev) => ({ ...prev, pozycje: prev.pozycje.map((p) => (p.id === pid ? { ...p, ...patch } : p)) }))
   const dodajPoz = () => setF((prev) => ({ ...prev, pozycje: [...prev.pozycje, nowaPozycja(firma.domyslnyVat)] }))
-  const usunPoz = (pid: string) =>
-    setF((prev) => ({ ...prev, pozycje: prev.pozycje.filter((p) => p.id !== pid) }))
+  const usunPoz = (pid: string) => setF((prev) => ({ ...prev, pozycje: prev.pozycje.filter((p) => p.id !== pid) }))
 
   const wybierzKlienta = (klientId: string) => {
     if (!klientId) {
@@ -231,10 +226,7 @@ function Edytor({ id }: { id: string }) {
   const splitSugerowany = sum.brutto > 15000
 
   const zapisz = () => {
-    const doZapisu: Faktura = {
-      ...f,
-      pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })),
-    }
+    const doZapisu: Faktura = { ...f, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }
     upsert('faktury', doZapisu)
     push('Faktura zapisana', 'ok')
     navigate('/faktury')
@@ -249,7 +241,13 @@ function Edytor({ id }: { id: string }) {
   }
 
   const klient = f.klientId ? b.klienci.find((k) => k.id === f.klientId) : undefined
-  const docNode = <FakturaDoc f={{ ...f, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />
+  const docNode = (
+    <FakturaDoc
+      f={{ ...f, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }}
+      firma={firma}
+      logoDataUrl={b.ustawienia.logoDataUrl}
+    />
+  )
 
   return (
     <div>
@@ -323,13 +321,25 @@ function Edytor({ id }: { id: string }) {
                 <Input type="date" value={f.dataWystawienia} onChange={(e) => set('dataWystawienia', e.target.value)} />
               </Field>
               <Field label="Data sprzedaży">
-                <Input type="date" value={f.dataSprzedazy || ''} onChange={(e) => set('dataSprzedazy', e.target.value)} />
+                <Input
+                  type="date"
+                  value={f.dataSprzedazy || ''}
+                  onChange={(e) => set('dataSprzedazy', e.target.value)}
+                />
               </Field>
               <Field label="Termin płatności">
-                <Input type="date" value={f.terminPlatnosci || ''} onChange={(e) => set('terminPlatnosci', e.target.value)} />
+                <Input
+                  type="date"
+                  value={f.terminPlatnosci || ''}
+                  onChange={(e) => set('terminPlatnosci', e.target.value)}
+                />
               </Field>
               <Field label="Numer konta">
-                <Input value={f.konto || ''} onChange={(e) => set('konto', e.target.value)} placeholder="NRB do przelewu" />
+                <Input
+                  value={f.konto || ''}
+                  onChange={(e) => set('konto', e.target.value)}
+                  placeholder="NRB do przelewu"
+                />
               </Field>
             </div>
           </SectionCard>
@@ -343,7 +353,7 @@ function Edytor({ id }: { id: string }) {
             <div className="grid gap-4">
               <Field label="Wybierz z bazy klientów" hint="Uzupełni nazwę, NIP i adres – możesz je edytować poniżej.">
                 <Select value={f.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                  <option value="">— wpisz ręcznie —</option>
+                  <option value="">– wpisz ręcznie –</option>
                   {b.klienci.map((k) => (
                     <option key={k.id} value={k.id}>
                       {klientNazwa(k)}
@@ -356,7 +366,11 @@ function Edytor({ id }: { id: string }) {
                   <Input value={f.nabywcaNazwa || ''} onChange={(e) => set('nabywcaNazwa', e.target.value)} />
                 </Field>
                 <Field label="NIP" hint="Puste = faktura dla osoby fizycznej (B2C).">
-                  <Input value={f.nabywcaNip || ''} onChange={(e) => set('nabywcaNip', e.target.value)} placeholder="np. 123-456-32-18" />
+                  <Input
+                    value={f.nabywcaNip || ''}
+                    onChange={(e) => set('nabywcaNip', e.target.value)}
+                    placeholder="np. 123-456-32-18"
+                  />
                 </Field>
               </div>
               <Field label="Adres">
@@ -382,7 +396,9 @@ function Edytor({ id }: { id: string }) {
                 {f.pozycje.map((p, i) => (
                   <div key={p.id} className="rounded-xl border border-stone-200 p-3">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">Poz. {i + 1}</span>
+                      <span className="text-[12px] font-semibold uppercase tracking-wide text-stone-400">
+                        Poz. {i + 1}
+                      </span>
                       <button
                         className="btn-ghost btn-sm !px-2 text-red-600"
                         onClick={() => usunPoz(p.id)}
@@ -404,7 +420,10 @@ function Edytor({ id }: { id: string }) {
                         />
                       </Field>
                       <Field label="Jedn." className="sm:col-span-3">
-                        <Select value={p.jednostka} onChange={(e) => setPoz(p.id, { jednostka: e.target.value as Unit })}>
+                        <Select
+                          value={p.jednostka}
+                          onChange={(e) => setPoz(p.id, { jednostka: e.target.value as Unit })}
+                        >
                           {JEDNOSTKI.map((j) => (
                             <option key={j} value={j}>
                               {j}
@@ -443,7 +462,11 @@ function Edytor({ id }: { id: string }) {
           </SectionCard>
 
           <SectionCard title="Uwagi">
-            <Textarea value={f.uwagi || ''} onChange={(e) => set('uwagi', e.target.value)} placeholder="Dodatkowe informacje na fakturze…" />
+            <Textarea
+              value={f.uwagi || ''}
+              onChange={(e) => set('uwagi', e.target.value)}
+              placeholder="Dodatkowe informacje na fakturze…"
+            />
           </SectionCard>
         </div>
 
@@ -502,7 +525,8 @@ function Edytor({ id }: { id: string }) {
             <Toggle checked={!!f.splitPayment} onChange={(v) => set('splitPayment', v)} label="Split payment" />
             {splitSugerowany && (
               <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-300">
-                Kwota brutto przekracza 15 000 zł – dla transakcji B2B rozważ obowiązkowy mechanizm podzielonej płatności.
+                Kwota brutto przekracza 15 000 zł – dla transakcji B2B rozważ obowiązkowy mechanizm podzielonej
+                płatności.
               </p>
             )}
           </SectionCard>

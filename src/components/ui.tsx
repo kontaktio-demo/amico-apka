@@ -146,14 +146,27 @@ export function Checkbox({
   )
 }
 
-export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+export function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  label?: string
+}) {
   return (
     <label className="flex items-center gap-2.5 cursor-pointer select-none">
       <span
         onClick={() => onChange(!checked)}
         className={cx('relative h-6 w-11 rounded-full transition', checked ? 'bg-brand-700' : 'bg-stone-300')}
       >
-        <span className={cx('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition', checked ? 'left-[22px]' : 'left-0.5')} />
+        <span
+          className={cx(
+            'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition',
+            checked ? 'left-[22px]' : 'left-0.5',
+          )}
+        />
       </span>
       {label && <span className="text-[14px] text-stone-700">{label}</span>}
     </label>
@@ -161,7 +174,15 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
 }
 
 // ---------- Wyszukiwarka ----------
-export function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+export function SearchInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
   return (
     <div className="relative">
       <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
@@ -176,15 +197,38 @@ export function SearchInput({ value, onChange, placeholder }: { value: string; o
 }
 
 // ---------- Odznaki ----------
-export function Badge({ tone = 'stone', children }: { tone?: 'green' | 'stone' | 'amber' | 'blue' | 'red'; children: React.ReactNode }) {
-  return <span className={`badge-${tone}`}>{children}</span>
+export type BadgeTone = 'green' | 'stone' | 'amber' | 'blue' | 'red'
+
+// Nazwy klas musza byc zapisane doslownie - Tailwind skanuje kod i nie widzi `badge-${tone}`.
+export const BADGE_CLASS: Record<BadgeTone, string> = {
+  green: 'badge-green',
+  stone: 'badge-stone',
+  amber: 'badge-amber',
+  blue: 'badge-blue',
+  red: 'badge-red',
+}
+
+export function Badge({ tone = 'stone', children }: { tone?: BadgeTone; children: React.ReactNode }) {
+  return <span className={BADGE_CLASS[tone]}>{children}</span>
 }
 
 // ---------- Pusty stan ----------
-export function EmptyState({ icon, title, desc, action }: { icon?: React.ReactNode; title: string; desc?: string; action?: React.ReactNode }) {
+export function EmptyState({
+  icon,
+  title,
+  desc,
+  action,
+}: {
+  icon?: React.ReactNode
+  title: string
+  desc?: string
+  action?: React.ReactNode
+}) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-stone-25 px-6 py-14 text-center">
-      {icon && <div className="mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-stone-100 text-stone-400">{icon}</div>}
+      {icon && (
+        <div className="mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-stone-100 text-stone-400">{icon}</div>
+      )}
       <h3 className="text-[16px] font-semibold text-stone-700">{title}</h3>
       {desc && <p className="mt-1 max-w-sm text-[13.5px] text-stone-500">{desc}</p>}
       {action && <div className="mt-4">{action}</div>}
@@ -193,14 +237,30 @@ export function EmptyState({ icon, title, desc, action }: { icon?: React.ReactNo
 }
 
 // ---------- Statystyka ----------
-export function Stat({ label, value, sub, tone = 'stone', icon }: { label: string; value: React.ReactNode; sub?: string; tone?: string; icon?: React.ReactNode }) {
+export function Stat({
+  label,
+  value,
+  sub,
+  tone = 'stone',
+  icon,
+}: {
+  label: string
+  value: React.ReactNode
+  sub?: string
+  tone?: string
+  icon?: React.ReactNode
+}) {
   return (
     <div className="card card-pad">
       <div className="flex items-center justify-between">
         <span className="text-[12.5px] font-medium uppercase tracking-wide text-stone-500">{label}</span>
-        {icon && <span className="text-stone-300">{icon}</span>}
+        {icon && <span className="text-stone-400">{icon}</span>}
       </div>
-      <div className={cx('mt-2 text-[26px] font-display font-semibold', tone === 'green' ? 'text-brand-700' : 'text-ink')}>{value}</div>
+      <div
+        className={cx('mt-2 text-[26px] font-display font-semibold', tone === 'green' ? 'text-brand-700' : 'text-ink')}
+      >
+        {value}
+      </div>
       {sub && <div className="mt-1 text-[12.5px] text-stone-400">{sub}</div>}
     </div>
   )
@@ -231,7 +291,10 @@ export function Modal({
   if (!open) return null
   const w = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl', xl: 'max-w-5xl' }[size]
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-8" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-8"
+      onClick={onClose}
+    >
       <div className={cx('card w-full animate-scale-in my-auto', w)} onClick={(e) => e.stopPropagation()}>
         {title && (
           <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
@@ -242,7 +305,9 @@ export function Modal({
           </div>
         )}
         <div className="px-6 py-5">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-2 border-t border-stone-200 px-6 py-4">{footer}</div>}
+        {footer && (
+          <div className="flex items-center justify-end gap-2 border-t border-stone-200 px-6 py-4">{footer}</div>
+        )}
       </div>
     </div>
   )
@@ -287,8 +352,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 // ---------- Potwierdzenie ----------
 export function useConfirm() {
-  const [state, setState] = useState<{ open: boolean; msg: string; resolve?: (v: boolean) => void }>({ open: false, msg: '' })
-  const confirm = useCallback((msg: string) => new Promise<boolean>((resolve) => setState({ open: true, msg, resolve })), [])
+  const [state, setState] = useState<{ open: boolean; msg: string; resolve?: (v: boolean) => void }>({
+    open: false,
+    msg: '',
+  })
+  const confirm = useCallback(
+    (msg: string) => new Promise<boolean>((resolve) => setState({ open: true, msg, resolve })),
+    [],
+  )
   const node = (
     <Modal
       open={state.open}
