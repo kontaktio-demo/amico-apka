@@ -17,6 +17,7 @@ import {
   ListTodo,
   ScanLine,
   Sparkles,
+  HeartHandshake,
   Settings,
   Menu,
   X,
@@ -173,6 +174,9 @@ function RoleNav() {
         ))}
       </nav>
       <div className="border-t border-white/[0.07] p-3">
+        <NavLink to="/pomoc" className={({ isActive }) => cx('nav-link', isActive && 'nav-link-active')}>
+          <HeartHandshake size={19} /> Poradnik
+        </NavLink>
         {wolno('/ustawienia') && (
           <NavLink to="/ustawienia" className={({ isActive }) => cx('nav-link', isActive && 'nav-link-active')}>
             <Settings size={19} /> Ustawienia

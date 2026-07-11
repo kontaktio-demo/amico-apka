@@ -155,6 +155,12 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
   ) : (
     // ---------- Widok: logowanie ----------
     <form onSubmit={wykonaj} className="space-y-4">
+      {c.status === 'sesja' && c.blad && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-[13px] text-amber-200">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <span>{c.blad}</span>
+        </div>
+      )}
       <div className="flex gap-1.5">
         {(
           [
@@ -230,6 +236,7 @@ export function StatusChip() {
     ok: { l: 'Zsynchronizowano', tone: 'green', ikona: <Cloud size={13} /> },
     offline: { l: 'Offline — zapisze się później', tone: 'amber', ikona: <CloudOff size={13} /> },
     blad: { l: 'Błąd zapisu', tone: 'red', ikona: <AlertTriangle size={13} /> },
+    sesja: { l: 'Zaloguj ponownie do chmury', tone: 'amber', ikona: <AlertTriangle size={13} /> },
   }
   const s = map[status] || map.off
   return (

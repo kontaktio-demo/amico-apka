@@ -27,6 +27,7 @@ import Ustawienia from './modules/Ustawienia'
 import Zadania from './modules/Zadania'
 import Skany from './modules/Skany'
 import Wizualizacja from './modules/Wizualizacja'
+import Pomoc from './modules/Pomoc'
 import { RoleGuard } from './components/RoleGuard'
 
 export default function App() {
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/ekspozycje" element={<RoleGuard path="/ekspozycje"><Ekspozycje /></RoleGuard>} />
             <Route path="/finanse" element={<RoleGuard path="/finanse"><Finanse /></RoleGuard>} />
             <Route path="/odprawa" element={<RoleGuard path="/odprawa"><Odprawa /></RoleGuard>} />
+            <Route path="/pomoc" element={<Pomoc />} />
             <Route path="/ustawienia" element={<RoleGuard path="/ustawienia"><Ustawienia /></RoleGuard>} />
             <Route path="*" element={<Pulpit />} />
           </Routes>

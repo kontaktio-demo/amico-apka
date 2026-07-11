@@ -14,7 +14,37 @@ import { nowISO } from './format'
 // Zasada nadrzedna: ZADNA zmiana nie moze zginac ani zostac cicho nadpisana.
 // ============================================================================
 
-export type SyncStatus = 'off' | 'laczenie' | 'ok' | 'zapisywanie' | 'offline' | 'blad'
+export type SyncStatus = 'off' | 'laczenie' | 'ok' | 'zapisywanie' | 'offline' | 'blad' | 'sesja'
+
+// Czy blad wynika z niewaznej sesji (usuniety user, zmienione haslo, wygasly/uniewazniony token)?
+function czyBladSesji(e: any): boolean {
+  const m = `${e?.message || ''} ${e?.code || ''} ${e?.hint || ''}`.toLowerCase()
+  return (
+    m.includes('jwt') ||
+    m.includes('sub claim') ||
+    m.includes('wymagane logowanie') ||
+    m.includes('not authenticated') ||
+    m.includes('invalid token') ||
+    m.includes('token is expired') ||
+    m.includes('user from sub claim')
+  )
+}
+
+// Sesja przestala byc wazna – przestajemy sie dobijac i prosimy o ponowne logowanie.
+// Dane lokalne zostaja nietkniete.
+async function obsluzWygaslaSesje() {
+  stopSync()
+  try {
+    await supabase.auth.signOut()
+  } catch {
+    /* ignore */
+  }
+  useCloud.getState().ustaw({
+    status: 'sesja',
+    workspaceId: null,
+    blad: 'Sesja w chmurze wygasła — zaloguj się ponownie (Ustawienia → Chmura). Twoje dane są bezpieczne na urządzeniu.',
+  })
+}
 
 interface CloudState {
   status: SyncStatus
@@ -212,17 +242,22 @@ async function zapisz(): Promise<void> {
   } catch (e: any) {
     blad = e
     brudne = true // NIGDY nie gubimy zmian
+    if (czyBladSesji(e)) {
+      wTrakcie = false
+      await obsluzWygaslaSesje() // bez sensu ponawiac – trzeba sie zalogowac
+      return
+    }
     C().ustaw({
       status: navigator.onLine ? 'blad' : 'offline',
       blad: e?.message || 'Błąd zapisu do chmury',
     })
   } finally {
     wTrakcie = false
-    if (blad) {
+    if (blad && useCloud.getState().status !== 'sesja') {
       // ponawiaj z narastajacym opoznieniem (5xx/timeout NIE emituje zdarzenia 'online')
       proby = Math.min(proby + 1, 5)
       zaplanujZapis(Math.min(30000, 1500 * 2 ** proby))
-    } else if (brudne) {
+    } else if (!blad && brudne) {
       zaplanujZapis()
     }
   }
@@ -327,6 +362,10 @@ export async function startSync(imie = '') {
     podlaczRealtime(workspaceId)
     await zapisz()
   } catch (e: any) {
+    if (czyBladSesji(e)) {
+      await obsluzWygaslaSesje()
+      return
+    }
     C().ustaw({
       status: navigator.onLine ? 'blad' : 'offline',
       blad: e?.message || 'Błąd połączenia z chmurą',
