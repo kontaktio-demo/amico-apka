@@ -1,0 +1,42 @@
+appId: pl.kontaktio.amico
+productName: AMICO
+copyright: Pracownia Kamieniarska AMICO
+
+directories:
+  output: release
+  buildResources: electron
+
+# Do paczki trafia TYLKO zbudowana aplikacja i warstwa desktopowa.
+# node_modules nie sa potrzebne - Vite wszystko wkompilowal w dist/.
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+
+asar: true
+
+win:
+  icon: electron/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  # perMachine=false -> instalacja dla biezacego uzytkownika, BEZ hasla administratora.
+  # Dzieki temu program da sie zainstalowac na dowolnym komputerze w firmie.
+  perMachine: false
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: AMICO
+  installerIcon: electron/icon.ico
+  uninstallerIcon: electron/icon.ico
+  installerHeaderIcon: electron/icon.ico
+  artifactName: AMICO-Instalator-${version}.${ext}
+  deleteAppDataOnUninstall: false # dane firmy zostaja po odinstalowaniu
+
+portable:
+  artifactName: AMICO-Przenosny-${version}.${ext}

@@ -16,43 +16,71 @@ function ensurePrintRoot(): HTMLElement {
   return el
 }
 
-const PrintCtx = createContext<{ print: (node: React.ReactNode) => void }>({ print: () => {} })
+type Zadanie = { node: React.ReactNode; tryb: 'druk' | 'pdf'; nazwa?: string }
+
+const PrintCtx = createContext<{
+  print: (node: React.ReactNode) => void
+  // Desktop: zapisuje dokument prosto do pliku PDF (bez okna drukowania).
+  zapiszPdf: (node: React.ReactNode, nazwa: string) => Promise<{ ok: boolean; anulowane?: boolean } | void>
+}>({ print: () => {}, zapiszPdf: async () => {} })
+
 export const usePrint = () => useContext(PrintCtx)
 
 export function PrintProvider({ children }: { children: React.ReactNode }) {
-  const [node, setNode] = useState<React.ReactNode | null>(null)
+  const [zadanie, setZadanie] = useState<Zadanie | null>(null)
   const [root] = useState(ensurePrintRoot)
+  const wynikRef = React.useRef<((r: any) => void) | null>(null)
 
-  const print = useCallback((n: React.ReactNode) => setNode(n), [])
+  const print = useCallback((n: React.ReactNode) => setZadanie({ node: n, tryb: 'druk' }), [])
+
+  const zapiszPdf = useCallback((n: React.ReactNode, nazwa: string) => {
+    return new Promise<any>((resolve) => {
+      wynikRef.current = resolve
+      setZadanie({ node: n, tryb: 'pdf', nazwa })
+    })
+  }, [])
 
   useEffect(() => {
-    if (!node) return
+    if (!zadanie) return
     let done = false
-    const clear = () => {
+    const clear = (wynik?: any) => {
       if (done) return
       done = true
-      setNode(null)
+      setZadanie(null)
+      wynikRef.current?.(wynik)
+      wynikRef.current = null
     }
-    window.addEventListener('afterprint', clear, { once: true })
-    const run = async () => {
+
+    const czekajNaRender = async () => {
       try {
         if (document.fonts?.ready) await document.fonts.ready
       } catch {
         /* ignore */
       }
       await new Promise((r) => setTimeout(r, 180))
+    }
+
+    const run = async () => {
+      await czekajNaRender()
+
+      if (zadanie.tryb === 'pdf' && window.amico?.desktop) {
+        const r = await window.amico.zapiszPdf(zadanie.nazwa || 'dokument')
+        clear(r)
+        return
+      }
+
+      window.addEventListener('afterprint', () => clear(), { once: true })
       window.print()
-      // Fallback gdy afterprint nie wystrzeli (niektore mobilne)
-      setTimeout(clear, 1200)
+      // Fallback gdy afterprint nie wystrzeli (niektore przegladarki mobilne)
+      setTimeout(() => clear(), 1200)
     }
     run()
-    return () => window.removeEventListener('afterprint', clear)
-  }, [node])
+  }, [zadanie])
 
   return (
-    <PrintCtx.Provider value={{ print }}>
+    <PrintCtx.Provider value={{ print, zapiszPdf }}>
       {children}
-      {node && createPortal(node, root)}
+      {zadanie && createPortal(zadanie.node, root)}
     </PrintCtx.Provider>
   )
 }

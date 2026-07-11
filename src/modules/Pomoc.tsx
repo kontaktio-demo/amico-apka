@@ -175,6 +175,21 @@ export default function Pomoc() {
           Po zainstalowaniu aplikacja działa <b>także bez internetu</b>. Nie musisz nic aktualizować – nowe wersje
           pojawiają się same.
         </Wskazowka>
+
+        <div className="mt-4 rounded-xl border border-white/10 p-4">
+          <div className="mb-2 text-[14.5px] font-semibold text-ink">Wersja na komputer (Windows)</div>
+          <p className="text-[13.5px] leading-relaxed text-stone-400">
+            Jest też zwykły program na komputer. Instalujesz go plikiem{' '}
+            <b className="text-stone-700">AMICO-Instalator.exe</b> – nie potrzeba do tego hasła administratora. Po
+            instalacji AMICO ma własną ikonę na pulpicie i działa jak każdy inny program.
+          </p>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-stone-400">
+            To <b className="text-stone-700">ta sama aplikacja i te same dane</b>. Jeśli zalogujesz się na komputerze
+            tym samym e-mailem i hasłem co na tablecie, zobaczysz dokładnie to samo. Na komputerze dochodzi jedna
+            wygodna rzecz: przycisk <b className="text-stone-700">„Zapisz PDF”</b>, który od razu zapisuje dokument jako
+            plik – bez przechodzenia przez okno drukowania.
+          </p>
+        </div>
       </Sekcja>
 
       {/* ---------- Pierwsze uruchomienie ---------- */}

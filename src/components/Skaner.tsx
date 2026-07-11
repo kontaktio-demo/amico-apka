@@ -6,6 +6,7 @@ import type { Skan, SkanKategoria } from '../lib/types'
 import { uid } from '../lib/id'
 import { nowISO } from '../lib/format'
 import { klientNazwa } from '../lib/helpers'
+import { czyDesktop } from '../lib/desktop'
 import {
   zaladujObraz,
   kadrujPerspektywe,
@@ -243,7 +244,11 @@ export function Skaner({
             ) : (
               <div className="max-w-sm p-8 text-center text-stone-400">
                 <Camera size={40} className="mx-auto mb-3 opacity-50" />
-                <p className="text-[14px]">Brak dostępu do kamery. Możesz wgrać zdjęcie dokumentu z pliku.</p>
+                <p className="text-[14px]">
+                  {czyDesktop()
+                    ? 'Ten komputer nie ma kamery. Kliknij „Wgraj” i wybierz zdjęcie lub skan dokumentu – kadrowanie i filtry działają tak samo.'
+                    : 'Brak dostępu do kamery. Możesz wgrać zdjęcie dokumentu z pliku.'}
+                </p>
               </div>
             )}
             <div className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-white/25" />

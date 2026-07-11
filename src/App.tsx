@@ -8,6 +8,7 @@ import { PWAReloadPrompt } from './components/PWAReloadPrompt'
 import { AuthProvider } from './components/Auth'
 import { sesjaChmury, startSync } from './lib/cloud'
 import { useStore } from './lib/store'
+import { czyDesktop, most } from './lib/desktop'
 import { LogoMark } from './components/Logo'
 
 import Pulpit from './modules/Pulpit'
@@ -47,6 +48,14 @@ export default function App() {
       })
       .catch(() => {})
   }, [hydrated])
+
+  // Menu aplikacji desktopowej -> Pomoc -> Poradnik
+  useEffect(() => {
+    if (!czyDesktop()) return
+    return most()?.naOtworzPoradnik(() => {
+      window.location.hash = '#/pomoc'
+    })
+  }, [])
 
   if (!hydrated) {
     return (
@@ -240,7 +249,9 @@ export default function App() {
               </Routes>
             </ErrorBoundary>
           </AppShell>
-          <PWAReloadPrompt />
+          {/* Service worker i "nowa wersja" to sprawy przegladarki.
+              W wersji desktopowej aktualizuje sie ja instalatorem. */}
+          {!czyDesktop() && <PWAReloadPrompt />}
         </AuthProvider>
       </PrintProvider>
     </ToastProvider>

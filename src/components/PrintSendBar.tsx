@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Printer, Send, Mail, MessageSquare, Copy, Share2, ChevronDown } from 'lucide-react'
-import { usePrint, shareContent, mailtoLink, smsLink, copyToClipboard } from '../lib/print'
+import { Printer, Send, Mail, MessageSquare, Copy, Share2, ChevronDown, FileDown } from 'lucide-react'
+import { usePrint, shareContent, mailtoLink, smsLink, copyToClipboard, safeFilename } from '../lib/print'
+import { czyDesktop } from '../lib/desktop'
 import { useToast } from './ui'
 
 export interface ShareData {
@@ -25,11 +26,27 @@ export function PrintSendBar({
   size?: 'sm' | 'md'
   labelPrint?: string
 }) {
-  const { print } = usePrint()
+  const { print, zapiszPdf } = usePrint()
   const { push } = useToast()
   const [open, setOpen] = useState(false)
+  const [zapisuje, setZapisuje] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const btn = size === 'sm' ? 'btn-sm' : ''
+  const desktop = czyDesktop()
+
+  // Na desktopie zapisujemy PDF jednym klikiem, bez okna drukowania.
+  const doZapisuPdf = async () => {
+    if (zapisuje) return
+    setZapisuje(true)
+    try {
+      const nazwa = safeFilename(share?.title || 'dokument')
+      const r: any = await zapiszPdf(getPrintNode(), nazwa)
+      if (r?.ok) push('Zapisano PDF', 'ok')
+      else if (r && !r.anulowane) push('Nie udało się zapisać PDF', 'err')
+    } finally {
+      setZapisuje(false)
+    }
+  }
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -50,8 +67,13 @@ export function PrintSendBar({
   return (
     <div className="flex items-center gap-2 no-print">
       {extra}
+      {desktop && (
+        <button className={`btn-outline ${btn}`} onClick={doZapisuPdf} disabled={zapisuje}>
+          <FileDown size={size === 'sm' ? 15 : 17} /> {zapisuje ? 'Zapisywanie…' : 'Zapisz PDF'}
+        </button>
+      )}
       <button className={`btn-outline ${btn}`} onClick={() => print(getPrintNode())}>
-        <Printer size={size === 'sm' ? 15 : 17} /> {labelPrint}
+        <Printer size={size === 'sm' ? 15 : 17} /> {desktop ? 'Drukuj' : labelPrint}
       </button>
       {share && (
         <div className="relative" ref={ref}>
@@ -97,7 +119,9 @@ export function PrintSendBar({
               </MenuItem>
               <div className="my-1 border-t border-stone-100" />
               <p className="px-3 py-1 text-[11px] leading-tight text-stone-400">
-                Aby wysłać PDF w załączniku: kliknij „Drukuj / PDF”, zapisz jako PDF i dołącz do wiadomości.
+                {desktop
+                  ? 'Aby wysłać PDF w załączniku: kliknij „Zapisz PDF”, a potem dołącz zapisany plik do wiadomości.'
+                  : 'Aby wysłać PDF w załączniku: kliknij „Drukuj / PDF”, zapisz jako PDF i dołącz do wiadomości.'}
               </p>
             </div>
           )}

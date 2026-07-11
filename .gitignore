@@ -6,3 +6,6 @@ dist-ssr
 .DS_Store
 .env
 .env.*
+
+# Aplikacja desktopowa – gotowe instalatory (budowane z kodu, nie trzymamy ich w repo)
+release

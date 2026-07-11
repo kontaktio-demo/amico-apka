@@ -32,6 +32,7 @@ import {
 import { Logo } from './Logo'
 import { useStore } from '../lib/store'
 import { requestPersistence } from '../lib/db'
+import { czyDesktop } from '../lib/desktop'
 import { cx } from './ui'
 import { useAuth } from './Auth'
 import { dozwoloneSciezki, nazwaRoli } from '../lib/auth'
@@ -318,6 +319,7 @@ function StorageStatus() {
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [installEvt, setInstallEvt] = useState<any>(null)
   const [standalone, setStandalone] = useState(false)
+  const desktop = czyDesktop()
 
   useEffect(() => {
     requestPersistence().then(setPersisted)
@@ -329,6 +331,18 @@ function StorageStatus() {
     window.addEventListener('beforeinstallprompt', h)
     return () => window.removeEventListener('beforeinstallprompt', h)
   }, [])
+
+  // W wersji desktopowej aplikacja jest juz zainstalowana, a dane trzyma
+  // katalog programu – zaproszenie do instalacji PWA nie ma tu sensu.
+  if (desktop) {
+    return (
+      <div className="mt-2 px-3">
+        <div className="flex items-center gap-1.5 text-[11px] text-stone-400">
+          <ShieldCheck size={13} className="text-brand-600" /> Dane zapisane na tym komputerze
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="mt-2 space-y-1.5 px-2">
