@@ -65,9 +65,12 @@ create policy amico_state_select on public.amico_state      for select to authen
 -- ---------- Funkcje (RPC) ----------
 -- Każda funkcja twardo wymaga zalogowania (auth.uid()) – ochrona przed anonimem.
 
+-- UWAGA: nazwy kolumn zwracanych (workspace_id/rola/nazwa) koliduja z kolumnami tabel,
+-- dlatego #variable_conflict use_column + ON CONFLICT po nazwie ograniczenia.
 create or replace function public.amico_bootstrap(p_imie text)
 returns table (workspace_id uuid, rola text, join_code text, nazwa text)
 language plpgsql security definer set search_path = public as $$
+#variable_conflict use_column
 declare w uuid;
 begin
   if auth.uid() is null then raise exception 'Wymagane logowanie'; end if;
@@ -80,8 +83,7 @@ begin
       values (auth.uid(), w, coalesce(nullif(p_imie, ''), 'Właściciel'),
               (select u.email from auth.users u where u.id = auth.uid()), 'wlasciciel');
     insert into public.amico_state (workspace_id, data, rev, updated_by)
-      values (w, '{}'::jsonb, 0, auth.uid())
-      on conflict (workspace_id) do nothing;
+      values (w, '{}'::jsonb, 0, auth.uid());
   else
     update public.amico_members m
        set imie = coalesce(nullif(p_imie, ''), m.imie)
@@ -98,6 +100,7 @@ end; $$;
 create or replace function public.amico_join(p_code text, p_imie text)
 returns table (workspace_id uuid, rola text, join_code text, nazwa text)
 language plpgsql security definer set search_path = public as $$
+#variable_conflict use_column
 declare w uuid;
 begin
   if auth.uid() is null then raise exception 'Wymagane logowanie'; end if;
@@ -110,7 +113,7 @@ begin
   insert into public.amico_members (user_id, workspace_id, imie, email, rola)
     values (auth.uid(), w, coalesce(nullif(p_imie, ''), 'Pracownik'),
             (select u.email from auth.users u where u.id = auth.uid()), 'montazysta')
-  on conflict (user_id, workspace_id) do update set imie = excluded.imie;
+  on conflict on constraint amico_members_pkey do update set imie = excluded.imie;
 
   return query
     select m.workspace_id, m.rola, ws.join_code, ws.nazwa
