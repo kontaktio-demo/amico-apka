@@ -19,6 +19,7 @@ import {
 import { useStore } from '../lib/store'
 import { requestPersistence, storageInfo } from '../lib/db'
 import { odlaczOdChmury } from '../lib/cloud'
+import { useAuth } from '../components/Auth'
 import {
   PageHeader,
   SectionCard,
@@ -59,6 +60,7 @@ function fmtBytes(n?: number): string {
 }
 
 export default function Ustawienia() {
+  const { user: zalogowany } = useAuth()
   const b = useStore((s) => s.baza)
   const updateUstawienia = useStore((s) => s.updateUstawienia)
   const setAktywnaFirma = useStore((s) => s.setAktywnaFirma)
@@ -250,7 +252,9 @@ export default function Ustawienia() {
         </SectionCard>
 
         {/* 2a. Chmura i synchronizacja */}
-        <CloudPanel />
+        {/* lokalnyUserId: konto zalozone przed polaczeniem z chmura zostanie z nia POWIAZANE,
+            zamiast tworzyc druga pozycje tej samej osoby na liscie uzytkownikow. */}
+        <CloudPanel lokalnyUserId={zalogowany?.id} />
 
         {/* 2b. Konto, zabezpieczenia i uzytkownicy */}
         <UzytkownicyPanel />

@@ -132,6 +132,7 @@ function RaportyTab({ firma }: { firma: Firma }) {
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
   const kolejnyNumer = useStore((s) => s.kolejnyNumer)
+  const podgladNumeru = useStore((s) => s.podgladNumeru)
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
 
@@ -146,10 +147,11 @@ function RaportyTab({ firma }: { firma: Firma }) {
     [b.raportyKasowe, firma.id],
   )
 
+  // Numer to podglad; nadajemy go dopiero przy zapisie (patrz onSave nizej).
   const nowy = () => {
     const r: RaportKasowy = {
       id: uid('rk'),
-      numer: kolejnyNumer('RK'),
+      numer: podgladNumeru('RK'),
       firmaId: firma.id,
       od: today(),
       do: today(),
@@ -242,7 +244,8 @@ function RaportyTab({ firma }: { firma: Firma }) {
           logoDataUrl={b.ustawienia.logoDataUrl}
           onClose={() => setEdytowany(null)}
           onSave={(r) => {
-            upsert('raportyKasowe', r)
+            const nowyRaport = !b.raportyKasowe.some((x) => x.id === r.id)
+            upsert('raportyKasowe', { ...r, numer: nowyRaport ? kolejnyNumer('RK') : r.numer })
             setEdytowany(null)
             push('Raport kasowy zapisany')
           }}

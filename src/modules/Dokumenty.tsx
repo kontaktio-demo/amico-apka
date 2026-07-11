@@ -33,6 +33,7 @@ export default function Dokumenty() {
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
   const kolejnyNumer = useStore((s) => s.kolejnyNumer)
+  const podgladNumeru = useStore((s) => s.podgladNumeru)
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
 
@@ -65,10 +66,12 @@ export default function Dokumenty() {
     })
 
   // ---------------- akcje: nowy ----------------
+  // Numer to na razie tylko PODGLAD. Prawdziwy nadajemy przy zapisie (onSave),
+  // zeby otwarcie i zamkniecie okna nie robilo dziury w numeracji.
   const nowyProtokol = () => {
     setEdytorP({
       id: uid('po'),
-      numer: kolejnyNumer('PO'),
+      numer: podgladNumeru('PO'),
       firmaId: firma.id,
       klientId: undefined,
       klientNazwa: '',
@@ -85,7 +88,7 @@ export default function Dokumenty() {
   const nowyKP = () => {
     setEdytorK({
       id: uid('kp'),
-      numer: kolejnyNumer('KP'),
+      numer: podgladNumeru('KP'),
       firmaId: firma.id,
       klientId: undefined,
       data: today(),
@@ -300,7 +303,8 @@ export default function Dokumenty() {
           onChange={setEdytorP}
           onClose={() => setEdytorP(null)}
           onSave={(p) => {
-            upsert('protokoly', p)
+            const nowy = !b.protokoly.some((x) => x.id === p.id)
+            upsert('protokoly', { ...p, numer: nowy ? kolejnyNumer('PO') : p.numer })
             setEdytorP(null)
             push('Protokół zapisany')
           }}
@@ -316,7 +320,12 @@ export default function Dokumenty() {
           onChange={setEdytorK}
           onClose={() => setEdytorK(null)}
           onSave={(kp) => {
-            upsert('kp', { ...kp, slownie: kwotaSlownie(kp.kwota) })
+            const nowy = !b.kp.some((x) => x.id === kp.id)
+            upsert('kp', {
+              ...kp,
+              numer: nowy ? kolejnyNumer('KP') : kp.numer,
+              slownie: kwotaSlownie(kp.kwota),
+            })
             setEdytorK(null)
             push('Dowód KP zapisany')
           }}

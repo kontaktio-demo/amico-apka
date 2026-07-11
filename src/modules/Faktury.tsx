@@ -171,6 +171,7 @@ function Edytor({ id }: { id: string }) {
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
   const kolejnyNumer = useStore((s) => s.kolejnyNumer)
+  const podgladNumeru = useStore((s) => s.podgladNumeru)
   const navigate = useNavigate()
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
@@ -178,17 +179,16 @@ function Edytor({ id }: { id: string }) {
   const isNew = id === 'nowa'
   const existing = b.faktury.find((f) => f.id === id)
 
-  const [f, setF] = useState<Faktura>(() => existing ?? nowaFaktura(firma.id, firma.konto, firma.domyslnyVat))
+  // Nowa faktura dostaje numer tylko jako PODGLAD. Prawdziwy numer nadajemy
+  // dopiero przy zapisie - dzieki temu otwarcie i anulowanie nie robi dziury
+  // w numeracji (a numeracja faktur musi byc ciagla).
+  const [f, setF] = useState<Faktura>(() => {
+    if (existing) return existing
+    const nowa = nowaFaktura(firma.id, firma.konto, firma.domyslnyVat)
+    return isNew ? { ...nowa, numer: podgladNumeru('FV') } : nowa
+  })
   const [podglad, setPodglad] = useState(false)
-  const numerRef = useRef(false)
-
-  // przy nowej – jednorazowo nadaj kolejny numer FV
-  useEffect(() => {
-    if (isNew && !numerRef.current) {
-      numerRef.current = true
-      setF((prev) => ({ ...prev, numer: kolejnyNumer('FV') }))
-    }
-  }, [isNew, kolejnyNumer])
+  const numerZmienionyRecznie = useRef(false)
 
   // istniejaca, ale nie znaleziona – wroc do listy
   useEffect(() => {
@@ -226,9 +226,17 @@ function Edytor({ id }: { id: string }) {
   const splitSugerowany = sum.brutto > 15000
 
   const zapisz = () => {
-    const doZapisu: Faktura = { ...f, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }
+    // Numer "spalamy" dopiero teraz i tylko wtedy, gdy uzytkowniczka go nie nadpisala.
+    const numer = isNew && !numerZmienionyRecznie.current ? kolejnyNumer('FV') : f.numer
+
+    // Dwa urzadzenia pracujace offline moga wygenerowac ten sam numer.
+    // Nie blokujemy zapisu, ale nie pozwalamy, zeby duplikat przeszedl niezauwazony.
+    const duplikat = b.faktury.some((x) => x.id !== f.id && x.numer === numer)
+    if (duplikat) push(`Uwaga: faktura o numerze ${numer} już istnieje. Popraw numer przed wysłaniem.`, 'err')
+
+    const doZapisu: Faktura = { ...f, numer, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }
     upsert('faktury', doZapisu)
-    push('Faktura zapisana', 'ok')
+    if (!duplikat) push('Faktura zapisana', 'ok')
     navigate('/faktury')
   }
 
@@ -294,7 +302,14 @@ function Edytor({ id }: { id: string }) {
                 </Select>
               </Field>
               <Field label="Numer">
-                <Input value={f.numer} onChange={(e) => set('numer', e.target.value)} placeholder="FV 1/2026" />
+                <Input
+                  value={f.numer}
+                  onChange={(e) => {
+                    numerZmienionyRecznie.current = true
+                    set('numer', e.target.value)
+                  }}
+                  placeholder="FV 1/2026"
+                />
               </Field>
               <Field label="Status">
                 <Select value={f.status} onChange={(e) => set('status', e.target.value as FakturaStatus)}>

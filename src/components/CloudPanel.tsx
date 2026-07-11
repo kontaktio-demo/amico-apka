@@ -21,9 +21,13 @@ type Tryb = 'logowanie' | 'rejestracja' | 'dolacz'
 export function CloudPanel({
   onZalogowano,
   bezRamki,
+  lokalnyUserId,
 }: {
   onZalogowano?: (userId: string) => void
   bezRamki?: boolean
+  // Osoba, ktora JUZ jest zalogowana lokalnie i wlasnie podpina swoje konto do chmury.
+  // Dzieki temu nie powstaje drugi wpis tej samej osoby na liscie uzytkownikow.
+  lokalnyUserId?: string
 }) {
   const c = useCloud()
   const { push } = useToast()
@@ -64,11 +68,14 @@ export function CloudPanel({
       await startSync(imie.trim())
 
       const userId = await zsynchronizujUzytkownikaLokalnie({
+        // Puste imie jest OK: przy logowaniu nie pytamy o nie, wiec funkcja
+        // ponizej zachowa imie, ktore juz mamy zapisane na tym urzadzeniu.
         id: sesja.user.id,
-        imie: imie.trim() || sesja.user.email || 'Użytkownik',
+        imie: imie.trim(),
         email: sesja.user.email || email.trim(),
         rola: wynik.rola,
         haslo,
+        zastapId: lokalnyUserId,
       })
 
       push('Połączono z chmurą – dane będą synchronizowane')

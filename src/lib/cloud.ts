@@ -217,13 +217,21 @@ export async function zsynchronizujUzytkownikaLokalnie(opts: {
   email: string
   rola: Rola
   haslo: string
+  // Konto zalozone LOKALNIE przed polaczeniem z chmura. Po polaczeniu ta sama osoba
+  // dostawala drugi wpis (inne id) i widniala na liscie uzytkownikow dwa razy.
+  // Przenosimy PIN/biometrie na konto chmurowe i kasujemy stary wpis.
+  zastapId?: string
 }): Promise<string> {
   const st = useStore.getState()
-  const istniejacy = st.baza.uzytkownicy.find((u) => u.id === opts.id)
+  const stary =
+    opts.zastapId && opts.zastapId !== opts.id ? st.baza.uzytkownicy.find((u) => u.id === opts.zastapId) : undefined
+  const istniejacy = st.baza.uzytkownicy.find((u) => u.id === opts.id) || stary
   const sol = istniejacy?.salt || losowaSol()
   const u: Uzytkownik = {
     id: opts.id,
-    imie: opts.imie || istniejacy?.imie || 'Użytkownik',
+    // Przy zwyklym logowaniu nie ma pola "Imie i nazwisko" – wtedy zostawiamy
+    // imie, ktore juz znamy. Adres e-mail jako imie to ostatecznosc.
+    imie: opts.imie || istniejacy?.imie || opts.email || 'Użytkownik',
     email: opts.email,
     rola: opts.rola,
     hasloHash: await hashHasla(opts.haslo, sol),
@@ -236,6 +244,7 @@ export async function zsynchronizujUzytkownikaLokalnie(opts: {
     utworzono: istniejacy?.utworzono || nowISO(),
   }
   st.upsert('uzytkownicy', u)
+  if (stary) st.remove('uzytkownicy', stary.id)
   zapiszOstatniego(u.id)
   return u.id
 }

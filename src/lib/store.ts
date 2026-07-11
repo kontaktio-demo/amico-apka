@@ -28,6 +28,7 @@ interface AppState {
   aktywnaFirma: () => Firma
   setAktywnaFirma: (id: string) => void
   // Numeracja dokumentow (ciagla per rok)
+  podgladNumeru: (prefix: string) => string
   kolejnyNumer: (prefix: string) => string
   // Zarzadzanie danymi
   eksportJSON: () => string
@@ -136,6 +137,17 @@ export const useStore = create<AppState>((setState, getState) => ({
 
   setAktywnaFirma: (id) => {
     getState().updateUstawienia({ aktywnaFirmaId: id })
+  },
+
+  // Podglad nastepnego numeru BEZ zuzywania licznika.
+  // Formularz pokazuje numer od razu, ale dopoki dokument nie zostanie zapisany,
+  // numer nie jest "spalony" - inaczej otwarcie i anulowanie nowej faktury
+  // robilo trwala dziure w numeracji (a ta musi byc ciagla).
+  podgladNumeru: (prefix) => {
+    const rok = new Date().getFullYear()
+    const key = `${prefix}-${rok}`
+    const kolejny = (getState().baza.ustawienia.numeracja[key] || 0) + 1
+    return `${prefix} ${kolejny}/${rok}`
   },
 
   kolejnyNumer: (prefix) => {
