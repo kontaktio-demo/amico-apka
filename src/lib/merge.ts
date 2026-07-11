@@ -55,13 +55,48 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
     })
     .filter((x) => x.t > granica)
 
-  // 4) Ustawienia – nowsze wygrywaja
+  // 4) Ustawienia – nowsze wygrywaja, ALE licznik numeracji scalamy przez MAX.
+  //    (licznik jest monotoniczny – cofniecie = duplikaty numerow faktur/umow!)
   const lu: any = lokalna.ustawienia
   const ru: any = zdalna.ustawienia
-  out.ustawienia = !ru ? lu : !lu ? ru : zm(lu) >= zm(ru) ? lu : ru
+  const wygrany: any = !ru ? lu : !lu ? ru : zm(lu) >= zm(ru) ? lu : ru
+  const przegrany: any = wygrany === lu ? ru : lu
+  const numeracja: Record<string, number> = { ...(przegrany?.numeracja || {}) }
+  for (const [k2, v] of Object.entries(wygrany?.numeracja || {})) {
+    numeracja[k2] = Math.max(Number(v) || 0, Number(numeracja[k2]) || 0)
+  }
+  out.ustawienia = { ...(wygrany || {}), numeracja }
+
+  // 5) Sekrety lokalne (hash hasla, PIN, biometria) NIGDY nie ida do chmury,
+  //    wiec po scaleniu przywracamy je z wersji lokalnej.
+  const sekretyLokalne = new Map<string, any>()
+  for (const u of (lokalna as any).uzytkownicy || []) sekretyLokalne.set(u.id, u)
+  out.uzytkownicy = (out.uzytkownicy || []).map((u: any) => {
+    const l = sekretyLokalne.get(u.id)
+    if (!l) return u
+    return {
+      ...u,
+      hasloHash: u.hasloHash || l.hasloHash,
+      salt: u.salt || l.salt,
+      pinHash: u.pinHash ?? l.pinHash,
+      pinSalt: u.pinSalt ?? l.pinSalt,
+      webauthnId: u.webauthnId ?? l.webauthnId,
+    }
+  })
 
   out.wersja = Math.max(lokalna.wersja || 1, zdalna.wersja || 1)
   return out as Baza
+}
+
+// Kopia bazy BEZ sekretow – tylko taka trafia do chmury.
+// (hashe hasel/PIN i klucze biometrii sa danymi urzadzenia, nie firmy)
+export function bezSekretow(b: Baza): Baza {
+  const kopia: any = { ...b }
+  kopia.uzytkownicy = (b.uzytkownicy || []).map((u: any) => {
+    const { hasloHash, salt, pinHash, pinSalt, webauthnId, ...reszta } = u
+    return reszta
+  })
+  return kopia as Baza
 }
 
 // Czy zdalna baza jest "pusta" (nowy workspace)

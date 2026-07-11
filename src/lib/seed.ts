@@ -40,16 +40,26 @@ const firmaMilena: Firma = {
   kolor: '#166b45',
 }
 
+// UWAGA: identyfikatory seeda MUSZA byc stabilne (nie losowe) – inaczej dwa urzadzenia
+// utworzylyby te same rekordy z roznymi id i po synchronizacji powstalyby duplikaty.
+const slug = (s: string): string =>
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+
 const pracownicy: Pracownik[] = [
-  { id: uid('pr'), imie: 'Ciastki', rola: 'montaz', aktywny: true },
-  { id: uid('pr'), imie: 'Bogdan', rola: 'montaz', aktywny: true },
-  { id: uid('pr'), imie: 'Sasza', rola: 'montaz', aktywny: true },
-  { id: uid('pr'), imie: 'Biuro AMICO', rola: 'biuro', aktywny: true },
+  { id: 'pr_ciastki', imie: 'Ciastki', rola: 'montaz', aktywny: true },
+  { id: 'pr_bogdan', imie: 'Bogdan', rola: 'montaz', aktywny: true },
+  { id: 'pr_sasza', imie: 'Sasza', rola: 'montaz', aktywny: true },
+  { id: 'pr_biuro', imie: 'Biuro AMICO', rola: 'biuro', aktywny: true },
 ]
 
 // ---------- Katalog materialow i uslug ----------
 const P = (nazwa: string, kategoria: Produkt['kategoria'], jednostka: Produkt['jednostka'], cenaNetto: number, vat: Produkt['vat'], extra: Partial<Produkt> = {}): Produkt => ({
-  id: uid('prod'),
+  id: `prod_${slug(nazwa)}`,
   nazwa,
   kategoria,
   jednostka,
@@ -152,7 +162,7 @@ export function bazaDemo(): Baza {
   const b = pustaBaza()
   const now = nowISO()
   b.klienci.push({
-    id: uid('kl'),
+    id: 'kl_demo_kowalska',
     typ: 'osoba',
     imie: 'Anna',
     nazwisko: 'Kowalska',

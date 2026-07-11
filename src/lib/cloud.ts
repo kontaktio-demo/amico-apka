@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { supabase } from './supabase'
 import { useStore } from './store'
-import { scalBaze, pustyStan } from './merge'
+import { scalBaze, pustyStan, bezSekretow } from './merge'
+import { pustaBaza } from './seed'
 import type { Baza, Rola, Uzytkownik } from './types'
 import { hashHasla, losowaSol, zapiszOstatniego } from './auth'
 import { nowISO } from './format'
@@ -9,7 +10,8 @@ import { nowISO } from './format'
 // ============================================================================
 // AMICO – synchronizacja z chmura (Supabase).
 // Model: cala baza firmy = jeden dokument JSON + licznik wersji (rev).
-// Zapis: CAS (compare-and-swap). Konflikt -> scalenie i ponowna proba.
+// Zapis: CAS (compare-and-swap). Konflikt -> scalenie -> ponowna proba.
+// Zasada nadrzedna: ZADNA zmiana nie moze zginac ani zostac cicho nadpisana.
 // ============================================================================
 
 export type SyncStatus = 'off' | 'laczenie' | 'ok' | 'zapisywanie' | 'offline' | 'blad'
@@ -39,12 +41,17 @@ export const useCloud = create<CloudState>((set) => ({
 
 const C = () => useCloud.getState()
 
-// ---------- rev (wersja serwera) ----------
+// ---------- rev serwera + przypisanie bazy do firmy ----------
 const revKey = (ws: string) => `amico-rev-${ws}`
 const getRev = (ws: string): number => Number(localStorage.getItem(revKey(ws)) || 0)
 const setRev = (ws: string, r: number) => localStorage.setItem(revKey(ws), String(r))
 
-// ---------- Sesja / logowanie ----------
+// Do KTOREJ firmy naleza dane lokalne. Chroni przed wmieszaniem danych firmy A do firmy B.
+const WS_KEY = 'amico-baza-ws'
+const getBazaWs = () => localStorage.getItem(WS_KEY)
+const setBazaWs = (ws: string) => localStorage.setItem(WS_KEY, ws)
+
+// ---------- Sesja / konto ----------
 export async function sesjaChmury() {
   const { data } = await supabase.auth.getSession()
   return data.session
@@ -53,7 +60,6 @@ export async function sesjaChmury() {
 export async function zarejestrujChmura(email: string, haslo: string) {
   const { data, error } = await supabase.auth.signUp({ email, password: haslo })
   if (error) throw error
-  // Gdy w projekcie wlaczone jest potwierdzanie e-mail, sesji nie bedzie od razu
   if (!data.session) {
     const r = await supabase.auth.signInWithPassword({ email, password: haslo })
     if (r.error) throw new Error('POTWIERDZ_EMAIL')
@@ -68,12 +74,20 @@ export async function zalogujChmura(email: string, haslo: string) {
 }
 
 export async function wylogujChmura() {
+  // Nie gubimy niezapisanych zmian
+  try {
+    if (brudne || wTrakcie) await zapisz()
+  } catch {
+    /* zmiany zostaja lokalnie */
+  }
+  const ws = C().workspaceId
   stopSync()
+  if (ws) localStorage.removeItem(revKey(ws))
+  localStorage.removeItem(WS_KEY)
   await supabase.auth.signOut()
   C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
 }
 
-// Zaklada firme (jesli user nie nalezy do zadnej) lub zwraca istniejaca
 export async function bootstrapFirmy(imie: string) {
   const { data, error } = await supabase.rpc('amico_bootstrap', { p_imie: imie })
   if (error) throw error
@@ -82,7 +96,6 @@ export async function bootstrapFirmy(imie: string) {
   return { workspaceId: r.workspace_id as string, rola: r.rola as Rola, joinCode: r.join_code as string }
 }
 
-// Dolaczenie pracownika kodem firmy
 export async function dolaczDoFirmy(kod: string, imie: string) {
   const { data, error } = await supabase.rpc('amico_join', { p_code: kod, p_imie: imie })
   if (error) throw error
@@ -97,7 +110,7 @@ export async function zmienRoleWChmurze(userId: string, rola: Rola) {
   if (error) throw error
 }
 
-// Tworzy/aktualizuje LOKALNE konto (zeby dzialalo odblokowanie PIN/haslem offline)
+// Lokalne konto (hash hasla/PIN zostaje TYLKO na urzadzeniu – nie trafia do chmury)
 export async function zsynchronizujUzytkownikaLokalnie(opts: {
   id: string
   imie: string
@@ -127,7 +140,7 @@ export async function zsynchronizujUzytkownikaLokalnie(opts: {
   return u.id
 }
 
-// ---------- Pobieranie / zapis stanu ----------
+// ---------- Stan ----------
 async function pobierzStan(ws: string): Promise<{ data: any; rev: number } | null> {
   const { data, error } = await supabase.from('amico_state').select('data, rev').eq('workspace_id', ws).maybeSingle()
   if (error) throw error
@@ -139,16 +152,17 @@ let stosujeZdalne = false
 let timer: ReturnType<typeof setTimeout> | null = null
 let wTrakcie = false
 let brudne = false
+let proby = 0
 let unsubStore: (() => void) | null = null
 let kanal: ReturnType<typeof supabase.channel> | null = null
 
-function zaplanujZapis() {
+function zaplanujZapis(opoznienie = 1200) {
   brudne = true
   if (timer) clearTimeout(timer)
-  timer = setTimeout(() => void zapisz(), 1200)
+  timer = setTimeout(() => void zapisz(), opoznienie)
 }
 
-async function zapisz() {
+async function zapisz(): Promise<void> {
   const ws = C().workspaceId
   if (!ws) return
   if (wTrakcie) {
@@ -156,63 +170,136 @@ async function zapisz() {
     return
   }
   if (!navigator.onLine) {
+    brudne = true // zapiszemy po powrocie sieci
     C().ustaw({ status: 'offline' })
     return
   }
+
   wTrakcie = true
   brudne = false
   C().ustaw({ status: 'zapisywanie' })
+  let blad: any = null
 
   try {
     for (let i = 0; i < 4; i++) {
-      const baza = useStore.getState().baza
-      const rev = getRev(ws)
-      const json = JSON.stringify(baza)
+      const doWyslania = bezSekretow(useStore.getState().baza)
+      const json = JSON.stringify(doWyslania)
       C().ustaw({ rozmiarKB: Math.round(json.length / 1024) })
 
       const { data, error } = await supabase.rpc('amico_save_state', {
         p_workspace: ws,
-        p_data: baza,
-        p_rev: rev,
+        p_data: doWyslania,
+        p_rev: getRev(ws),
       })
       if (error) throw error
       const r: any = Array.isArray(data) ? data[0] : data
 
       if (r?.ok) {
         setRev(ws, Number(r.rev))
+        proby = 0
         C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
-        break
+        return
       }
 
-      // Konflikt – ktos zapisal w miedzyczasie. Scal i sprobuj ponownie.
-      const serwer = r?.data as Baza
+      // Konflikt – ktos zapisal w miedzyczasie: scal i ponow
       setRev(ws, Number(r?.rev || 0))
-      const scalona = scalBaze(useStore.getState().baza, serwer)
+      const scalona = scalBaze(useStore.getState().baza, (r?.data || {}) as Baza)
       stosujeZdalne = true
       useStore.getState().zastapBaze(scalona)
       stosujeZdalne = false
-      if (i === 3) throw new Error('Nie udało się rozwiązać konfliktu zapisu')
     }
+    throw new Error('Nie udało się rozwiązać konfliktu zapisu')
   } catch (e: any) {
-    C().ustaw({ status: 'blad', blad: e?.message || 'Błąd zapisu do chmury' })
+    blad = e
+    brudne = true // NIGDY nie gubimy zmian
+    C().ustaw({
+      status: navigator.onLine ? 'blad' : 'offline',
+      blad: e?.message || 'Błąd zapisu do chmury',
+    })
   } finally {
     wTrakcie = false
-    if (brudne) zaplanujZapis()
+    if (blad) {
+      // ponawiaj z narastajacym opoznieniem (5xx/timeout NIE emituje zdarzenia 'online')
+      proby = Math.min(proby + 1, 5)
+      zaplanujZapis(Math.min(30000, 1500 * 2 ** proby))
+    } else if (brudne) {
+      zaplanujZapis()
+    }
   }
 }
 
+// Pobierz z serwera i scal z lokalnym; wypchnij, jesli scalenie wniosło cokolwiek nowego
 async function pobierzIScal(ws: string) {
   const zdalny = await pobierzStan(ws)
-  if (!zdalny) return
+  if (!zdalny) {
+    zaplanujZapis(0)
+    return
+  }
   setRev(ws, zdalny.rev)
-  if (pustyStan(zdalny.data)) return
+
+  if (pustyStan(zdalny.data)) {
+    zaplanujZapis(0) // serwer pusty – wyslij to, co mamy lokalnie
+    return
+  }
+
   const scalona = scalBaze(useStore.getState().baza, zdalny.data as Baza)
   stosujeZdalne = true
   useStore.getState().zastapBaze(scalona)
   stosujeZdalne = false
+
+  // Czy scalony stan rozni sie od serwera? Jesli tak – mamy lokalne rekordy do wyslania.
+  const rozne = JSON.stringify(bezSekretow(scalona)) !== JSON.stringify(zdalny.data)
+  if (rozne) zaplanujZapis(300)
+  else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }
 
-// ---------- Start / stop synchronizacji ----------
+// Dane lokalne naleza do INNEJ firmy – nie wolno ich wmieszac. Bierzemy stan zdalny.
+async function zastapLokalneZdalnym(ws: string) {
+  const zdalny = await pobierzStan(ws)
+  const nowa = zdalny && !pustyStan(zdalny.data) ? (zdalny.data as Baza) : pustaBaza()
+  setRev(ws, zdalny?.rev ?? 0)
+  stosujeZdalne = true
+  useStore.getState().zastapBaze(nowa)
+  stosujeZdalne = false
+}
+
+// ---------- Nasluch (musi dzialac nawet gdy start padnie offline) ----------
+function podlaczNasluch() {
+  unsubStore?.()
+  unsubStore = useStore.subscribe((s, prev) => {
+    if (s.baza !== prev.baza && !stosujeZdalne) zaplanujZapis()
+  })
+  window.removeEventListener('online', onOnline)
+  window.removeEventListener('offline', onOffline)
+  window.addEventListener('online', onOnline)
+  window.addEventListener('offline', onOffline)
+}
+
+function onOnline() {
+  if (C().workspaceId) zaplanujZapis(200)
+  else void startSync() // start byl offline – bootstrap sie nie udal, ponow
+}
+function onOffline() {
+  C().ustaw({ status: 'offline' })
+}
+
+function podlaczRealtime(ws: string) {
+  kanal?.unsubscribe()
+  kanal = supabase
+    .channel(`amico_state_${ws}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'amico_state', filter: `workspace_id=eq.${ws}` }, async (payload: any) => {
+      const nowaRev = Number(payload?.new?.rev ?? 0)
+      if (nowaRev && nowaRev <= getRev(ws)) return // to nasz wlasny zapis
+      try {
+        await pobierzIScal(ws)
+      } catch {
+        /* ponowimy przy nastepnej zmianie */
+      }
+    })
+    .subscribe()
+}
+
+// ---------- Start / stop ----------
 export async function startSync(imie = '') {
   const sesja = await sesjaChmury()
   if (!sesja) {
@@ -221,59 +308,35 @@ export async function startSync(imie = '') {
   }
   C().ustaw({ status: 'laczenie', email: sesja.user.email || null, blad: null })
 
+  // KRYTYCZNE: nasluch podpinamy PRZED operacjami sieciowymi.
+  // Gdyby bootstrap padl (brak sieci), zmiany i tak beda kolejkowane i wysla sie po powrocie online.
+  podlaczNasluch()
+
   try {
     const { workspaceId, rola, joinCode } = await bootstrapFirmy(imie)
     C().ustaw({ workspaceId, rola, joinCode })
 
-    // 1) pobierz z serwera i scal z lokalnym
-    await pobierzIScal(workspaceId)
+    const poprzedniWs = getBazaWs()
+    if (poprzedniWs && poprzedniWs !== workspaceId) {
+      await zastapLokalneZdalnym(workspaceId) // ochrona przed wyciekiem miedzy firmami
+    } else {
+      await pobierzIScal(workspaceId)
+    }
+    setBazaWs(workspaceId)
 
-    // 2) wypchnij scalony stan (albo pierwszy zapis)
+    podlaczRealtime(workspaceId)
     await zapisz()
-
-    // 3) realtime – zmiany z innych urzadzen
-    kanal?.unsubscribe()
-    kanal = supabase
-      .channel(`amico_state_${workspaceId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'amico_state', filter: `workspace_id=eq.${workspaceId}` },
-        async (payload: any) => {
-          const nowaRev = Number(payload?.new?.rev || 0)
-          if (nowaRev <= getRev(workspaceId)) return // to nasz wlasny zapis
-          try {
-            await pobierzIScal(workspaceId)
-            C().ustaw({ status: 'ok', ostatniZapis: nowISO() })
-          } catch {
-            /* ignoruj */
-          }
-        },
-      )
-      .subscribe()
-
-    // 4) nasluchuj zmian lokalnych -> zapis (z debouncem)
-    unsubStore?.()
-    unsubStore = useStore.subscribe((s, prev) => {
-      if (s.baza !== prev.baza && !stosujeZdalne) zaplanujZapis()
-    })
-
-    // 5) online/offline
-    window.addEventListener('online', onOnline)
-    window.addEventListener('offline', onOffline)
   } catch (e: any) {
-    C().ustaw({ status: 'blad', blad: e?.message || 'Błąd połączenia z chmurą' })
+    C().ustaw({
+      status: navigator.onLine ? 'blad' : 'offline',
+      blad: e?.message || 'Błąd połączenia z chmurą',
+    })
   }
-}
-
-function onOnline() {
-  if (C().workspaceId) zaplanujZapis()
-}
-function onOffline() {
-  C().ustaw({ status: 'offline' })
 }
 
 export function stopSync() {
   if (timer) clearTimeout(timer)
+  timer = null
   unsubStore?.()
   unsubStore = null
   kanal?.unsubscribe()
@@ -282,7 +345,7 @@ export function stopSync() {
   window.removeEventListener('offline', onOffline)
 }
 
-// Reczne wymuszenie zapisu (przycisk w Ustawieniach)
 export async function wymusZapis() {
+  brudne = true
   await zapisz()
 }

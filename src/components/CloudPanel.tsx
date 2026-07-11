@@ -49,6 +49,11 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
       const wynik =
         tryb === 'dolacz' ? await dolaczDoFirmy(kod.trim(), imie.trim()) : await bootstrapFirmy(imie.trim())
 
+      // KOLEJNOSC MA ZNACZENIE: najpierw pobranie/scalenie stanu firmy z chmury
+      // (moze podmienic lokalna baze), dopiero potem zakladamy lokalne konto,
+      // zeby nie zostalo skasowane przez dane przychodzace z serwera.
+      await startSync(imie.trim())
+
       const userId = await zsynchronizujUzytkownikaLokalnie({
         id: sesja.user.id,
         imie: imie.trim() || sesja.user.email || 'Użytkownik',
@@ -57,7 +62,6 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
         haslo,
       })
 
-      await startSync(imie.trim())
       push('Połączono z chmurą — dane będą synchronizowane')
       onZalogowano?.(userId)
     } catch (e: any) {

@@ -14,6 +14,7 @@ type ArrItem<K extends ArrKeys> = Baza[K] extends Array<infer T> ? T : never
 interface AppState {
   baza: Baza
   hydrated: boolean
+  bladZapisu: string | null // blad zapisu lokalnego (np. brak miejsca)
   init: () => Promise<void>
   persist: () => void
   setBaza: (b: Baza) => void
@@ -40,22 +41,32 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null
 export const useStore = create<AppState>((setState, getState) => ({
   baza: pustaBaza(),
   hydrated: false,
+  bladZapisu: null,
 
   init: async () => {
     const zapisana = await loadBaza()
     if (zapisana && zapisana.firmy?.length) {
       setState({ baza: migruj(zapisana), hydrated: true })
     } else {
-      const demo = bazaDemo()
-      setState({ baza: demo, hydrated: true })
-      await saveBaza(demo)
+      // Start bez danych demo – demo mozna wczytac recznie w Ustawieniach.
+      // (Losowe rekordy demo powodowalyby duplikaty po synchronizacji.)
+      const pusta = pustaBaza()
+      setState({ baza: pusta, hydrated: true })
+      await saveBaza(pusta)
     }
   },
 
   persist: () => {
     if (saveTimer) clearTimeout(saveTimer)
     saveTimer = setTimeout(() => {
-      saveBaza(getState().baza).catch(() => {})
+      saveBaza(getState().baza)
+        .then(() => {
+          if (getState().bladZapisu) setState({ bladZapisu: null })
+        })
+        .catch((e) => {
+          // np. QuotaExceededError – uzytkownik MUSI o tym wiedziec
+          setState({ bladZapisu: e?.name === 'QuotaExceededError' ? 'Brak miejsca na urządzeniu — zrób kopię i usuń stare skany.' : 'Nie udało się zapisać danych lokalnie.' })
+        })
     }, 250)
   },
 
@@ -86,8 +97,12 @@ export const useStore = create<AppState>((setState, getState) => ({
   },
 
   zastapBaze: (b) => {
-    setState({ baza: b })
-    saveBaza(b).catch(() => {})
+    // migruj – dane z chmury moga pochodzic z innej wersji aplikacji
+    const m = migruj(b)
+    setState({ baza: m })
+    saveBaza(m).catch((e) => {
+      setState({ bladZapisu: e?.name === 'QuotaExceededError' ? 'Brak miejsca na urządzeniu.' : 'Nie udało się zapisać danych lokalnie.' })
+    })
   },
 
   patch: (fn) => {
@@ -121,7 +136,12 @@ export const useStore = create<AppState>((setState, getState) => ({
     setState((st) => ({
       baza: {
         ...st.baza,
-        ustawienia: { ...st.baza.ustawienia, numeracja: { ...st.baza.ustawienia.numeracja, [key]: kolejny } },
+        // _zm jest KONIECZNE – bez niego scalanie mogloby cofnac licznik i wygenerowac duplikaty numerow
+        ustawienia: {
+          ...st.baza.ustawienia,
+          numeracja: { ...st.baza.ustawienia.numeracja, [key]: kolejny },
+          _zm: nowISO(),
+        } as any,
       },
     }))
     getState().persist()
