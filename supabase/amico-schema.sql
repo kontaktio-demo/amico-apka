@@ -1,8 +1,9 @@
 -- =====================================================================
---  AMICO – schemat chmury (Supabase)
+--  AMICO – schemat chmury (Supabase)  [wersja 2 – utwardzona]
 --  BEZPIECZNE: tworzy WYŁĄCZNIE obiekty z prefiksem amico_.
 --  Nie modyfikuje ani nie usuwa żadnych istniejących tabel/danych.
---  Uruchom raz w: Supabase → SQL Editor → New query → wklej → Run.
+--  Idempotentny – można uruchomić ponownie.
+--  Uruchom w: Supabase → SQL Editor → New query → wklej → Run.
 -- =====================================================================
 
 create extension if not exists pgcrypto;
@@ -62,13 +63,15 @@ create policy amico_state_select on public.amico_state      for select to authen
 -- Zapis stanu wyłącznie przez funkcję amico_save_state (kontrola wersji) – brak polityk INSERT/UPDATE.
 
 -- ---------- Funkcje (RPC) ----------
+-- Każda funkcja twardo wymaga zalogowania (auth.uid()) – ochrona przed anonimem.
 
--- Pierwsze logowanie: utwórz firmę + członkostwo właściciela (jeśli user nie należy do żadnej)
 create or replace function public.amico_bootstrap(p_imie text)
 returns table (workspace_id uuid, rola text, join_code text, nazwa text)
 language plpgsql security definer set search_path = public as $$
 declare w uuid;
 begin
+  if auth.uid() is null then raise exception 'Wymagane logowanie'; end if;
+
   select m.workspace_id into w from public.amico_members m where m.user_id = auth.uid() limit 1;
 
   if w is null then
@@ -92,12 +95,13 @@ begin
      where m.user_id = auth.uid() and m.workspace_id = w;
 end; $$;
 
--- Dołączenie pracownika do firmy kodem
 create or replace function public.amico_join(p_code text, p_imie text)
 returns table (workspace_id uuid, rola text, join_code text, nazwa text)
 language plpgsql security definer set search_path = public as $$
 declare w uuid;
 begin
+  if auth.uid() is null then raise exception 'Wymagane logowanie'; end if;
+
   select ws.id into w from public.amico_workspaces ws where ws.join_code = upper(trim(p_code));
   if w is null then
     raise exception 'Nieprawidłowy kod dołączenia';
@@ -121,6 +125,7 @@ returns table (ok boolean, rev bigint, data jsonb)
 language plpgsql security definer set search_path = public as $$
 declare cur bigint;
 begin
+  if auth.uid() is null then raise exception 'Wymagane logowanie'; end if;
   if not public.amico_is_member(p_workspace) then
     raise exception 'Brak dostępu do tej firmy';
   end if;
@@ -140,17 +145,16 @@ begin
     return query select true, cur + 1, p_data;
 
   else
-    -- konflikt: ktoś zapisał w międzyczasie
     return query
       select false, cur, (select s.data from public.amico_state s where s.workspace_id = p_workspace);
   end if;
 end; $$;
 
--- Zmiana roli pracownika (tylko właściciel/kierownik)
 create or replace function public.amico_set_role(p_user uuid, p_workspace uuid, p_rola text)
 returns void
 language plpgsql security definer set search_path = public as $$
 begin
+  if auth.uid() is null then raise exception 'Wymagane logowanie'; end if;
   if not exists (
     select 1 from public.amico_members m
      where m.workspace_id = p_workspace and m.user_id = auth.uid()
@@ -162,13 +166,23 @@ begin
    where user_id = p_user and workspace_id = p_workspace;
 end; $$;
 
--- ---------- Uprawnienia ----------
+-- ---------- Uprawnienia (utwardzenie: nic dla anonima) ----------
+revoke all on public.amico_workspaces from anon;
+revoke all on public.amico_members    from anon;
+revoke all on public.amico_state      from anon;
+
+revoke all on function public.amico_is_member(uuid)                 from public, anon;
+revoke all on function public.amico_bootstrap(text)                 from public, anon;
+revoke all on function public.amico_join(text, text)                from public, anon;
+revoke all on function public.amico_save_state(uuid, jsonb, bigint) from public, anon;
+revoke all on function public.amico_set_role(uuid, uuid, text)      from public, anon;
+
 grant select on public.amico_workspaces, public.amico_members, public.amico_state to authenticated;
-grant execute on function public.amico_is_member(uuid)                       to authenticated;
-grant execute on function public.amico_bootstrap(text)                       to authenticated;
-grant execute on function public.amico_join(text, text)                      to authenticated;
-grant execute on function public.amico_save_state(uuid, jsonb, bigint)       to authenticated;
-grant execute on function public.amico_set_role(uuid, uuid, text)            to authenticated;
+grant execute on function public.amico_is_member(uuid)                 to authenticated;
+grant execute on function public.amico_bootstrap(text)                 to authenticated;
+grant execute on function public.amico_join(text, text)                to authenticated;
+grant execute on function public.amico_save_state(uuid, jsonb, bigint) to authenticated;
+grant execute on function public.amico_set_role(uuid, uuid, text)      to authenticated;
 
 -- ---------- Realtime (dodanie tylko naszej tabeli do istniejącej publikacji) ----------
 do $$
@@ -180,5 +194,5 @@ begin
     alter publication supabase_realtime add table public.amico_state;
   end if;
 exception when others then
-  null; -- brak publikacji / brak uprawnień → realtime opcjonalny, apka i tak działa
+  null;
 end $$;

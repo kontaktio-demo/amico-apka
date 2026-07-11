@@ -53,10 +53,10 @@ export async function sesjaChmury() {
 export async function zarejestrujChmura(email: string, haslo: string) {
   const { data, error } = await supabase.auth.signUp({ email, password: haslo })
   if (error) throw error
-  // Gdy wlaczone potwierdzanie e-mail, sesji nie bedzie od razu
+  // Gdy w projekcie wlaczone jest potwierdzanie e-mail, sesji nie bedzie od razu
   if (!data.session) {
     const r = await supabase.auth.signInWithPassword({ email, password: haslo })
-    if (r.error) throw new Error('Konto utworzone. Potwierdź e-mail i zaloguj się.')
+    if (r.error) throw new Error('POTWIERDZ_EMAIL')
   }
   return true
 }

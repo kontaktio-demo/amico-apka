@@ -63,13 +63,17 @@ export function CloudPanel({ onZalogowano, bezRamki }: { onZalogowano?: (userId:
     } catch (e: any) {
       const m: string = e?.message || 'Nie udało się połączyć'
       setErr(
-        /Invalid login/i.test(m)
-          ? 'Nieprawidłowy e-mail lub hasło'
-          : /already registered/i.test(m)
-            ? 'Ten e-mail ma już konto — wybierz „Zaloguj się”'
-            : /amico_bootstrap|amico_join|does not exist|schema cache/i.test(m)
-              ? 'Baza w chmurze nie jest jeszcze przygotowana — uruchom skrypt SQL (supabase/amico-schema.sql)'
-              : m,
+        m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
+          ? 'Konto utworzone. Potwierdź e-mail (link w wiadomości), a potem zaloguj się. Aby zespół nie musiał tego robić: Supabase → Authentication → Sign In / Providers → Email → wyłącz „Confirm email”.'
+          : /Invalid login/i.test(m)
+            ? 'Nieprawidłowy e-mail lub hasło'
+            : /already registered|User already/i.test(m)
+              ? 'Ten e-mail ma już konto — wybierz „Zaloguj się”'
+              : /Wymagane logowanie/i.test(m)
+                ? 'Sesja wygasła — zaloguj się ponownie'
+                : /amico_bootstrap|amico_join|does not exist|schema cache|PGRST202/i.test(m)
+                  ? 'Baza w chmurze nie jest przygotowana — uruchom skrypt SQL (supabase/amico-schema.sql)'
+                  : m,
       )
     } finally {
       setBusy(false)
