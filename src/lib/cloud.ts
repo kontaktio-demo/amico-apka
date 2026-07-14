@@ -55,7 +55,10 @@ function czyBladSesji(e: any): boolean {
 async function obsluzWygaslaSesje() {
   stopSync()
   try {
-    await supabase.auth.signOut()
+    // scope: 'local' jest KLUCZOWE. Domyslne wylogowanie w Supabase jest globalne –
+    // uniewaznia sesje na WSZYSTKICH urzadzeniach. Przez to potkniecie sesji w jednej
+    // aplikacji (np. na komputerze) wyrzucalo uzytkownika takze z tabletu.
+    await supabase.auth.signOut({ scope: 'local' })
   } catch {
     /* ignore */
   }
@@ -174,7 +177,9 @@ export async function wylogujChmura() {
   // UWAGA: NIE kasujemy WS_KEY. To jedyny znacznik mowiacy, do ktorej firmy naleza
   // dane lezace na tym urzadzeniu. Skasowanie go sprawia, ze po zalogowaniu sie na
   // konto INNEJ firmy dane starej firmy zostalyby z nia scalone i wypchniete do chmury.
-  await supabase.auth.signOut()
+  // Wylogowanie dotyczy TYLKO tego urzadzenia. Bez scope: 'local' Supabase uniewaznia
+  // sesje wszedzie – wylogowanie sie na komputerze wyrzucalo tez z tabletu.
+  await supabase.auth.signOut({ scope: 'local' })
   C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
 }
 

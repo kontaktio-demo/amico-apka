@@ -144,13 +144,9 @@ function ustawMenu() {
     {
       label: 'Plik',
       submenu: [
-        {
-          label: 'Zapisz PDF…',
-          accelerator: 'CmdOrCtrl+S',
-          click: () => glowneOkno?.webContents.send('amico:skrot-zapisz-pdf'),
-        },
-        { label: 'Drukuj…', accelerator: 'CmdOrCtrl+P', role: 'print' },
-        { type: 'separator' },
+        // Swiadomie NIE ma tu "Drukuj" ani "Zapisz PDF". Te akcje maja sens tylko przy
+        // konkretnym dokumencie i sa przy nim jako przyciski. Globalny Ctrl+P drukowal
+        // pusta kartke, bo poza dokumentem nie ma czego drukowac.
         { label: 'Zamknij', accelerator: 'Alt+F4', role: 'quit' },
       ],
     },
@@ -249,7 +245,9 @@ ipcMain.handle('amico:zapisz-pdf', async (zdarzenie, { nazwa }) => {
     const pdf = await wc.printToPDF({
       printBackground: true, // KONIECZNE: inaczej znikaja ciemne belki i kwoty na nich
       pageSize: 'A4',
-      margins: { marginType: 'custom', top: 0.47, bottom: 0.47, left: 0.47, right: 0.47 },
+      // Rozmiar strony i marginesy bierzemy z reguly @page w CSS. Gdyby ustawiac je
+      // tutaj osobno, rozjechalyby sie z wyliczeniami dopasowania dokumentu do kartki.
+      preferCSSPageSize: true,
     })
     fs.writeFileSync(filePath, pdf)
     shell.showItemInFolder(filePath)

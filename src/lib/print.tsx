@@ -16,6 +16,100 @@ function ensurePrintRoot(): HTMLElement {
   return el
 }
 
+// ============================================================================
+// Dopasowanie dokumentu do kartki
+//
+// Problem, ktory to rozwiazuje: dokument (np. wycena) bywa o kilka centymetrow
+// wyzszy niz pole zadruku A4. Przegladarka spycha wtedy koncowke - blok podpisow
+// i stopke - na DRUGA kartke, ktora poza tym jest pusta. Wyglada to tak, jakby
+// "drukowal sie sam dol strony".
+//
+// Rozwiazanie: przed drukiem mierzymy arkusz w geometrii kartki i, jesli wystaje
+// tylko o kawalek, delikatnie go zmniejszamy, zeby zmiescil sie w calosci.
+// Uklad i proporcje dokumentu zostaja bez zmian - jest tylko odrobine mniejszy.
+// ============================================================================
+
+const MM_PX = 96 / 25.4
+const MARGINES_MM = 10 // MUSI byc zgodne z @page w src/index.css
+const SZER_POLA = (210 - 2 * MARGINES_MM) * MM_PX
+const WYS_POLA = (297 - 2 * MARGINES_MM) * MM_PX
+const MIN_SKALA = 0.75 // ponizej tego dokument bylby juz nieczytelny
+const MAX_NADMIAR = 0.35 // wystaje o wiecej niz 1/3 strony -> to naprawde dluzszy dokument
+
+function dopasujArkuszeDoStrony(root: HTMLElement) {
+  const arkusze = Array.from(root.querySelectorAll<HTMLElement>('.doc-sheet'))
+  if (!arkusze.length) return
+
+  // #print-root jest ukryty (display: none), a ukrytego elementu nie da sie zmierzyc.
+  // Na czas pomiaru wykladamy go poza ekranem - uklad sie liczy, ale nic nie miga.
+  const styleWyjsciowy = root.getAttribute('style')
+  root.style.cssText = 'display:block;position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none;'
+
+  for (const arkusz of arkusze) {
+    const inner = arkusz.querySelector<HTMLElement>('.doc-inner')
+    if (!inner) continue
+
+    arkusz.style.removeProperty('--skala-druku')
+    arkusz.style.removeProperty('--wys-druku')
+
+    // Ustawiamy geometrie druku: szerokosc pola zadruku, bez wlasnych marginesow arkusza
+    const zapas = {
+      width: arkusz.style.width,
+      padding: arkusz.style.padding,
+      minHeight: arkusz.style.minHeight,
+      height: arkusz.style.height,
+    }
+    arkusz.style.width = `${SZER_POLA}px`
+    arkusz.style.padding = '0'
+    arkusz.style.minHeight = '0'
+    arkusz.style.height = 'auto'
+    inner.style.width = '100%'
+    inner.style.transform = 'none'
+
+    const wysNaturalna = inner.getBoundingClientRect().height
+    const stron = wysNaturalna / WYS_POLA
+    const pelnych = Math.floor(stron)
+    const nadmiar = stron - pelnych
+
+    let skala: number | null = null
+    // Skalujemy TYLKO gdy dokument wystaje o niewielki kawalek ponad JEDNA strone.
+    // Przy dluzszych dokumentach (umowa, poradnik) zostawiamy naturalny podzial na
+    // strony - transformacja rozciagnieta przez lamanie stron potrafi uciac tresc.
+    if (pelnych === 1 && nadmiar > 0 && nadmiar <= MAX_NADMIAR) {
+      // 2 px zapasu, zeby zaokraglenie nie wypchnelo dokumentu na kolejna kartke
+      const kandydat = (WYS_POLA - 2) / wysNaturalna
+      if (kandydat >= MIN_SKALA) skala = kandydat
+    }
+
+    if (skala) {
+      // Po zmniejszeniu tresc uklada sie szerzej, wiec mierzymy jeszcze raz -
+      // inaczej wysokosc pudelka nie zgadzalaby sie z tym, co widac na papierze.
+      inner.style.width = `${SZER_POLA / skala}px`
+      const wysPoPoszerzeniu = inner.getBoundingClientRect().height
+      const wysKoncowa = Math.min(wysPoPoszerzeniu * skala, WYS_POLA - 2)
+      arkusz.style.setProperty('--skala-druku', String(skala))
+      arkusz.style.setProperty('--wys-druku', `${Math.ceil(wysKoncowa)}px`)
+      // Zmniejszenie jest tylko wizualne - pudelko tresci DALEJ ma pelna wysokosc
+      // i to ono wypychalo druga, prawie pusta kartke. Przycinamy je do arkusza.
+      // Klasa jest wazna: przy dokumentach wielostronicowych (umowa, poradnik)
+      // NIE skalujemy i NIE przycinamy, bo obcielibysmy tresc.
+      arkusz.classList.add('doc-dopasowany')
+    } else {
+      arkusz.classList.remove('doc-dopasowany')
+    }
+
+    arkusz.style.width = zapas.width
+    arkusz.style.padding = zapas.padding
+    arkusz.style.minHeight = zapas.minHeight
+    arkusz.style.height = zapas.height
+    inner.style.width = ''
+    inner.style.transform = ''
+  }
+
+  if (styleWyjsciowy === null) root.removeAttribute('style')
+  else root.setAttribute('style', styleWyjsciowy)
+}
+
 type Zadanie = { node: React.ReactNode; tryb: 'druk' | 'pdf'; nazwa?: string }
 
 const PrintCtx = createContext<{
@@ -62,6 +156,8 @@ export function PrintProvider({ children }: { children: React.ReactNode }) {
 
     const run = async () => {
       await czekajNaRender()
+      // Dokument, ktory wystaje o kawalek, zmniejszamy tak, by zmiescil sie na kartce
+      dopasujArkuszeDoStrony(root)
 
       if (zadanie.tryb === 'pdf' && window.amico?.desktop) {
         const r = await window.amico.zapiszPdf(zadanie.nazwa || 'dokument')
@@ -75,7 +171,31 @@ export function PrintProvider({ children }: { children: React.ReactNode }) {
       setTimeout(() => clear(), 1200)
     }
     run()
-  }, [zadanie])
+  }, [zadanie, root])
+
+  // Gdy ktos naciśnie Ctrl+P zamiast uzyc przycisku w aplikacji, #print-root jest
+  // pusty i na papier poszlaby czysta kartka. Podpowiadamy, co zrobic.
+  useEffect(() => {
+    const naPrzedDrukiem = () => {
+      if (root.childElementCount > 0) return
+      root.dataset.podpowiedz = 'tak'
+      root.innerHTML =
+        '<div class="doc-sheet"><div class="doc-inner" style="padding:40mm 0;text-align:center;font-size:12pt;color:#12130f">' +
+        'Aby wydrukować dokument, otwórz go w aplikacji i użyj przycisku <b>Drukuj / PDF</b>.' +
+        '</div></div>'
+    }
+    const naPoDruku = () => {
+      if (root.dataset.podpowiedz !== 'tak') return
+      delete root.dataset.podpowiedz
+      root.innerHTML = ''
+    }
+    window.addEventListener('beforeprint', naPrzedDrukiem)
+    window.addEventListener('afterprint', naPoDruku)
+    return () => {
+      window.removeEventListener('beforeprint', naPrzedDrukiem)
+      window.removeEventListener('afterprint', naPoDruku)
+    }
+  }, [root])
 
   return (
     <PrintCtx.Provider value={{ print, zapiszPdf }}>

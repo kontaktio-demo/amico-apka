@@ -7,11 +7,6 @@ contextBridge.exposeInMainWorld('amico', {
   zapiszPdf: (nazwa) => ipcRenderer.invoke('amico:zapisz-pdf', { nazwa }),
   wersja: () => ipcRenderer.invoke('amico:wersja'),
   // Skroty z menu aplikacji
-  naSkrotZapiszPdf: (cb) => {
-    const h = () => cb()
-    ipcRenderer.on('amico:skrot-zapisz-pdf', h)
-    return () => ipcRenderer.removeListener('amico:skrot-zapisz-pdf', h)
-  },
   naOtworzPoradnik: (cb) => {
     const h = () => cb()
     ipcRenderer.on('amico:otworz-poradnik', h)

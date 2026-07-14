@@ -16,24 +16,27 @@ import {
 } from '../lib/cloud'
 import { fmtDateTime } from '../lib/format'
 
-type Tryb = 'logowanie' | 'rejestracja' | 'dolacz'
+export type Tryb = 'logowanie' | 'rejestracja' | 'dolacz'
 
 export function CloudPanel({
   onZalogowano,
   bezRamki,
   lokalnyUserId,
+  trybStartowy,
 }: {
   onZalogowano?: (userId: string) => void
   bezRamki?: boolean
   // Osoba, ktora JUZ jest zalogowana lokalnie i wlasnie podpina swoje konto do chmury.
   // Dzieki temu nie powstaje drugi wpis tej samej osoby na liscie uzytkownikow.
   lokalnyUserId?: string
+  // Z jaka zakladka panel ma sie otworzyc (ekran startowy od razu wie, czego chce uzytkownik)
+  trybStartowy?: Tryb
 }) {
   const c = useCloud()
   const { push } = useToast()
   const [maSesje, setMaSesje] = useState<boolean | null>(null)
 
-  const [tryb, setTryb] = useState<Tryb>('logowanie')
+  const [tryb, setTryb] = useState<Tryb>(trybStartowy || 'logowanie')
   const [imie, setImie] = useState('')
   const [email, setEmail] = useState('')
   const [haslo, setHaslo] = useState('')

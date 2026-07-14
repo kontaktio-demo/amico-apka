@@ -7,7 +7,6 @@ export interface MostDesktop {
   desktop: true
   zapiszPdf: (nazwa: string) => Promise<{ ok: boolean; sciezka?: string; anulowane?: boolean; blad?: string }>
   wersja: () => Promise<string>
-  naSkrotZapiszPdf: (cb: () => void) => () => void
   naOtworzPoradnik: (cb: () => void) => () => void
 }
 

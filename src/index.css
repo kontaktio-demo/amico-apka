@@ -197,12 +197,23 @@ h3,
 }
 
 @media print {
+  /* UWAGA: ten margines musi byc zgodny ze stala MARGINES_MM w src/lib/print.tsx,
+     bo tam liczymy, czy dokument miesci sie na jednej kartce. */
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 10mm;
   }
   :root {
     color-scheme: light;
+  }
+  /* Bez tego html/body zostaja przyciete do wysokosci ekranu (height: 100%)
+     i czesc dokumentu moze w ogole nie trafic na papier. */
+  html,
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background-attachment: scroll !important;
   }
   /* KRYTYCZNE: przegladarki domyslnie NIE drukuja teł. Bez tego ciemne belki
      (naglowki tabel, wiersz RAZEM BRUTTO) znikaja, a bialy tekst na nich
@@ -229,6 +240,31 @@ h3,
     margin: 0;
     padding: 0;
     box-shadow: none;
+    /* Wysokosc wyliczona przez silnik druku po dopasowaniu skali.
+       Bez niej pudelko arkusza dalej zajmowaloby pelna wysokosc i mimo
+       zmniejszenia tresci powstawalaby druga, prawie pusta kartka. */
+    height: var(--wys-druku, auto);
+  }
+  .doc-inner {
+    transform: scale(var(--skala-druku, 1));
+    transform-origin: top left;
+    /* Tresc uklada sie szerzej, a potem jest zmniejszana - dzieki temu po
+       przeskalowaniu wypelnia cala szerokosc kartki, a nie tylko jej czesc. */
+    width: calc(100% / var(--skala-druku, 1));
+  }
+  /* Tylko arkusze faktycznie dopasowane do kartki. Zmniejszenie jest wizualne,
+     wiec pudelko tresci nadal ma pelna wysokosc - trzeba je przyciac, inaczej
+     wypycha druga, pusta kartke. Dokumentow wielostronicowych to NIE dotyczy. */
+  .doc-sheet.doc-dopasowany {
+    overflow: hidden;
+  }
+  /* Kazdy kolejny arkusz zaczyna sie od nowej kartki */
+  .doc-sheet + .doc-sheet {
+    break-before: page;
+  }
+  /* Wiersz tabeli nie ma sie lamac w polowie miedzy kartkami */
+  .doc-sheet tr {
+    break-inside: avoid;
   }
   .no-print {
     display: none !important;

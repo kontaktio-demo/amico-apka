@@ -22,9 +22,15 @@ export function DocSheet({
 }) {
   return (
     <div className={`doc-sheet ${compact ? 'compact' : ''}`}>
-      <DocLetterhead firma={firma} logoDataUrl={logoDataUrl} />
-      <div className="mt-5">{children}</div>
-      {!bezStopki && <DocFooter firma={firma} />}
+      {/* doc-inner jest potrzebne do druku: jesli dokument wystaje poza kartke
+          o kawalek, silnik druku zmniejsza TA warstwe, zeby zmiescic calosc na
+          jednej stronie. Bez tego ostatnie kilka centymetrow (podpisy i stopka)
+          ladowalo samotnie na drugiej kartce. */}
+      <div className="doc-inner">
+        <DocLetterhead firma={firma} logoDataUrl={logoDataUrl} />
+        <div className="mt-5">{children}</div>
+        {!bezStopki && <DocFooter firma={firma} />}
+      </div>
     </div>
   )
 }

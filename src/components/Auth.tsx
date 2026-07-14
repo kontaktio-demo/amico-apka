@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Delete, Fingerprint, LogIn, ShieldCheck, UserPlus, KeyRound, ArrowLeft } from 'lucide-react'
+import { Delete, Fingerprint, LogIn, ShieldCheck, UserPlus, KeyRound, ArrowLeft, Cloud, Users } from 'lucide-react'
 import { useStore } from '../lib/store'
 import type { Uzytkownik, Rola } from '../lib/types'
 import { uid } from '../lib/id'
@@ -21,8 +21,7 @@ import {
 } from '../lib/auth'
 import { Logo } from './Logo'
 import { Field, Input } from './ui'
-import { CloudPanel } from './CloudPanel'
-import { Cloud } from 'lucide-react'
+import { CloudPanel, type Tryb } from './CloudPanel'
 
 interface AuthCtx {
   user: Uzytkownik | null
@@ -99,13 +98,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthShell>
-      {widok === 'onboarding' && <Onboarding onDone={zaloguj} />}
-      {widok === 'login' && <Login onLogin={zaloguj} />}
+      {widok === 'onboarding' && <PierwszeUruchomienie onDone={zaloguj} />}
+      {widok === 'login' && (
+        <>
+          <Login onLogin={zaloguj} />
+          <ChmuraLogowanie onZalogowano={zaloguj} />
+        </>
+      )}
       {widok === 'lock' && user && (
         <Lock user={user} onUnlock={() => setWidok('in')} onSwitch={() => setWidok('login')} />
       )}
-      {(widok === 'onboarding' || widok === 'login') && <ChmuraLogowanie onZalogowano={zaloguj} />}
     </AuthShell>
+  )
+}
+
+// ---------- Pierwsze uruchomienie ----------
+// Na NOWYM urzadzeniu (drugi tablet, komputer z aplikacja desktopowa) najczestsza
+// potrzeba to "mam juz konto, chce zobaczyc swoje dane" – i to musi byc pierwsza,
+// oczywista opcja. Wczesniej ekran startowy proponowal zalozenie konta LOKALNEGO,
+// przez co na komputerze powstawalo osobne, puste konto i wygladalo to tak, jakby
+// nie dalo sie zalogowac.
+type Wybor = 'menu' | 'lokalne' | Tryb
+
+function PierwszeUruchomienie({ onDone }: { onDone: (id: string) => void }) {
+  const [wybor, setWybor] = useState<Wybor>('menu')
+
+  if (wybor === 'lokalne') return <Onboarding onDone={onDone} onWroc={() => setWybor('menu')} />
+
+  if (wybor !== 'menu') {
+    return (
+      <div>
+        <button
+          className="mb-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-stone-400 hover:text-white"
+          onClick={() => setWybor('menu')}
+        >
+          <ArrowLeft size={14} /> Wróć
+        </button>
+        <CloudPanel bezRamki onZalogowano={onDone} trybStartowy={wybor} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-[19px] font-display font-semibold text-ink">Witaj w AMICO</h1>
+        <p className="mt-1 text-[13px] leading-relaxed text-stone-400">
+          Jeśli masz już konto, zaloguj się – zobaczysz te same dane co na pozostałych urządzeniach.
+        </p>
+      </div>
+
+      <button className="btn-primary w-full btn-lg" onClick={() => setWybor('logowanie')}>
+        <Cloud size={18} /> Mam już konto – zaloguj się
+      </button>
+
+      <button className="btn-outline w-full" onClick={() => setWybor('rejestracja')}>
+        <UserPlus size={17} /> Zakładam AMICO pierwszy raz
+      </button>
+
+      <button className="btn-outline w-full" onClick={() => setWybor('dolacz')}>
+        <Users size={17} /> Dołączam do firmy (mam kod)
+      </button>
+
+      <div className="border-t border-white/10 pt-3 text-center">
+        <button
+          className="text-[12.5px] font-medium text-stone-500 transition hover:text-stone-300"
+          onClick={() => setWybor('lokalne')}
+        >
+          Pracuj tylko na tym urządzeniu, bez chmury
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -158,8 +221,8 @@ function Avatar({ u, size = 44 }: { u: { imie: string; kolor?: string }; size?: 
   )
 }
 
-// ---------- Onboarding ----------
-function Onboarding({ onDone }: { onDone: (id: string) => void }) {
+// ---------- Konto tylko na tym urzadzeniu (bez chmury) ----------
+function Onboarding({ onDone, onWroc }: { onDone: (id: string) => void; onWroc?: () => void }) {
   const upsert = useStore((s) => s.upsert)
   const [imie, setImie] = useState('')
   const [email, setEmail] = useState('')
@@ -195,15 +258,28 @@ function Onboarding({ onDone }: { onDone: (id: string) => void }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {onWroc && (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-stone-400 hover:text-white"
+          onClick={onWroc}
+        >
+          <ArrowLeft size={14} /> Wróć
+        </button>
+      )}
       <div className="flex items-center gap-2.5">
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-50 text-brand-700">
           <UserPlus size={18} />
         </span>
         <div>
-          <h1 className="text-[18px] font-display font-semibold text-ink">Utwórz konto</h1>
-          <p className="text-[12.5px] text-stone-500">Pierwsze konto – właściciel firmy</p>
+          <h1 className="text-[18px] font-display font-semibold text-ink">Konto na tym urządzeniu</h1>
+          <p className="text-[12.5px] text-stone-500">Bez chmury – dane zostaną tylko tutaj</p>
         </div>
       </div>
+      <p className="rounded-xl border border-amber-500/20 bg-amber-500/[0.07] px-3 py-2 text-[12.5px] leading-relaxed text-amber-200/90">
+        Te dane nie pojawią się na innych urządzeniach i nie będzie ich kopii na serwerze. Chmurę możesz włączyć później
+        w Ustawieniach.
+      </p>
       <Field label="Imię i nazwisko">
         <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Andrzej Fiks" autoFocus />
       </Field>
