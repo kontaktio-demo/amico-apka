@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ClipboardList, Plus, Trash2, X, ChevronLeft, ChevronRight, CalendarDays, ListPlus } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { PageHeader, Card, CardBody, EmptyState, Input, Badge } from '../components/ui'
+import { PageHeader, Card, CardBody, EmptyState, Input, Badge, useConfirm } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
 import { OdprawaDoc } from '../documents/OdprawaDoc'
 import { today, fmtDate, fmtDateLong, addDays, nowISO } from '../lib/format'
@@ -29,6 +29,7 @@ export default function Odprawa() {
   const firma = useStore((s) => s.aktywnaFirma)()
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
+  const { confirm, confirmNode } = useConfirm()
 
   const [data, setData] = useState<string>(today())
 
@@ -55,8 +56,12 @@ export default function Odprawa() {
     if (!odprawa) return
     zapisz(odprawa.sekcje.map((s, i) => (i === idx ? { ...s, tytul } : s)))
   }
-  const usunSekcje = (idx: number) => {
+  const usunSekcje = async (idx: number) => {
     if (!odprawa) return
+    const s = odprawa.sekcje[idx]
+    // Sekcja z wpisami znika bez sladu - pytamy, gdy jest co stracic.
+    if (s?.pozycje?.length && !(await confirm(`Usunąć sekcję „${s.tytul}” wraz z ${s.pozycje.length} pozycjami?`)))
+      return
     zapisz(odprawa.sekcje.filter((_, i) => i !== idx))
   }
   const dodajSekcje = () => {
@@ -215,13 +220,19 @@ export default function Odprawa() {
             </button>
             <button
               className="btn-ghost text-stone-400 hover:text-red-600"
-              onClick={() => remove('odprawy', odprawa.id)}
+              onClick={async () => {
+                if (
+                  await confirm(`Usunąć całą odprawę z dnia ${fmtDate(odprawa.data)}? Tej operacji nie można cofnąć.`)
+                )
+                  remove('odprawy', odprawa.id)
+              }}
             >
               <Trash2 size={16} /> Usuń odprawę
             </button>
           </div>
         </>
       )}
+      {confirmNode}
     </div>
   )
 }

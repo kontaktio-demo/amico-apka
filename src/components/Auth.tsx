@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
     const last = ostatniUzytkownik()
-    if (last && uzytkownicy.some((u) => u.id === last)) {
+    // Nieaktywne konto (wylaczone przez wlasciciela) nie moze wejsc nawet PIN-em.
+    if (last && uzytkownicy.some((u) => u.id === last && u.aktywny !== false)) {
       setUserId(last)
       setWidok('lock')
     } else {
@@ -61,6 +62,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [hydrated])
 
   const user = useMemo(() => uzytkownicy.find((u) => u.id === userId) || null, [uzytkownicy, userId])
+
+  // Konto moglo zniknac w trakcie pracy (usuniete na innym urzadzeniu i przyszlo
+  // przez synchronizacje). Bez tego zostawalby pusty ekran, z ktorego nie dalo sie
+  // wyjsc bez odswiezenia. Wracamy na ekran logowania/zakladania konta.
+  useEffect(() => {
+    if (widok === 'in' && userId && !user) {
+      wyczyscOstatniego()
+      setUserId(null)
+      setWidok(uzytkownicy.length ? 'login' : 'onboarding')
+    }
+  }, [widok, userId, user, uzytkownicy.length])
 
   // Auto-blokada po bezczynnosci (5 min) – ochrona przy zgubieniu urzadzenia
   useEffect(() => {
@@ -304,7 +316,11 @@ function Onboarding({ onDone, onWroc }: { onDone: (id: string) => void; onWroc?:
 
 // ---------- Login (email + haslo) ----------
 function Login({ onLogin }: { onLogin: (id: string) => void }) {
-  const uzytkownicy = useStore((s) => s.baza.uzytkownicy)
+  const wszyscy = useStore((s) => s.baza.uzytkownicy)
+  // Tylko konta, ktore mozna odblokowac NA TYM urzadzeniu (maja lokalne haslo)
+  // i nie zostaly wylaczone (aktywny !== false). Konta wspolpracownikow przychodza
+  // z chmury bez sekretow - te loguja sie przez panel chmury, a nie z tej listy.
+  const uzytkownicy = wszyscy.filter((u) => u.hasloHash && u.salt && u.aktywny !== false)
   const [sel, setSel] = useState<string | null>(uzytkownicy.length === 1 ? uzytkownicy[0].id : null)
   const [haslo, setHaslo] = useState('')
   const [err, setErr] = useState('')
@@ -316,13 +332,29 @@ function Login({ onLogin }: { onLogin: (id: string) => void }) {
     if (!user) return
     setErr('')
     setBusy(true)
-    const ok = await sprawdzHaslo(haslo, user.salt, user.hasloHash)
-    setBusy(false)
-    if (ok) onLogin(user.id)
-    else setErr('Nieprawidłowe hasło.')
+    try {
+      const ok = await sprawdzHaslo(haslo, user.salt, user.hasloHash)
+      if (ok) onLogin(user.id)
+      else setErr('Nieprawidłowe hasło.')
+    } catch {
+      setErr('Nie udało się zweryfikować hasła. Spróbuj ponownie.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   if (!user) {
+    if (uzytkownicy.length === 0) {
+      return (
+        <div className="space-y-2">
+          <h1 className="text-[18px] font-display font-semibold text-ink">Zaloguj się</h1>
+          <p className="text-[13px] leading-relaxed text-stone-400">
+            Na tym urządzeniu nie ma jeszcze zapisanego hasła. Zaloguj się przez chmurę tym samym e-mailem i hasłem co
+            na pozostałych urządzeniach.
+          </p>
+        </div>
+      )
+    }
     return (
       <div className="space-y-3">
         <h1 className="text-[18px] font-display font-semibold text-ink">Wybierz użytkownika</h1>

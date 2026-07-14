@@ -54,8 +54,21 @@ export function CloudPanel({
     setErr('')
     setBusy(true)
     try {
-      if (tryb === 'rejestracja') await zarejestrujChmura(email.trim(), haslo)
-      else await zalogujChmura(email.trim(), haslo)
+      if (tryb === 'rejestracja') {
+        await zarejestrujChmura(email.trim(), haslo)
+      } else if (tryb === 'dolacz') {
+        // Pracownik dolaczajacy kodem zwykle NIE MA jeszcze konta. Probujemy sie
+        // zalogowac, a jesli konta nie ma - zakladamy je i dopiero potem dolaczamy.
+        // Wczesniej "Dolacz" tylko probowal logowania i konczyl sie bledem.
+        try {
+          await zalogujChmura(email.trim(), haslo)
+        } catch (e: any) {
+          if (/Invalid login/i.test(e?.message || '')) await zarejestrujChmura(email.trim(), haslo)
+          else throw e
+        }
+      } else {
+        await zalogujChmura(email.trim(), haslo)
+      }
 
       const sesja = await sesjaChmury()
       if (!sesja) throw new Error('Brak sesji – sprawdź e-mail lub hasło')

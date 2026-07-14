@@ -13,7 +13,7 @@
 //   - linki zewnetrzne otwieraja sie w przegladarce, nie w oknie aplikacji.
 // ============================================================================
 
-const { app, BrowserWindow, protocol, shell, dialog, ipcMain, Menu } = require('electron')
+const { app, BrowserWindow, protocol, shell, dialog, ipcMain, Menu, screen } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
 
@@ -67,11 +67,26 @@ function wczytajOkno() {
 function zapiszOkno(win) {
   try {
     if (!win || win.isDestroyed()) return
-    const b = win.getBounds()
+    // getNormalBounds, a nie getBounds - inaczej po "Przywroc w dol" okno zapamietaloby
+    // rozmiar pelnoekranowy.
+    const b = win.getNormalBounds()
     fs.writeFileSync(plikOkna(), JSON.stringify({ ...b, zmaksymalizowane: win.isMaximized() }))
   } catch {
     /* nie blokujemy zamkniecia z powodu zapisu ustawien okna */
   }
+}
+
+// Czy zapamietana pozycja okna miesci sie na ktoryms z podlaczonych ekranow.
+// Po odlaczeniu monitora zapisane x/y moga wskazywac obszar poza ekranem i okna
+// w ogole nie widac. Wtedy ignorujemy pozycje i pozwalamy systemowi wysrodkowac.
+function pozycjaWidoczna(z) {
+  if (!z || typeof z.x !== 'number' || typeof z.y !== 'number') return false
+  return screen.getAllDisplays().some((d) => {
+    const w = d.workArea
+    const srodekX = z.x + (z.width || 0) / 2
+    const srodekY = z.y + (z.height || 0) / 2
+    return srodekX >= w.x && srodekX <= w.x + w.width && srodekY >= w.y && srodekY <= w.y + w.height
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -81,12 +96,15 @@ let glowneOkno = null
 
 function utworzOkno() {
   const zapisane = wczytajOkno()
+  const naEkranie = pozycjaWidoczna(zapisane)
 
   glowneOkno = new BrowserWindow({
     width: zapisane?.width || 1440,
     height: zapisane?.height || 900,
-    x: zapisane?.x,
-    y: zapisane?.y,
+    // Pozycje przywracamy tylko, gdy okno byloby widoczne na aktualnie podlaczonym
+    // monitorze. W przeciwnym razie system sam je wysrodkuje.
+    x: naEkranie ? zapisane.x : undefined,
+    y: naEkranie ? zapisane.y : undefined,
     minWidth: 1024,
     minHeight: 680,
     show: false,

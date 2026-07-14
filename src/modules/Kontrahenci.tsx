@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Handshake, Plus, Pencil, Trash2, Phone, Mail, Building2, Coins, Percent, Check } from 'lucide-react'
 import { useStore } from '../lib/store'
 import {
@@ -409,12 +409,7 @@ function EdycjaModal({
             <Input type="date" value={k.dataKontaktu || ''} onChange={(e) => set('dataKontaktu', e.target.value)} />
           </Field>
           <Field label="Stawka prowizji (%)">
-            <Input
-              value={k.stawkaProwizji ?? ''}
-              onChange={(e) => set('stawkaProwizji', e.target.value === '' ? undefined : parseNum(e.target.value))}
-              placeholder="np. 10"
-              inputMode="decimal"
-            />
+            <KwotaInput value={k.stawkaProwizji} onChange={(n) => set('stawkaProwizji', n)} placeholder="np. 10" />
           </Field>
         </div>
 
@@ -454,11 +449,7 @@ function EdycjaModal({
                   <div key={p.id} className="rounded-xl border border-stone-200 p-3">
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                       <Field label="Kwota (zł)">
-                        <Input
-                          value={p.kwota || ''}
-                          onChange={(e) => zmienProwizje(p.id, { kwota: parseNum(e.target.value) })}
-                          inputMode="decimal"
-                        />
+                        <KwotaInput value={p.kwota} onChange={(n) => zmienProwizje(p.id, { kwota: n || 0 })} />
                       </Field>
                       <Field label="Nr zlecenia">
                         <Input
@@ -589,5 +580,35 @@ export function KontrahenciDoc({
         Kategoria kontrahentów: <b>{typNazwa}</b>. Dokument informacyjny – {firma.nazwa}.
       </div>
     </DocSheet>
+  )
+}
+
+// Pole kwoty z wlasnym buforem tekstu. Bez niego wpisanie liczby z przecinkiem
+// (np. "1,50") gubilo przecinek i zawyzalo kwote 100-krotnie.
+function KwotaInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value?: number
+  onChange: (n: number | undefined) => void
+  placeholder?: string
+}) {
+  const [txt, setTxt] = useState(value != null ? String(value).replace('.', ',') : '')
+  useEffect(() => {
+    const biezacy = parseNum(txt)
+    if (biezacy !== (value || 0)) setTxt(value != null ? String(value).replace('.', ',') : '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+  return (
+    <Input
+      value={txt}
+      inputMode="decimal"
+      placeholder={placeholder ?? '0,00'}
+      onChange={(e) => {
+        setTxt(e.target.value)
+        onChange(e.target.value.trim() === '' ? undefined : parseNum(e.target.value))
+      }}
+    />
   )
 }

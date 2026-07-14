@@ -196,13 +196,13 @@ export default function Pomoc() {
       <Sekcja tytul="Pierwsze uruchomienie – 4 kroki (robisz raz)" ikona={<Lock size={18} />}>
         <div className="space-y-3">
           <Krok n={1} tytul="Załóż sobie konto">
-            Na ekranie startowym kliknij <b>„Zaloguj przez chmurę”</b> (mały napis na dole), a potem zakładkę{' '}
-            <b>„Załóż konto”</b>. Wpisz swoje <b>imię i nazwisko</b>, swój <b>e-mail</b> i wymyśl <b>hasło</b>. Kliknij
-            „Załóż konto i połącz”.
+            Na pierwszym ekranie („Witaj w AMICO”) kliknij <b>„Zakładam AMICO pierwszy raz”</b>. Wpisz swoje{' '}
+            <b>imię i nazwisko</b>, swój <b>e-mail</b> i wymyśl <b>hasło</b>, a potem kliknij „Załóż konto i połącz”.
             <br />
             <span className="mt-1 block text-stone-500">
               Zapamiętaj ten e-mail i hasło – <b>tym samym</b> zalogujesz się później na komputerze albo na nowym
-              tablecie i zobaczysz te same dane.
+              tablecie i zobaczysz te same dane. Na kolejnym urządzeniu wybierasz wtedy{' '}
+              <b>„Mam już konto – zaloguj się”</b>.
             </span>
           </Krok>
           <Krok n={2} tytul="Ustaw PIN – żeby wchodzić jednym dotknięciem">
@@ -623,8 +623,8 @@ export default function Pomoc() {
             <code className="rounded bg-white/[0.06] px-1.5 py-0.5">86D64CD7</code>. Kliknij go, żeby skopiować.
           </Krok>
           <Krok n={2} tytul="Przekaż kod pracownikowi">
-            Pracownik otwiera aplikację na swoim telefonie, klika <b>„Zaloguj przez chmurę” → „Dołącz do firmy”</b>,
-            wpisuje swoje imię, e-mail, hasło <b>i ten kod</b>.
+            Pracownik otwiera aplikację na swoim telefonie i na pierwszym ekranie klika{' '}
+            <b>„Dołączam do firmy (mam kod)”</b>, a potem wpisuje swoje imię, e-mail, hasło <b>i ten kod</b>.
           </Krok>
           <Krok n={3} tytul="Nadaj mu rolę">
             W{' '}
@@ -893,7 +893,8 @@ function PoradnikDruk({ firma }: { firma: any }) {
       <h2 style={h2}>Pierwsze uruchomienie (robisz raz)</h2>
       <ol style={{ paddingLeft: 14, margin: 0 }}>
         <li style={li}>
-          „Zaloguj przez chmurę” → „Załóż konto”: imię, e-mail, hasło. (Tym samym zalogujesz się na każdym urządzeniu.)
+          Na pierwszym ekranie: „Zakładam AMICO pierwszy raz” – imię, e-mail, hasło. (Tym samym zalogujesz się na każdym
+          urządzeniu, wybierając „Mam już konto”.)
         </li>
         <li style={li}>
           Ustawienia → Twoje konto: ustaw <b>PIN</b> (4 cyfry) i ewentualnie odcisk palca / Face ID.
@@ -980,8 +981,8 @@ function PoradnikDruk({ firma }: { firma: any }) {
 
       <h2 style={h2}>Dodanie pracownika</h2>
       <p style={p}>
-        Ustawienia → Chmura → skopiuj <b>kod firmy</b>. Pracownik w aplikacji wybiera „Zaloguj przez chmurę” → „Dołącz
-        do firmy”, wpisuje imię, e-mail, hasło i ten kod. Rolę (Montażysta / Biuro / Właściciel) nadajesz w
+        Ustawienia → Chmura → skopiuj <b>kod firmy</b>. Pracownik w aplikacji wybiera na pierwszym ekranie „Dołączam do
+        firmy (mam kod)”, wpisuje imię, e-mail, hasło i ten kod. Rolę (Montażysta / Biuro / Właściciel) nadajesz w
         Ustawieniach.
       </p>
 

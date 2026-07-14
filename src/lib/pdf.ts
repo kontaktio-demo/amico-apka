@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import { safeFilename } from './print'
+import { czyDesktop } from './desktop'
 
 // Sklejenie stron (obrazy JPEG dataURL) w jeden dokument PDF A4.
 export function skanDoPdf(strony: string[]): jsPDF {
@@ -32,21 +33,32 @@ export function pdfBlob(strony: string[]): Blob {
   return skanDoPdf(strony).output('blob')
 }
 
-// Druk PDF w nowej karcie
-export function drukujPdf(strony: string[]) {
+// Druk PDF. Zwraca true, jesli udalo sie otworzyc okno druku; false, gdy zamiast
+// tego plik zostal zapisany (wtedy warto o tym poinformowac uzytkownika).
+export function drukujPdf(strony: string[], nazwa = 'skan'): boolean {
+  // W aplikacji desktopowej okna z blob: sa blokowane (bezpieczenstwo), wiec zamiast
+  // pustego okna zapisujemy plik - uzytkownik otworzy go i wydrukuje z czytnika PDF.
+  if (czyDesktop()) {
+    pobierzPdf(strony, nazwa)
+    return false
+  }
   const pdf = skanDoPdf(strony)
   const url = pdf.output('bloburl')
   const w = window.open(url as unknown as string, '_blank')
-  if (w) {
-    w.onload = () => {
-      try {
-        w.focus()
-        w.print()
-      } catch {
-        /* ignore */
-      }
+  if (!w) {
+    // Wyskakujace okna zablokowane - zapisujemy plik jako plan awaryjny.
+    pobierzPdf(strony, nazwa)
+    return false
+  }
+  w.onload = () => {
+    try {
+      w.focus()
+      w.print()
+    } catch {
+      /* ignore */
     }
   }
+  return true
 }
 
 // Wyslanie PDF w zalaczniku – Web Share API (poziom 2), fallback: pobranie

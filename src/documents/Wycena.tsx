@@ -113,8 +113,7 @@ export function WycenaDoc({
           </table>
         </div>
         <div style={{ fontSize: '8pt', color: '#6b6459', marginTop: 4 }}>
-          Do podanych cen należy doliczyć podatek VAT 8% lub 23%. Umowa na osobę fizyczną:{' '}
-          <b>{w.osobaFizyczna ? 'TAK' : 'NIE'}</b>
+          Ceny zawierają podatek VAT. Umowa na osobę fizyczną: <b>{w.osobaFizyczna ? 'TAK' : 'NIE'}</b>
         </div>
       </div>
 

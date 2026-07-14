@@ -101,6 +101,7 @@ export default function Ekspozycje() {
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
   const kolejnyNumer = useStore((s) => s.kolejnyNumer)
+  const podgladNumeru = useStore((s) => s.podgladNumeru)
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
 
@@ -110,7 +111,9 @@ export default function Ekspozycje() {
   const lista = b.ekspozycje.slice().sort((a, c) => c.utworzono.localeCompare(a.utworzono))
 
   const otworzNowa = () => {
-    setEdit(pustaEkspozycja(firma.id, kolejnyNumer('EKS')))
+    // Numer to na razie PODGLAD; prawdziwy nadajemy przy zapisie, zeby anulowanie
+    // nowej ekspozycji nie robilo dziury w numeracji.
+    setEdit(pustaEkspozycja(firma.id, podgladNumeru('EKS')))
   }
   const otworzEdycje = (e: Ekspozycja) => {
     setEdit(structuredClone(e))
@@ -125,7 +128,8 @@ export default function Ekspozycje() {
       push('Podaj nazwę firmy lub wybierz sprzedawcę', 'err')
       return
     }
-    upsert('ekspozycje', { ...edit, nazwaFirmy: nazwa })
+    const nowa = !b.ekspozycje.some((x) => x.id === edit.id)
+    upsert('ekspozycje', { ...edit, nazwaFirmy: nazwa, numer: nowa ? kolejnyNumer('EKS') : edit.numer })
     setEdit(null)
     push('Zapisano ekspozycję')
   }

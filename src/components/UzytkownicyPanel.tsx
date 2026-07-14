@@ -4,7 +4,7 @@ import { SectionCard, Field, Input, Select, Toggle, Badge, useToast, useConfirm 
 import { useStore } from '../lib/store'
 import { useAuth } from './Auth'
 import { ROLE, nazwaRoli, hashHasla, hashPin, losowaSol, biometriaDostepna, zarejestrujBiometrie } from '../lib/auth'
-import { zmienRoleWChmurze } from '../lib/cloud'
+import { zmienRoleWChmurze, usunCzlonkaZChmury } from '../lib/cloud'
 import type { Uzytkownik, Rola } from '../lib/types'
 import { uid } from '../lib/id'
 import { nowISO, initials } from '../lib/format'
@@ -185,7 +185,17 @@ export function UzytkownicyPanel() {
                 }}
                 onUsun={async () => {
                   if (us.id === user?.id) return push('Nie można usunąć własnego konta', 'err')
-                  if (await confirm(`Usunąć użytkownika „${us.imie}”?`)) remove('uzytkownicy', us.id)
+                  if (!(await confirm(`Usunąć użytkownika „${us.imie}”? Straci on dostęp do danych firmy.`))) return
+                  // Najpierw odbieramy dostep w chmurze, potem kasujemy lokalnie.
+                  // Konta lokalne (usr_*, bez konta w chmurze) pomijamy - RPC dotyczy uuid.
+                  if (/^[0-9a-f-]{36}$/i.test(us.id)) {
+                    try {
+                      await usunCzlonkaZChmury(us.id)
+                    } catch {
+                      push('Usunięto lokalnie, ale nie udało się odebrać dostępu w chmurze', 'err')
+                    }
+                  }
+                  remove('uzytkownicy', us.id)
                 }}
               />
             ))}

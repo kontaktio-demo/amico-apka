@@ -112,7 +112,15 @@ export default function Ustawienia() {
     e.target.value = ''
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => {
+    reader.onload = async () => {
+      // Wczytanie kopii ZASTEPUJE wszystkie obecne dane (i po synchronizacji trafia do
+      // chmury). Bez potwierdzenia latwo bylo nieodwracalnie skasowac biezaca prace.
+      if (
+        !(await confirm(
+          'Wczytanie kopii ZASTĄPI wszystkie obecne dane na tym urządzeniu (klientów, wyceny, faktury). Tej operacji nie można cofnąć. Kontynuować?',
+        ))
+      )
+        return
       const ok = importJSON(String(reader.result))
       push(ok ? 'Kopia wczytana – dane zostały zastąpione' : 'Nieprawidłowy plik kopii', ok ? 'ok' : 'err')
     }
@@ -139,7 +147,7 @@ export default function Ustawienia() {
       return
     // Najpierw odlaczamy chmure. Inaczej subskrypcja store'a wyslalaby pusta baze
     // na serwer i skasowala dane CALEJ firmy, takze na pozostalych urzadzeniach.
-    odlaczOdChmury()
+    await odlaczOdChmury()
     await wyczyscWszystko()
     push('Wyczyszczono dane na tym urządzeniu', 'info')
   }
@@ -240,7 +248,10 @@ export default function Ustawienia() {
                   />
                   <button
                     className="btn-ghost !px-2 text-red-600"
-                    onClick={() => remove('pracownicy', p.id)}
+                    onClick={async () => {
+                      if (await confirm(`Usunąć członka zespołu „${p.imie || 'bez nazwy'}”?`))
+                        remove('pracownicy', p.id)
+                    }}
                     title="Usuń"
                   >
                     <Trash2 size={16} />

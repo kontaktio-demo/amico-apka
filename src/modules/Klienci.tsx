@@ -491,7 +491,16 @@ function KartaKlienta({ id }: { id: string }) {
   }
 
   const usunKlienta = async () => {
-    if (await confirm(`Usunąć klienta „${klientNazwa(k)}” wraz z historią? Operacja jest nieodwracalna.`)) {
+    // Ostrzegamy o powiazaniach – po usunieciu klienta jego zlecenia i wydarzenia
+    // straca nazwe ("brak klienta"), a faktur/umow z jego danymi nie da sie juz
+    // powiazac z kartoteka.
+    const zlecen = b.zlecenia.filter((z) => z.klientId === k.id).length
+    const faktur = b.faktury.filter((f) => f.klientId === k.id).length
+    const powiazania = [zlecen && `${zlecen} zlecen`, faktur && `${faktur} faktur`].filter(Boolean).join(', ')
+    const tresc = powiazania
+      ? `Klient „${klientNazwa(k)}” ma powiązania (${powiazania}). Po usunięciu stracą one nazwę klienta. Operacja jest nieodwracalna. Usunąć mimo to?`
+      : `Usunąć klienta „${klientNazwa(k)}” wraz z historią? Operacja jest nieodwracalna.`
+    if (await confirm(tresc)) {
       remove('klienci', k.id)
       push('Usunięto klienta', 'ok')
       nav('/klienci')
@@ -763,8 +772,10 @@ function KartaKlienta({ id }: { id: string }) {
                       </div>
                     </div>
                     <button
-                      onClick={() => usunWpis(h.id)}
-                      className="shrink-0 text-stone-400 opacity-0 transition hover:text-red-500 group-hover:opacity-100"
+                      onClick={async () => {
+                        if (await confirm('Usunąć ten wpis z historii?')) usunWpis(h.id)
+                      }}
+                      className="shrink-0 text-stone-300 transition hover:text-red-500"
                       title="Usuń wpis"
                     >
                       <Trash2 size={15} />

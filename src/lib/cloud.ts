@@ -183,14 +183,23 @@ export async function wylogujChmura() {
   C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
 }
 
-// Odlacza urzadzenie od chmury BEZ wylogowania i bez wysylania czegokolwiek.
-// Uzywane przed czyszczeniem danych lokalnych, zeby pusta baza nie poszla na serwer.
-export function odlaczOdChmury() {
+// Odlacza urzadzenie od chmury BEZ wysylania czegokolwiek. Uzywane przy czyszczeniu
+// danych lokalnych, zeby pusta baza nie poszla na serwer.
+// Kasujemy WSZYSTKIE slady polaczenia i wylogowujemy sie (lokalnie). Inaczej po
+// restarcie startSync() ponownie sciagnal cala baze firmy z chmury - czyszczenie
+// byloby pozorne, a przy okazji ktos moglby wejsc w cudze dane.
+export async function odlaczOdChmury() {
   const ws = C().workspaceId
   stopSync()
   if (ws) localStorage.removeItem(revKey(ws))
   localStorage.removeItem(WS_KEY)
-  C().ustaw({ status: 'off', workspaceId: null, joinCode: null, blad: null })
+  localStorage.removeItem(AKT_WS)
+  try {
+    await supabase.auth.signOut({ scope: 'local' })
+  } catch {
+    /* ignore */
+  }
+  C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
 }
 
 export async function bootstrapFirmy(imie: string) {
@@ -212,6 +221,17 @@ export async function zmienRoleWChmurze(userId: string, rola: Rola) {
   const ws = C().workspaceId
   if (!ws) return
   const { error } = await supabase.rpc('amico_set_role', { p_user: userId, p_workspace: ws, p_rola: rola })
+  if (error) throw error
+}
+
+// Odbiera pracownikowi dostep do danych firmy w chmurze. Bez tego usuniecie osoby
+// w aplikacji kasowalo tylko lokalny wpis - w bazie miala dalej prawo odczytu i zapisu,
+// a jej konto "zmartwychwstawalo" przy nastepnym logowaniu.
+// Wymaga funkcji amico_remove_member z supabase/amico-poprawki-2.sql.
+export async function usunCzlonkaZChmury(userId: string) {
+  const ws = C().workspaceId
+  if (!ws) return
+  const { error } = await supabase.rpc('amico_remove_member', { p_user: userId, p_workspace: ws })
   if (error) throw error
 }
 

@@ -198,7 +198,13 @@ export default function Dokumenty() {
                           <div className="flex items-center justify-end gap-2">
                             <PrintSendBar
                               size="sm"
-                              getPrintNode={() => <ProtokolDoc p={p} firma={firma} logoDataUrl={logo} />}
+                              getPrintNode={() => (
+                                <ProtokolDoc
+                                  p={p}
+                                  firma={b.firmy.find((x) => x.id === p.firmaId) || firma}
+                                  logoDataUrl={logo}
+                                />
+                              )}
                               share={{
                                 title: `Protokół odbioru ${p.numer}`,
                                 text: `Protokół odbioru ${p.numer} – ${nazwa}. Data: ${fmtDate(p.data)}.`,
@@ -269,7 +275,13 @@ export default function Dokumenty() {
                           <div className="flex items-center justify-end gap-2">
                             <PrintSendBar
                               size="sm"
-                              getPrintNode={() => <KPDoc kp={kp} firma={firma} logoDataUrl={logo} />}
+                              getPrintNode={() => (
+                                <KPDoc
+                                  kp={kp}
+                                  firma={b.firmy.find((x) => x.id === kp.firmaId) || firma}
+                                  logoDataUrl={logo}
+                                />
+                              )}
                               share={{
                                 title: `Dowód KP ${kp.numer}`,
                                 text: `Dowód wpłaty KP ${kp.numer} na kwotę ${fmtPLN(kp.kwota)} od: ${nazwa}. Data: ${fmtDate(kp.data)}.`,
@@ -298,7 +310,7 @@ export default function Dokumenty() {
         <ProtokolEditor
           draft={edytorP}
           klienci={b.klienci}
-          firma={firma}
+          firma={b.firmy.find((x) => x.id === edytorP.firmaId) || firma}
           logo={logo}
           onChange={setEdytorP}
           onClose={() => setEdytorP(null)}
@@ -315,7 +327,7 @@ export default function Dokumenty() {
         <KPEditor
           draft={edytorK}
           klienci={b.klienci}
-          firma={firma}
+          firma={b.firmy.find((x) => x.id === edytorK.firmaId) || firma}
           logo={logo}
           onChange={setEdytorK}
           onClose={() => setEdytorK(null)}

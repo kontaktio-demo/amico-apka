@@ -200,7 +200,13 @@ function PodgladSkanu({
           <button className="btn-outline" onClick={() => pobierzPdf(d.strony, d.nazwa)}>
             <Download size={16} /> PDF
           </button>
-          <button className="btn-outline" onClick={() => drukujPdf(d.strony)}>
+          <button
+            className="btn-outline"
+            onClick={() => {
+              const okno = drukujPdf(d.strony, d.nazwa)
+              if (!okno) push('Zapisano PDF – otwórz go, aby wydrukować', 'ok')
+            }}
+          >
             <Printer size={16} /> Drukuj
           </button>
           <button className="btn-primary" onClick={wyslij}>

@@ -45,13 +45,18 @@ async function pbkdf2(tekst: string, solB64: string, iters = 120000): Promise<st
 export async function hashHasla(haslo: string, sol: string): Promise<string> {
   return pbkdf2(haslo, sol, 120000)
 }
-export async function sprawdzHaslo(haslo: string, sol: string, hash: string): Promise<boolean> {
+export async function sprawdzHaslo(haslo: string, sol?: string, hash?: string): Promise<boolean> {
+  // Konto zsynchronizowane z chmury (nie zalozone na TYM urzadzeniu) nie ma jeszcze
+  // lokalnej soli ani hasha. Bez tej ochrony atob(undefined) rzucalby wyjatkiem,
+  // przycisk "Zaloguj" zostawal na zawsze wyszarzony i nie dalo sie wejsc.
+  if (!sol || !hash) return false
   return (await pbkdf2(haslo, sol, 120000)) === hash
 }
 export async function hashPin(pin: string, sol: string): Promise<string> {
   return pbkdf2(pin, sol, 60000)
 }
-export async function sprawdzPin(pin: string, sol: string, hash: string): Promise<boolean> {
+export async function sprawdzPin(pin: string, sol?: string, hash?: string): Promise<boolean> {
+  if (!sol || !hash) return false
   return (await pbkdf2(pin, sol, 60000)) === hash
 }
 

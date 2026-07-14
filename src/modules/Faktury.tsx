@@ -190,6 +190,11 @@ function Edytor({ id }: { id: string }) {
   const [podglad, setPodglad] = useState(false)
   const numerZmienionyRecznie = useRef(false)
 
+  // WYSTAWCA faktury to firma zapisana na dokumencie (f.firmaId), a NIE ta akurat
+  // aktywna. Po przelaczeniu podmiotu faktura pierwszej firmy musi sie dalej drukowac
+  // z jej NIP-em i nazwa - inaczej dokument wskazuje niewlasciwego podatnika.
+  const firmaWystawca = b.firmy.find((x) => x.id === f.firmaId) || firma
+
   // istniejaca, ale nie znaleziona – wroc do listy
   useEffect(() => {
     if (!isNew && !existing) navigate('/faktury', { replace: true })
@@ -199,7 +204,8 @@ function Edytor({ id }: { id: string }) {
 
   const setPoz = (pid: string, patch: Partial<Pozycja>) =>
     setF((prev) => ({ ...prev, pozycje: prev.pozycje.map((p) => (p.id === pid ? { ...p, ...patch } : p)) }))
-  const dodajPoz = () => setF((prev) => ({ ...prev, pozycje: [...prev.pozycje, nowaPozycja(firma.domyslnyVat)] }))
+  const dodajPoz = () =>
+    setF((prev) => ({ ...prev, pozycje: [...prev.pozycje, nowaPozycja(firmaWystawca.domyslnyVat)] }))
   const usunPoz = (pid: string) => setF((prev) => ({ ...prev, pozycje: prev.pozycje.filter((p) => p.id !== pid) }))
 
   const wybierzKlienta = (klientId: string) => {
@@ -252,7 +258,7 @@ function Edytor({ id }: { id: string }) {
   const docNode = (
     <FakturaDoc
       f={{ ...f, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }}
-      firma={firma}
+      firma={firmaWystawca}
       logoDataUrl={b.ustawienia.logoDataUrl}
     />
   )

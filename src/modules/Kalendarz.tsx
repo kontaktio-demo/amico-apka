@@ -146,6 +146,12 @@ export default function Kalendarz() {
       push('Podaj tytuł wydarzenia', 'err')
       return
     }
+    // Bez daty wydarzenie nie pojawi sie w zadnym widoku kalendarza - czyli
+    // zniknie bezpowrotnie. Wymagamy jej przed zapisem.
+    if (!draft.data) {
+      push('Podaj datę wydarzenia', 'err')
+      return
+    }
     upsert('wydarzenia', { ...draft, tytul: draft.tytul.trim() })
     setModalOpen(false)
     setWybranyDzien(draft.data)

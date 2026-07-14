@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Camera, Upload, X, Check, RotateCcw, Trash2, Plus, ScanLine, FileText, ChevronLeft } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { useToast, Field, Input, Select, Textarea } from './ui'
+import { useToast, useConfirm, Field, Input, Select, Textarea } from './ui'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { uid } from '../lib/id'
 import { nowISO } from '../lib/format'
@@ -59,6 +59,13 @@ export function Skaner({
   const b = useStore((s) => s.baza)
   const upsert = useStore((s) => s.upsert)
   const { push } = useToast()
+  const { confirm, confirmNode } = useConfirm()
+
+  // Zamkniecie skanera po zeskanowaniu, ale przed zapisaniem, kasuje strony bezpowrotnie.
+  const zamknij = async () => {
+    if (strony.length > 0 && !(await confirm(`Odrzucić ${strony.length} zeskanowanych stron bez zapisania?`))) return
+    onClose()
+  }
 
   const [etap, setEtap] = useState<Etap>('kamera')
   const [strony, setStrony] = useState<Strona[]>([])
@@ -229,7 +236,7 @@ export function Skaner({
         </div>
         <div className="flex items-center gap-2 text-[13px] text-stone-400">
           {strony.length > 0 && <span>{strony.length} str.</span>}
-          <button className="btn-ghost !px-2" onClick={onClose}>
+          <button className="btn-ghost !px-2" onClick={zamknij}>
             <X size={22} />
           </button>
         </div>
@@ -412,6 +419,7 @@ export function Skaner({
           </div>
         </div>
       )}
+      {confirmNode}
     </div>
   )
 }

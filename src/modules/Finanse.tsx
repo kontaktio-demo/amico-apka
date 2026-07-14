@@ -214,7 +214,11 @@ function RaportyTab({ firma }: { firma: Firma }) {
                     <PrintSendBar
                       size="sm"
                       getPrintNode={() => (
-                        <RaportKasowyDoc r={r} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />
+                        <RaportKasowyDoc
+                          r={r}
+                          firma={b.firmy.find((x) => x.id === r.firmaId) || firma}
+                          logoDataUrl={b.ustawienia.logoDataUrl}
+                        />
                       )}
                       share={{
                         title: `Raport kasowy ${r.numer}`,

@@ -3,6 +3,7 @@ import type { Baza, Firma } from './types'
 import { loadBaza, saveBaza, clearBaza } from './db'
 import { pustaBaza } from './seed'
 import { nowISO } from './format'
+import { bezSekretow } from './merge'
 
 // Kolekcje bedace tablicami obiektow z polem id
 type ArrKeys = {
@@ -37,6 +38,23 @@ interface AppState {
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+// Numeracja dokumentow jest osobna dla KAZDEGO podmiotu (firma_andrzej / firma_milena),
+// bo kazdy podatnik prowadzi wlasna, ciagla serie faktur. Wspolny licznik robilby
+// dziury w seriach obu firm.
+function numerKey(s: AppState, prefix: string, rok: number): string {
+  const firmaId = s.aktywnaFirma().id
+  return `${firmaId}-${prefix}-${rok}`
+}
+// Stan licznika dla klucza. Jesli klucza per-firma jeszcze nie ma, ale istnieje stary
+// klucz globalny (sprzed rozdzielenia na podmioty) - dziedziczymy z niego, zeby nie
+// cofnac istniejacej serii.
+function stanLicznika(s: AppState, key: string, prefix: string, rok: number): number {
+  const num = s.baza.ustawienia.numeracja
+  if (num[key] != null) return num[key]
+  const stary = num[`${prefix}-${rok}`]
+  return stary != null ? stary : 0
+}
 
 export const useStore = create<AppState>((setState, getState) => ({
   baza: pustaBaza(),
@@ -145,16 +163,17 @@ export const useStore = create<AppState>((setState, getState) => ({
   // robilo trwala dziure w numeracji (a ta musi byc ciagla).
   podgladNumeru: (prefix) => {
     const rok = new Date().getFullYear()
-    const key = `${prefix}-${rok}`
-    const kolejny = (getState().baza.ustawienia.numeracja[key] || 0) + 1
+    const st = getState()
+    const key = numerKey(st, prefix, rok)
+    const kolejny = stanLicznika(st, key, prefix, rok) + 1
     return `${prefix} ${kolejny}/${rok}`
   },
 
   kolejnyNumer: (prefix) => {
     const rok = new Date().getFullYear()
-    const key = `${prefix}-${rok}`
     const s = getState()
-    const kolejny = (s.baza.ustawienia.numeracja[key] || 0) + 1
+    const key = numerKey(s, prefix, rok)
+    const kolejny = stanLicznika(s, key, prefix, rok) + 1
     setState((st) => ({
       baza: {
         ...st.baza,
@@ -170,13 +189,33 @@ export const useStore = create<AppState>((setState, getState) => ({
     return `${prefix} ${kolejny}/${rok}`
   },
 
-  eksportJSON: () => JSON.stringify(getState().baza, null, 2),
+  // Kopia zapasowa BEZ sekretow (hash hasla, PIN, klucz biometrii). Plik kopii bywa
+  // wysylany mailem albo lezy na pendrive - nie moze zawierac danych logowania.
+  eksportJSON: () => JSON.stringify(bezSekretow(getState().baza), null, 2),
 
   importJSON: (json) => {
     try {
       const parsed = JSON.parse(json) as Baza
       if (!parsed.firmy || !Array.isArray(parsed.firmy)) return false
-      getState().setBaza(migruj(parsed))
+      // Kopia nie ma sekretow, wiec przenosimy lokalne dane logowania z biezacej bazy,
+      // zeby po imporcie dalo sie dalej wejsc tym samym PIN-em / haslem.
+      const sekrety = new Map(getState().baza.uzytkownicy.map((u) => [u.id, u]))
+      const scalone = {
+        ...parsed,
+        uzytkownicy: (parsed.uzytkownicy || []).map((u: any) => {
+          const l: any = sekrety.get(u.id)
+          if (!l) return u
+          return {
+            ...u,
+            hasloHash: u.hasloHash || l.hasloHash,
+            salt: u.salt || l.salt,
+            pinHash: u.pinHash ?? l.pinHash,
+            pinSalt: u.pinSalt ?? l.pinSalt,
+            webauthnId: u.webauthnId ?? l.webauthnId,
+          }
+        }),
+      }
+      getState().setBaza(migruj(scalone as Baza))
       return true
     } catch {
       return false
