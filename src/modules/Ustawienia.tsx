@@ -69,7 +69,6 @@ export default function Ustawienia() {
   const eksportJSON = useStore((s) => s.eksportJSON)
   const importJSON = useStore((s) => s.importJSON)
   const wyczyscWszystko = useStore((s) => s.wyczyscWszystko)
-  const wyczyscKonta = useStore((s) => s.wyczyscKonta)
 
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
@@ -151,20 +150,6 @@ export default function Ustawienia() {
     await odlaczOdChmury()
     await wyczyscWszystko()
     push('Wyczyszczono dane na tym urządzeniu', 'info')
-  }
-
-  async function onWyczyscKonta() {
-    if (
-      !(await confirm(
-        'Usunąć WSZYSTKIE konta logowania? Dane firmy (klienci, wyceny, umowy, faktury) zostaną nietknięte. Po tej operacji założysz nowe konto na czysto, a stare loginy przestaną działać. Kontynuować?',
-      ))
-    )
-      return
-    // Odlaczamy chmure, zeby nie zaciagnela z powrotem starych kont, i konczymy
-    // czysto: dane zostaja, kont nie ma.
-    await odlaczOdChmury()
-    await wyczyscKonta()
-    push('Usunięto wszystkie konta. Dane firmy zostały zachowane.', 'ok')
   }
 
   // ---------- Zespol ----------
@@ -423,20 +408,12 @@ export default function Ustawienia() {
           icon={<Database size={18} />}
           desc="Kopię zapasową zrobisz przyciskiem Eksport powyżej."
         >
-          <div className="flex flex-wrap gap-2">
-            <button className="btn-outline" onClick={onWyczyscKonta}>
-              <Users size={16} /> Usuń wszystkie konta (zachowaj dane)
-            </button>
-            <button className="btn-danger" onClick={onWyczysc}>
-              <Trash2 size={16} /> Wyczyść wszystko
-            </button>
-          </div>
+          <button className="btn-danger" onClick={onWyczysc}>
+            <Trash2 size={16} /> Wyczyść dane z tego urządzenia
+          </button>
           <p className="mt-2 text-[12.5px] text-stone-500">
-            <b className="text-stone-300">Usuń wszystkie konta</b> kasuje tylko loginy (założysz nowe na czysto) –
-            klienci, wyceny i faktury zostają.
-            <br />
-            <b className="text-stone-300">Wyczyść wszystko</b> kasuje wszystkie dane z tego urządzenia. Operacja jest
-            nieodwracalna – używaj tylko wtedy, gdy naprawdę chcesz zacząć od zera.
+            Usuwa kopię danych z tego urządzenia i wylogowuje z chmury. Dane firmy zostają na serwerze – po ponownym
+            zalogowaniu wrócą. Używaj, gdy oddajesz albo czyścisz to urządzenie.
           </p>
         </SectionCard>
       </div>

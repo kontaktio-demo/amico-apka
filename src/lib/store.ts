@@ -34,8 +34,6 @@ interface AppState {
   eksportJSON: () => string
   importJSON: (json: string) => boolean
   wyczyscWszystko: () => Promise<void>
-  // Usuwa wszystkie konta logowania, ale ZACHOWUJE dane firmy (klientow, wyceny itd.)
-  wyczyscKonta: () => Promise<void>
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -230,22 +228,6 @@ export const useStore = create<AppState>((setState, getState) => ({
     setState({ baza: pusta })
     await clearBaza()
     await saveBaza(pusta)
-  },
-
-  // Usuwa WSZYSTKIE konta logowania (uzytkownicy), ale zostawia dane firmy nietkniete.
-  // Dla kazdego konta zostaje tombstone, zeby usuniecie propagowalo sie tez do chmury,
-  // gdyby urzadzenie bylo z nia polaczone.
-  wyczyscKonta: async () => {
-    const s = getState()
-    const teraz = nowISO()
-    const tomby = s.baza.uzytkownicy.map((u) => ({ k: 'uzytkownicy', id: u.id, t: teraz }))
-    const nowa: Baza = {
-      ...s.baza,
-      uzytkownicy: [],
-      usuniete: [...(s.baza.usuniete || []), ...tomby],
-    }
-    setState({ baza: nowa })
-    await saveBaza(nowa)
   },
 }))
 

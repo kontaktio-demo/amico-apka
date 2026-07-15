@@ -1,12 +1,9 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Delete, Fingerprint, LogIn, ShieldCheck, UserPlus, KeyRound, ArrowLeft, Cloud, Users } from 'lucide-react'
+import { Delete, Fingerprint, LogIn, UserPlus, KeyRound, ArrowLeft, Cloud, Users } from 'lucide-react'
 import { useStore } from '../lib/store'
 import type { Uzytkownik, Rola } from '../lib/types'
-import { uid } from '../lib/id'
-import { nowISO } from '../lib/format'
 import { initials } from '../lib/format'
 import {
-  hashHasla,
   sprawdzHaslo,
   hashPin,
   sprawdzPin,
@@ -33,8 +30,6 @@ interface AuthCtx {
 }
 const Ctx = createContext<AuthCtx>({ user: null, lock: () => {}, logout: () => {}, przelogujNa: () => {} })
 export const useAuth = () => useContext(Ctx)
-
-const KOLORY = ['#3a4a7a', '#2f6f57', '#7a4a3a', '#5a3a7a', '#7a6a2f', '#2f6a7a']
 
 type Widok = 'loading' | 'onboarding' | 'login' | 'lock' | 'in'
 
@@ -225,7 +220,7 @@ function AuthShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="card card-pad">{children}</div>
         <p className="mt-6 text-center text-[11.5px] text-stone-500">
-          Dane przechowywane lokalnie na urządzeniu. Logowanie chroni dostęp do aplikacji.
+          Dane firmy są w chmurze i synchronizują się między urządzeniami. Logowanie chroni dostęp do aplikacji.
         </p>
       </div>
     </div>
@@ -240,87 +235,6 @@ function Avatar({ u, size = 44 }: { u: { imie: string; kolor?: string }; size?: 
     >
       {initials(u.imie)}
     </span>
-  )
-}
-
-// ---------- Konto tylko na tym urzadzeniu (bez chmury) ----------
-function Onboarding({ onDone, onWroc }: { onDone: (id: string) => void; onWroc?: () => void }) {
-  const upsert = useStore((s) => s.upsert)
-  const [imie, setImie] = useState('')
-  const [email, setEmail] = useState('')
-  const [haslo, setHaslo] = useState('')
-  const [haslo2, setHaslo2] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState('')
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErr('')
-    if (imie.trim().length < 2) return setErr('Podaj imię i nazwisko.')
-    if (!/.+@.+\..+/.test(email)) return setErr('Podaj poprawny e-mail.')
-    if (haslo.length < 4) return setErr('Hasło min. 4 znaki.')
-    if (haslo !== haslo2) return setErr('Hasła nie są takie same.')
-    setBusy(true)
-    const sol = losowaSol()
-    const u: Uzytkownik = {
-      id: uid('usr'),
-      imie: imie.trim(),
-      email: email.trim().toLowerCase(),
-      rola: 'wlasciciel',
-      hasloHash: await hashHasla(haslo, sol),
-      salt: sol,
-      kolor: KOLORY[0],
-      aktywny: true,
-      utworzono: nowISO(),
-    }
-    upsert('uzytkownicy', u)
-    setBusy(false)
-    onDone(u.id)
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-4">
-      {onWroc && (
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-stone-400 hover:text-white"
-          onClick={onWroc}
-        >
-          <ArrowLeft size={14} /> Wróć
-        </button>
-      )}
-      <div className="flex items-center gap-2.5">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-50 text-brand-700">
-          <UserPlus size={18} />
-        </span>
-        <div>
-          <h1 className="text-[18px] font-display font-semibold text-ink">Konto na tym urządzeniu</h1>
-          <p className="text-[12.5px] text-stone-500">Bez chmury – dane zostaną tylko tutaj</p>
-        </div>
-      </div>
-      <p className="rounded-xl border border-amber-500/20 bg-amber-500/[0.07] px-3 py-2 text-[12.5px] leading-relaxed text-amber-200/90">
-        Te dane nie pojawią się na innych urządzeniach i nie będzie ich kopii na serwerze. Chmurę możesz włączyć później
-        w Ustawieniach.
-      </p>
-      <Field label="Imię i nazwisko">
-        <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Andrzej Fiks" autoFocus />
-      </Field>
-      <Field label="E-mail">
-        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="biuro@amicco.pl" />
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Hasło">
-          <Input type="password" value={haslo} onChange={(e) => setHaslo(e.target.value)} placeholder="••••" />
-        </Field>
-        <Field label="Powtórz hasło">
-          <Input type="password" value={haslo2} onChange={(e) => setHaslo2(e.target.value)} placeholder="••••" />
-        </Field>
-      </div>
-      {err && <p className="text-[12.5px] text-red-400">{err}</p>}
-      <button className="btn-primary w-full btn-lg" disabled={busy}>
-        <ShieldCheck size={18} /> Utwórz i wejdź
-      </button>
-    </form>
   )
 }
 

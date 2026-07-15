@@ -338,7 +338,7 @@ function StorageStatus() {
     return (
       <div className="mt-2 px-3">
         <div className="flex items-center gap-1.5 text-[11px] text-stone-400">
-          <ShieldCheck size={13} className="text-brand-600" /> Dane zapisane na tym komputerze
+          <ShieldCheck size={13} className="text-brand-600" /> Kopia offline na tym komputerze
         </div>
       </div>
     )
@@ -360,7 +360,7 @@ function StorageStatus() {
       )}
       <div className="flex items-center gap-1.5 px-1 text-[11px] text-stone-400">
         <ShieldCheck size={13} className={persisted ? 'text-brand-600' : 'text-stone-400'} />
-        {persisted ? 'Dane zabezpieczone lokalnie' : 'Pamięć lokalna'}
+        {persisted ? 'Kopia offline zabezpieczona' : 'Kopia offline'}
       </div>
     </div>
   )

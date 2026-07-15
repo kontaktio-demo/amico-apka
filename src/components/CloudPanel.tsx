@@ -98,20 +98,25 @@ export function CloudPanel({
       onZalogowano?.(userId)
     } catch (e: any) {
       const m: string = e?.message || 'Nie udało się połączyć'
+      const brakSieci =
+        (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+        /failed to fetch|networkerror|network request failed|load failed/i.test(m)
       setErr(
-        m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
-          ? 'Konto utworzone. Potwierdź e-mail (link w wiadomości), a potem zaloguj się. Aby zespół nie musiał tego robić: Supabase → Authentication → Sign In / Providers → Email → wyłącz „Confirm email”.'
-          : /Invalid login/i.test(m)
-            ? tryb === 'logowanie'
-              ? 'Nieprawidłowy e-mail lub hasło do CHMURY. Uwaga: hasło do chmury bywa inne niż to, którym odblokowujesz aplikację na tablecie. Jeśli na drugim urządzeniu pracujesz bez chmury, najpierw włącz tam synchronizację (Ustawienia → Chmura → Załóż konto), a dopiero potem zaloguj się tutaj tym samym e-mailem i hasłem.'
-              : 'Nieprawidłowy e-mail lub hasło'
-            : /already registered|User already/i.test(m)
-              ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”'
-              : /Wymagane logowanie/i.test(m)
-                ? 'Sesja wygasła – zaloguj się ponownie'
-                : /amico_bootstrap|amico_join|does not exist|schema cache|PGRST202/i.test(m)
-                  ? 'Baza w chmurze nie jest przygotowana – uruchom skrypt SQL (supabase/amico-schema.sql)'
-                  : m,
+        brakSieci
+          ? 'Brak połączenia z internetem. Do logowania potrzebny jest zasięg – spróbuj ponownie, gdy będziesz online.'
+          : m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
+            ? 'Konto utworzone. Potwierdź e-mail (link w wiadomości), a potem zaloguj się. Aby zespół nie musiał tego robić: Supabase → Authentication → Sign In / Providers → Email → wyłącz „Confirm email”.'
+            : /Invalid login/i.test(m)
+              ? tryb === 'logowanie'
+                ? 'Nieprawidłowy e-mail lub hasło. Uwaga: hasło do chmury bywa inne niż PIN, którym odblokowujesz aplikację na tablecie.'
+                : 'Nieprawidłowy e-mail lub hasło'
+              : /already registered|User already/i.test(m)
+                ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”'
+                : /Wymagane logowanie/i.test(m)
+                  ? 'Sesja wygasła – zaloguj się ponownie'
+                  : /amico_bootstrap|amico_join|does not exist|schema cache|PGRST202/i.test(m)
+                    ? 'Baza w chmurze nie jest przygotowana – uruchom skrypt SQL (supabase/amico-schema.sql)'
+                    : m,
       )
     } finally {
       setBusy(false)
