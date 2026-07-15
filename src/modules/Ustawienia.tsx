@@ -60,7 +60,7 @@ function fmtBytes(n?: number): string {
 }
 
 export default function Ustawienia() {
-  const { user: zalogowany } = useAuth()
+  const { user: zalogowany, przelogujNa } = useAuth()
   const b = useStore((s) => s.baza)
   const updateUstawienia = useStore((s) => s.updateUstawienia)
   const setAktywnaFirma = useStore((s) => s.setAktywnaFirma)
@@ -69,6 +69,7 @@ export default function Ustawienia() {
   const eksportJSON = useStore((s) => s.eksportJSON)
   const importJSON = useStore((s) => s.importJSON)
   const wyczyscWszystko = useStore((s) => s.wyczyscWszystko)
+  const wyczyscKonta = useStore((s) => s.wyczyscKonta)
 
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
@@ -150,6 +151,20 @@ export default function Ustawienia() {
     await odlaczOdChmury()
     await wyczyscWszystko()
     push('Wyczyszczono dane na tym urządzeniu', 'info')
+  }
+
+  async function onWyczyscKonta() {
+    if (
+      !(await confirm(
+        'Usunąć WSZYSTKIE konta logowania? Dane firmy (klienci, wyceny, umowy, faktury) zostaną nietknięte. Po tej operacji założysz nowe konto na czysto, a stare loginy przestaną działać. Kontynuować?',
+      ))
+    )
+      return
+    // Odlaczamy chmure, zeby nie zaciagnela z powrotem starych kont, i konczymy
+    // czysto: dane zostaja, kont nie ma.
+    await odlaczOdChmury()
+    await wyczyscKonta()
+    push('Usunięto wszystkie konta. Dane firmy zostały zachowane.', 'ok')
   }
 
   // ---------- Zespol ----------
@@ -265,7 +280,7 @@ export default function Ustawienia() {
         {/* 2a. Chmura i synchronizacja */}
         {/* lokalnyUserId: konto zalozone przed polaczeniem z chmura zostanie z nia POWIAZANE,
             zamiast tworzyc druga pozycje tej samej osoby na liscie uzytkownikow. */}
-        <CloudPanel lokalnyUserId={zalogowany?.id} />
+        <CloudPanel lokalnyUserId={zalogowany?.id} onZalogowano={(id) => przelogujNa(id)} />
 
         {/* 2b. Konto, zabezpieczenia i uzytkownicy */}
         <UzytkownicyPanel />
@@ -408,12 +423,20 @@ export default function Ustawienia() {
           icon={<Database size={18} />}
           desc="Kopię zapasową zrobisz przyciskiem Eksport powyżej."
         >
-          <button className="btn-danger" onClick={onWyczysc}>
-            <Trash2 size={16} /> Wyczyść wszystko
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button className="btn-outline" onClick={onWyczyscKonta}>
+              <Users size={16} /> Usuń wszystkie konta (zachowaj dane)
+            </button>
+            <button className="btn-danger" onClick={onWyczysc}>
+              <Trash2 size={16} /> Wyczyść wszystko
+            </button>
+          </div>
           <p className="mt-2 text-[12.5px] text-stone-500">
-            Kasuje wszystkie dane z tego urządzenia. Operacja jest nieodwracalna – używaj tylko wtedy, gdy naprawdę
-            chcesz zacząć od zera.
+            <b className="text-stone-300">Usuń wszystkie konta</b> kasuje tylko loginy (założysz nowe na czysto) –
+            klienci, wyceny i faktury zostają.
+            <br />
+            <b className="text-stone-300">Wyczyść wszystko</b> kasuje wszystkie dane z tego urządzenia. Operacja jest
+            nieodwracalna – używaj tylko wtedy, gdy naprawdę chcesz zacząć od zera.
           </p>
         </SectionCard>
       </div>

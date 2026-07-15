@@ -27,8 +27,11 @@ interface AuthCtx {
   user: Uzytkownik | null
   lock: () => void
   logout: () => void
+  // Przelacza zalogowanego uzytkownika na inne konto (np. gdy po polaczeniu z chmura
+  // lokalne konto dostaje nowy identyfikator z chmury).
+  przelogujNa: (id: string) => void
 }
-const Ctx = createContext<AuthCtx>({ user: null, lock: () => {}, logout: () => {} })
+const Ctx = createContext<AuthCtx>({ user: null, lock: () => {}, logout: () => {}, przelogujNa: () => {} })
 export const useAuth = () => useContext(Ctx)
 
 const KOLORY = ['#3a4a7a', '#2f6f57', '#7a4a3a', '#5a3a7a', '#7a6a2f', '#2f6a7a']
@@ -66,12 +69,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Konto moglo zniknac w trakcie pracy (usuniete na innym urzadzeniu i przyszlo
   // przez synchronizacje). Bez tego zostawalby pusty ekran, z ktorego nie dalo sie
   // wyjsc bez odswiezenia. Wracamy na ekran logowania/zakladania konta.
+  // UWAGA: dajemy krotka chwile, bo przy laczeniu konta z chmura lokalne id na moment
+  // znika, zanim przelogujNa ustawi nowe (chmurowe) id - bez opoznienia wyrzucaloby
+  // uzytkownika na login dokladnie w chwili laczenia z chmura.
   useEffect(() => {
-    if (widok === 'in' && userId && !user) {
-      wyczyscOstatniego()
-      setUserId(null)
-      setWidok(uzytkownicy.length ? 'login' : 'onboarding')
-    }
+    if (!(widok === 'in' && userId && !user)) return
+    const t = setTimeout(() => {
+      const st = useStore.getState().baza.uzytkownicy
+      if (!st.some((u) => u.id === userId)) {
+        wyczyscOstatniego()
+        setUserId(null)
+        setWidok(st.length ? 'login' : 'onboarding')
+      }
+    }, 400)
+    return () => clearTimeout(t)
   }, [widok, userId, user, uzytkownicy.length])
 
   // Auto-blokada po bezczynnosci (5 min) – ochrona przy zgubieniu urzadzenia
@@ -96,6 +107,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     zapiszOstatniego(id)
     setWidok('in')
   }
+  // Zmiana biezacego konta bez wychodzenia z aplikacji (np. lokalne id -> chmurowe id
+  // po polaczeniu z chmura). Zostajemy zalogowani.
+  const przelogujNa = (id: string) => {
+    setUserId(id)
+    zapiszOstatniego(id)
+    setWidok('in')
+  }
   const lock = () => setWidok(user ? 'lock' : 'login')
   const logout = () => {
     wyczyscOstatniego()
@@ -103,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setWidok(uzytkownicy.length ? 'login' : 'onboarding')
   }
 
-  const ctx: AuthCtx = { user, lock, logout }
+  const ctx: AuthCtx = { user, lock, logout, przelogujNa }
 
   if (widok === 'loading') return null
   if (widok === 'in' && user) return <Ctx.Provider value={ctx}>{children}</Ctx.Provider>
@@ -125,17 +143,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 // ---------- Pierwsze uruchomienie ----------
-// Na NOWYM urzadzeniu (drugi tablet, komputer z aplikacja desktopowa) najczestsza
-// potrzeba to "mam juz konto, chce zobaczyc swoje dane" – i to musi byc pierwsza,
-// oczywista opcja. Wczesniej ekran startowy proponowal zalozenie konta LOKALNEGO,
-// przez co na komputerze powstawalo osobne, puste konto i wygladalo to tak, jakby
-// nie dalo sie zalogowac.
-type Wybor = 'menu' | 'lokalne' | Tryb
+// AMICO to wewnetrzny system firmy - KAZDE konto jest kontem w chmurze, zeby te same
+// dane byly na wszystkich urzadzeniach (tablet, komputer) i w bazie. Nie ma trybu
+// "tylko na tym urzadzeniu" - dane firmy nie moga siedziec w wyspach na jednym sprzecie.
+type Wybor = 'menu' | Tryb
 
 function PierwszeUruchomienie({ onDone }: { onDone: (id: string) => void }) {
   const [wybor, setWybor] = useState<Wybor>('menu')
-
-  if (wybor === 'lokalne') return <Onboarding onDone={onDone} onWroc={() => setWybor('menu')} />
 
   if (wybor !== 'menu') {
     return (
@@ -172,14 +186,10 @@ function PierwszeUruchomienie({ onDone }: { onDone: (id: string) => void }) {
         <Users size={17} /> Dołączam do firmy (mam kod)
       </button>
 
-      <div className="border-t border-white/10 pt-3 text-center">
-        <button
-          className="text-[12.5px] font-medium text-stone-500 transition hover:text-stone-300"
-          onClick={() => setWybor('lokalne')}
-        >
-          Pracuj tylko na tym urządzeniu, bez chmury
-        </button>
-      </div>
+      <p className="border-t border-white/10 pt-3 text-center text-[12px] leading-relaxed text-stone-500">
+        Do pierwszego logowania potrzebny jest internet. Później aplikacja działa też offline i sama synchronizuje
+        zmiany, gdy wróci zasięg.
+      </p>
     </div>
   )
 }

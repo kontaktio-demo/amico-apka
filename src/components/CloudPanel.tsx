@@ -102,7 +102,9 @@ export function CloudPanel({
         m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
           ? 'Konto utworzone. Potwierdź e-mail (link w wiadomości), a potem zaloguj się. Aby zespół nie musiał tego robić: Supabase → Authentication → Sign In / Providers → Email → wyłącz „Confirm email”.'
           : /Invalid login/i.test(m)
-            ? 'Nieprawidłowy e-mail lub hasło'
+            ? tryb === 'logowanie'
+              ? 'Nieprawidłowy e-mail lub hasło do CHMURY. Uwaga: hasło do chmury bywa inne niż to, którym odblokowujesz aplikację na tablecie. Jeśli na drugim urządzeniu pracujesz bez chmury, najpierw włącz tam synchronizację (Ustawienia → Chmura → Załóż konto), a dopiero potem zaloguj się tutaj tym samym e-mailem i hasłem.'
+              : 'Nieprawidłowy e-mail lub hasło'
             : /already registered|User already/i.test(m)
               ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”'
               : /Wymagane logowanie/i.test(m)

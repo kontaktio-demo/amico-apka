@@ -3,7 +3,6 @@ import type { Baza, Firma } from './types'
 import { loadBaza, saveBaza, clearBaza } from './db'
 import { pustaBaza } from './seed'
 import { nowISO } from './format'
-import { bezSekretow } from './merge'
 
 // Kolekcje bedace tablicami obiektow z polem id
 type ArrKeys = {
@@ -35,6 +34,8 @@ interface AppState {
   eksportJSON: () => string
   importJSON: (json: string) => boolean
   wyczyscWszystko: () => Promise<void>
+  // Usuwa wszystkie konta logowania, ale ZACHOWUJE dane firmy (klientow, wyceny itd.)
+  wyczyscKonta: () => Promise<void>
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -189,16 +190,18 @@ export const useStore = create<AppState>((setState, getState) => ({
     return `${prefix} ${kolejny}/${rok}`
   },
 
-  // Kopia zapasowa BEZ sekretow (hash hasla, PIN, klucz biometrii). Plik kopii bywa
-  // wysylany mailem albo lezy na pendrive - nie moze zawierac danych logowania.
-  eksportJSON: () => JSON.stringify(bezSekretow(getState().baza), null, 2),
+  // Kopia zapasowa to PELNA kopia do przeniesienia na inne urzadzenie - MUSI zawierac
+  // dane logowania (hash hasla/PIN, nie samo haslo), bo inaczej po wczytaniu na nowym
+  // urzadzeniu nie dalo by sie w ogole zalogowac. To hasze PBKDF2, nie jawne hasla;
+  // plik kopii trzymaj przy sobie (pendrive), a nie wysylaj obcym.
+  eksportJSON: () => JSON.stringify(getState().baza, null, 2),
 
   importJSON: (json) => {
     try {
       const parsed = JSON.parse(json) as Baza
       if (!parsed.firmy || !Array.isArray(parsed.firmy)) return false
-      // Kopia nie ma sekretow, wiec przenosimy lokalne dane logowania z biezacej bazy,
-      // zeby po imporcie dalo sie dalej wejsc tym samym PIN-em / haslem.
+      // Jesli w kopii ktoregos konta brakowaloby danych logowania (np. starsza kopia
+      // bez sekretow), odtwarzamy je z biezacej bazy, zeby dalo sie dalej wejsc.
       const sekrety = new Map(getState().baza.uzytkownicy.map((u) => [u.id, u]))
       const scalone = {
         ...parsed,
@@ -227,6 +230,22 @@ export const useStore = create<AppState>((setState, getState) => ({
     setState({ baza: pusta })
     await clearBaza()
     await saveBaza(pusta)
+  },
+
+  // Usuwa WSZYSTKIE konta logowania (uzytkownicy), ale zostawia dane firmy nietkniete.
+  // Dla kazdego konta zostaje tombstone, zeby usuniecie propagowalo sie tez do chmury,
+  // gdyby urzadzenie bylo z nia polaczone.
+  wyczyscKonta: async () => {
+    const s = getState()
+    const teraz = nowISO()
+    const tomby = s.baza.uzytkownicy.map((u) => ({ k: 'uzytkownicy', id: u.id, t: teraz }))
+    const nowa: Baza = {
+      ...s.baza,
+      uzytkownicy: [],
+      usuniete: [...(s.baza.usuniete || []), ...tomby],
+    }
+    setState({ baza: nowa })
+    await saveBaza(nowa)
   },
 }))
 
