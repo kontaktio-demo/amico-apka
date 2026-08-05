@@ -45,10 +45,16 @@ export default function Zadania() {
   const [tylkoMoje, setTylkoMoje] = useState(montaz)
   const firma = useStore((s) => s.aktywnaFirma)()
 
-  // lista osob do przypisania (uzytkownicy + zespol)
+  // Lista osob do przypisania (uzytkownicy + zespol). Jesli ktos jest jednoczesnie
+  // uzytkownikiem (loguje sie) i wpisem "zespol", pokazujemy go TYLKO raz - jako
+  // uzytkownika. Inaczej zadanie przypisane do wpisu "(zespol)" nie trafialoby do
+  // filtra "Moje" (ten porownuje po id konta), wiec montazysta by go nie widzial.
   const osoby = useMemo(() => {
-    const u = b.uzytkownicy.map((x) => ({ id: x.id, nazwa: x.imie }))
-    const p = b.pracownicy.map((x) => ({ id: x.id, nazwa: `${x.imie} (zespół)` }))
+    const u = b.uzytkownicy.filter((x) => x.aktywny !== false).map((x) => ({ id: x.id, nazwa: x.imie }))
+    const imionaUzytk = new Set(u.map((x) => x.nazwa.trim().toLowerCase()))
+    const p = b.pracownicy
+      .filter((x) => !imionaUzytk.has((x.imie || '').trim().toLowerCase()))
+      .map((x) => ({ id: x.id, nazwa: `${x.imie} (zespół)` }))
     return [...u, ...p]
   }, [b.uzytkownicy, b.pracownicy])
   const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '–'
@@ -162,6 +168,7 @@ export default function Zadania() {
                           {z.termin && (
                             <span className={cx('inline-flex items-center gap-1', spozniony && 'text-red-400')}>
                               <Calendar size={12} /> {fmtDate(z.termin)}
+                              {z.godzina ? `, ${z.godzina}` : ''}
                             </span>
                           )}
                           {zl && (
@@ -357,7 +364,10 @@ function ZadaniaDruk({
             <tr key={z.id}>
               <td style={cell}>{z.tytul}</td>
               <td style={cell}>{nazwaOsoby(z.przypisanyDo)}</td>
-              <td style={cell}>{fmtDate(z.termin)}</td>
+              <td style={cell}>
+                {fmtDate(z.termin)}
+                {z.godzina ? `, ${z.godzina}` : ''}
+              </td>
               <td style={cell}>{z.priorytet}</td>
               <td style={cell}>{z.status}</td>
             </tr>

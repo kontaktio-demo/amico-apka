@@ -230,6 +230,15 @@ function PodgladSkanu({
           <Field label="Nazwa">
             <Input value={d.nazwa} onChange={(e) => set({ nazwa: e.target.value })} />
           </Field>
+          <Field label="Kategoria">
+            <Select value={d.kategoria} onChange={(e) => set({ kategoria: e.target.value as SkanKategoria })}>
+              {Object.entries(KAT).map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </Field>
           <Field label="Przypisz do zlecenia">
             <Select value={d.zlecenieId || ''} onChange={(e) => set({ zlecenieId: e.target.value || undefined })}>
               <option value="">– brak –</option>

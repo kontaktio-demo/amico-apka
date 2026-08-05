@@ -7,6 +7,7 @@ import {
   zarejestrujChmura,
   dolaczDoFirmy,
   bootstrapFirmy,
+  ustalWorkspace,
   zsynchronizujUzytkownikaLokalnie,
   startSync,
   wylogujChmura,
@@ -63,8 +64,17 @@ export function CloudPanel({
         try {
           await zalogujChmura(email.trim(), haslo)
         } catch (e: any) {
-          if (/Invalid login/i.test(e?.message || '')) await zarejestrujChmura(email.trim(), haslo)
-          else throw e
+          if (/Invalid login/i.test(e?.message || '')) {
+            try {
+              await zarejestrujChmura(email.trim(), haslo)
+            } catch (e2: any) {
+              // "already registered" tutaj oznacza: konto istnieje, ale podane haslo
+              // bylo bledne (a nie "brak konta"). Nie mylimy uzytkownika.
+              if (/already registered|User already/i.test(e2?.message || ''))
+                throw new Error('Nieprawidłowy e-mail lub hasło. To konto już istnieje – wpisz właściwe hasło.')
+              throw e2
+            }
+          } else throw e
         }
       } else {
         await zalogujChmura(email.trim(), haslo)
@@ -73,7 +83,15 @@ export function CloudPanel({
       const sesja = await sesjaChmury()
       if (!sesja) throw new Error('Brak sesji – sprawdź e-mail lub hasło')
 
-      const wynik = tryb === 'dolacz' ? await dolaczDoFirmy(kod.trim(), imie.trim()) : await bootstrapFirmy(imie.trim())
+      // "logowanie" = istniejacy czlonek. Uzywamy ustalWorkspace (pamieta wybrana
+      // firme, a gdy jej brak - siega po istniejace czlonkostwo), a NIE bootstrapFirmy,
+      // ktory moglby wpasc w puste, prywatne workspace i podmienic lokalne dane.
+      const wynik =
+        tryb === 'dolacz'
+          ? await dolaczDoFirmy(kod.trim(), imie.trim())
+          : tryb === 'logowanie'
+            ? await ustalWorkspace(imie.trim())
+            : await bootstrapFirmy(imie.trim())
       // Zapamietujemy SWIADOMIE wybrana firme. Bez tego startSync moglby przy nastepnym
       // uruchomieniu trafic na inne czlonkostwo tego samego konta i podmienic dane.
       zapamietajWorkspace(wynik.workspaceId)

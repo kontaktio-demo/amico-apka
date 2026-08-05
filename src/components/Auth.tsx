@@ -68,17 +68,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // znika, zanim przelogujNa ustawi nowe (chmurowe) id - bez opoznienia wyrzucaloby
   // uzytkownika na login dokladnie w chwili laczenia z chmura.
   useEffect(() => {
-    if (!(widok === 'in' && userId && !user)) return
+    if (widok !== 'in' || !userId) return
     const t = setTimeout(() => {
       const st = useStore.getState().baza.uzytkownicy
-      if (!st.some((u) => u.id === userId)) {
+      const rek = st.find((u) => u.id === userId)
+      // (a) konto zniknelo (usuniete na innym urzadzeniu) LUB (b) zostalo
+      // dezaktywowane (aktywny:false). W obu przypadkach wracamy na ekran logowania -
+      // dzieki temu dezaktywowana osoba nie wejdzie nawet przez logowanie chmurowe.
+      if (!rek || rek.aktywny === false) {
         wyczyscOstatniego()
         setUserId(null)
         setWidok(st.length ? 'login' : 'onboarding')
       }
     }, 400)
     return () => clearTimeout(t)
-  }, [widok, userId, user, uzytkownicy.length])
+  }, [widok, userId, user, uzytkownicy])
 
   // Auto-blokada po bezczynnosci (5 min) – ochrona przy zgubieniu urzadzenia
   useEffect(() => {
@@ -335,13 +339,32 @@ function Login({ onLogin }: { onLogin: (id: string) => void }) {
 }
 
 // ---------- Lock (szybkie odblokowanie) ----------
+// Licznik bledow PIN trzymamy w localStorage (per konto), inaczej po odswiezeniu
+// strony blokada "5 prob" znikala - i mozna bylo probowac PIN bez konca.
+const PIN_PROBY_KEY = (id: string) => `amico-pin-proby-${id}`
+const czytajProbyPin = (id: string): number => {
+  const n = Number(localStorage.getItem(PIN_PROBY_KEY(id)) || '0')
+  return Number.isFinite(n) && n > 0 ? n : 0
+}
+
 function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => void; onSwitch: () => void }) {
   const [pin, setPin] = useState('')
   const [err, setErr] = useState('')
   const [bioOk, setBioOk] = useState(false)
-  const [trybHaslo, setTrybHaslo] = useState(!user.pinHash && !user.webauthnId)
+  const [proby, setProby] = useState(() => czytajProbyPin(user.id))
+  // Po 5 bledach PIN jest zablokowany az do poprawnego logowania HASLEM.
+  const zablokowanyPin = proby >= 5
+  const [trybHaslo, setTrybHaslo] = useState((!user.pinHash && !user.webauthnId) || czytajProbyPin(user.id) >= 5)
   const [haslo, setHaslo] = useState('')
-  const [proby, setProby] = useState(0)
+
+  const wyczyscProby = () => {
+    localStorage.removeItem(PIN_PROBY_KEY(user.id))
+    setProby(0)
+  }
+  const odblokuj = () => {
+    wyczyscProby()
+    onUnlock()
+  }
 
   useEffect(() => {
     biometriaDostepna().then((d) => setBioOk(d && !!user.webauthnId))
@@ -349,15 +372,16 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
 
   // auto-weryfikacja PIN po 4 cyfrach
   useEffect(() => {
-    if (pin.length === 4 && user.pinHash && user.pinSalt) {
+    if (pin.length === 4 && user.pinHash && user.pinSalt && !zablokowanyPin) {
       sprawdzPin(pin, user.pinSalt, user.pinHash).then((ok) => {
-        if (ok) onUnlock()
+        if (ok) odblokuj()
         else {
           const n = proby + 1
           setProby(n)
+          localStorage.setItem(PIN_PROBY_KEY(user.id), String(n))
           if (n >= 5) {
             setTrybHaslo(true)
-            setErr('Za dużo prób PIN – zaloguj się hasłem')
+            setErr('Za dużo prób PIN – dostęp PIN-em zablokowany. Zaloguj się hasłem.')
             setPin('')
           } else {
             setErr(`Błędny PIN (próba ${n}/5)`)
@@ -375,14 +399,15 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
   const biometria = async () => {
     if (!user.webauthnId) return
     const ok = await odblokujBiometria(user.webauthnId)
-    if (ok) onUnlock()
+    if (ok) odblokuj()
     else setErr('Nie rozpoznano.')
   }
 
   const przezHaslo = async (e: React.FormEvent) => {
     e.preventDefault()
     const ok = await sprawdzHaslo(haslo, user.salt, user.hasloHash)
-    if (ok) onUnlock()
+    // Poprawne haslo kasuje blokade PIN.
+    if (ok) odblokuj()
     else setErr('Nieprawidłowe hasło.')
   }
 
@@ -450,7 +475,7 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
             <KeyRound size={13} /> Zaloguj hasłem
           </button>
         )}
-        {trybHaslo && (user.pinHash || user.webauthnId) && (
+        {trybHaslo && (user.pinHash || user.webauthnId) && !zablokowanyPin && (
           <button onClick={() => setTrybHaslo(false)} className="text-stone-500 hover:text-white">
             Szybkie odblokowanie
           </button>

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { clsx } from 'clsx'
 import { X, Search, Check, AlertTriangle, Info, Loader2 } from 'lucide-react'
 
@@ -290,26 +291,38 @@ export function Modal({
   }, [open, onClose])
   if (!open) return null
   const w = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl', xl: 'max-w-5xl' }[size]
-  return (
+  // Portal do <body>: gwarantuje, ze modal jest zawsze wzgledem CALEGO ekranu, a nie
+  // wzgledem jakiegos rodzica z transformem (np. animacja wejscia strony tworzyla
+  // blok ograniczajacy, przez co okno pojawialo sie tylko w czesci ekranu i tresc
+  // "uciekala" w dol). Wzorzec dwuelementowy: overflow-y-auto na warstwie zewnetrznej,
+  // a wewnetrzny wrapper ma min-h-full + items-center - krotkie okno jest wysrodkowane,
+  // a dlugie zaczyna sie od gory i da sie doscrollowac. overscroll-contain blokuje
+  // przewijanie tla na iOS.
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-8"
+      className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div className={cx('card w-full animate-scale-in my-auto', w)} onClick={(e) => e.stopPropagation()}>
-        {title && (
-          <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
-            <h2 className="text-[18px] font-display font-semibold text-ink">{title}</h2>
-            <button className="btn-ghost -mr-2 !px-2" onClick={onClose}>
-              <X size={20} />
-            </button>
-          </div>
-        )}
-        <div className="px-6 py-5">{children}</div>
-        {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-stone-200 px-6 py-4">{footer}</div>
-        )}
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-8">
+        <div className={cx('card w-full animate-scale-in', w)} onClick={(e) => e.stopPropagation()}>
+          {title && (
+            <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
+              <h2 className="text-[18px] font-display font-semibold text-ink">{title}</h2>
+              <button className="btn-ghost -mr-2 !px-2" onClick={onClose}>
+                <X size={20} />
+              </button>
+            </div>
+          )}
+          <div className="px-6 py-5">{children}</div>
+          {footer && (
+            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-200 px-6 py-4">
+              {footer}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -328,7 +341,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={{ push }}>
       {children}
-      <div className="fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-2 no-print">
+      <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-2 no-print">
         {items.map((t) => (
           <div
             key={t.id}

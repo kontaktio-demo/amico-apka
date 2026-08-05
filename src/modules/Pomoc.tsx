@@ -92,6 +92,42 @@ export default function Pomoc() {
         </CardBody>
       </Card>
 
+      {/* ---------- Znasz to z iPhone'a ---------- */}
+      <Sekcja tytul="Znasz to z iPhone’a – AMICO działa podobnie" ikona={<Smartphone size={18} />}>
+        <p className="mb-4 text-[14px] leading-relaxed text-stone-400">
+          Cały zespół pracuje na iPhone’ach, więc dobra wiadomość: <b className="text-stone-700">nie musisz uczyć się
+          niczego nowego</b>. AMICO korzysta z tych samych rzeczy, które znasz z telefonu. Oto porównanie:
+        </p>
+        <div className="grid gap-2.5 md:grid-cols-2">
+          <Znajome amico="Logowanie e-mailem i hasłem" ios="jak konto Apple (Apple ID)">
+            Jedno konto. Ten sam e-mail i hasło działają na iPhonie, na drugim telefonie i na komputerze – wszędzie
+            widzisz te same dane.
+          </Znajome>
+          <Znajome amico="Synchronizacja w chmurze" ios="jak Zdjęcia i Notatki w iCloud">
+            Dodajesz coś na jednym urządzeniu, a po chwili jest na drugim. Nic nie klikasz, dzieje się samo.
+          </Znajome>
+          <Znajome amico="Wejście PIN-em lub Face ID" ios="jak odblokowanie iPhone’a">
+            Po pierwszym zalogowaniu nie wpisujesz już długiego hasła – wchodzisz czterocyfrowym kodem albo twarzą.
+          </Znajome>
+          <Znajome amico="Skaner dokumentów" ios="jak skanowanie w Notatkach / Plikach">
+            Przykładasz kartkę, aplikacja ją prostuje, wyostrza i zapisuje jako PDF – dokładnie jak skaner w iPhonie.
+          </Znajome>
+          <Znajome amico="Podpis palcem" ios="jak podpis PDF w Mailu / Podglądzie">
+            Klient podpisuje palcem na ekranie, tak samo jak podpisujesz dokumenty przysłane mailem na iPhonie.
+          </Znajome>
+          <Znajome amico="Przycisk „Wyślij”" ios="jak systemowe „Udostępnij”">
+            Ten sam kwadracik ze strzałką co w całym iOS – wyślesz dokument mailem, SMS-em albo przez WhatsApp.
+          </Znajome>
+          <Znajome amico="Działa bez internetu" ios="jak Notatki w podróży">
+            W piwnicy u klienta bez zasięgu wszystko działa i zapisuje się. Wyśle się samo, gdy wróci internet.
+          </Znajome>
+          <Znajome amico="Ikona na ekranie" ios="jak każda aplikacja">
+            „Dodaj do ekranu początkowego” w Safari i AMICO ma własną ikonę – otwierasz jednym dotknięciem, na pełny
+            ekran, bez paska przeglądarki.
+          </Znajome>
+        </div>
+      </Sekcja>
+
       {/* ---------- Słowniczek ---------- */}
       <Sekcja tytul="Najpierw słowniczek – 7 słów, które wystarczy znać" ikona={<BookOpen size={18} />}>
         <p className="mb-4 text-[14px] text-stone-400">
@@ -257,6 +293,48 @@ export default function Pomoc() {
             rozglądać – dane zapisują się dopiero, gdy klikniesz „Zapisz” albo „Dodaj”.
           </p>
         </div>
+      </Sekcja>
+
+      {/* ---------- Uniwersalne czynności ---------- */}
+      <Sekcja tytul="Dodać, zmienić, nazwać, znaleźć, wysłać – wszędzie tak samo" ikona={<PenLine size={18} />}>
+        <p className="mb-4 text-[14px] leading-relaxed text-stone-400">
+          Każda zakładka działa według tego samego schematu. Nauczysz się tego raz i będzie działać wszędzie – w
+          klientach, wycenach, fakturach, zadaniach.
+        </p>
+        <div className="space-y-3">
+          <Czynnosc etykieta="Dodać nowe">
+            Szukaj przycisku <b className="text-stone-700">„+ Dodaj”</b> lub <b className="text-stone-700">„Nowy”</b> w
+            prawym górnym rogu listy. Wypełniasz pola i klikasz <b className="text-stone-700">„Zapisz”</b>. Numery
+            (WYC&nbsp;1/2026, FV&nbsp;1/2026) aplikacja nadaje <b>sama</b> – nie wpisujesz ich ręcznie.
+          </Czynnosc>
+          <Czynnosc etykieta="Zmienić (edytować)">
+            Kliknij w istniejący wpis na liście – otworzy się jego karta. Zmieniasz, co chcesz, i klikasz{' '}
+            <b className="text-stone-700">„Zapisz”</b>. Dokładnie jak edycja kontaktu w iPhonie: wchodzisz → poprawiasz →
+            gotowe. Zmiana od razu jest na wszystkich urządzeniach.
+          </Czynnosc>
+          <Czynnosc etykieta="Jak nazywać, żeby potem znaleźć">
+            Złota zasada: <b className="text-stone-700">nazwij tak, żebyś sam poznał to za pół roku</b>. Klient –{' '}
+            <i>imię i nazwisko</i>. Skan – <i>co to jest</i> („Pomiar Wiśniewski”, „Faktura hurtownia”). Zlecenie –{' '}
+            <i>klient + co robimy</i> („Blat kuchenny – Wiśniewski”). Unikaj skrótów, których nikt poza Tobą nie
+            zrozumie.
+          </Czynnosc>
+          <Czynnosc etykieta="Znaleźć">
+            U góry listy jest pole <b className="text-stone-700">„Szukaj”</b> – wpisz kawałek nazwiska albo numeru, jak w
+            Kontaktach czy Mailu na iPhonie. Lista od razu się zawęża.
+          </Czynnosc>
+          <Czynnosc etykieta="Wysłać albo wydrukować">
+            Otwórz dokument i użyj <b className="text-stone-700">„Drukuj”</b> lub <b className="text-stone-700">„Wyślij”</b>{' '}
+            u góry. „Wyślij” to ten sam kwadracik ze strzałką co w iOS – wybierzesz mail, SMS lub WhatsApp.
+          </Czynnosc>
+          <Czynnosc etykieta="Usunąć">
+            Ikona <b className="text-stone-700">kosza</b>. Aplikacja <b>zawsze pyta „Czy na pewno?”</b> – przez przypadek
+            nic nie zniknie. Usuwaj tylko wtedy, gdy naprawdę czegoś już nie potrzebujesz.
+          </Czynnosc>
+        </div>
+        <Wskazowka>
+          Nie musisz niczego zapamiętywać na siłę. Jeśli utkniesz – wróć tu albo po prostu klikaj spokojnie: dopóki nie
+          naciśniesz „Zapisz” lub „Usuń”, nic się nie dzieje.
+        </Wskazowka>
       </Sekcja>
 
       {/* ---------- Przewodnik po zakładkach ---------- */}
@@ -742,6 +820,32 @@ function Slowko({ slowo, children }: { slowo: string; children: React.ReactNode 
     <div className="rounded-xl border border-white/10 p-4">
       <div className="text-[14px] font-semibold text-brand-700">{slowo}</div>
       <p className="mt-1 text-[13.5px] leading-relaxed text-stone-400">{children}</p>
+    </div>
+  )
+}
+
+function Czynnosc({ etykieta, children }: { etykieta: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-xl border border-white/10 p-4 sm:flex-row sm:items-baseline sm:gap-4">
+      <div className="shrink-0 sm:w-44">
+        <span className="inline-flex items-center rounded-lg bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-700">
+          {etykieta}
+        </span>
+      </div>
+      <p className="flex-1 text-[13.5px] leading-relaxed text-stone-400">{children}</p>
+    </div>
+  )
+}
+
+function Znajome({ amico, ios, children }: { amico: string; ios: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-white/10 p-4">
+      <div className="text-[14px] font-semibold text-stone-700">{amico}</div>
+      <div className="mt-1 flex items-center gap-1.5 text-[12.5px] font-medium text-brand-600">
+        <Smartphone size={13} className="shrink-0" />
+        {ios}
+      </div>
+      <p className="mt-2 text-[13px] leading-relaxed text-stone-400">{children}</p>
     </div>
   )
 }

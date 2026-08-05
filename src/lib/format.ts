@@ -4,7 +4,9 @@ import type { Pozycja, VatRate } from './types'
 export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
 
 export function fmtPLN(n: number | undefined | null, opts: { symbol?: boolean } = {}): string {
-  const v = Number.isFinite(n as number) ? (n as number) : 0
+  let v = Number.isFinite(n as number) ? (n as number) : 0
+  // Zapobiega brzydkiemu "-0,00 zł" przy saldach bliskich zera / ujemnym zeru.
+  if (Object.is(v, -0) || Math.abs(v) < 0.005) v = 0
   const s = v.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   return opts.symbol === false ? s : `${s} zł`
 }
@@ -149,8 +151,10 @@ export function fmtKonto(s: string): string {
 export function validNRB(s: string): boolean {
   const c = cleanKonto(s)
   if (!/^\d{26}$/.test(c)) return false
-  // IBAN: przenies PL (2521) na koniec, dopisz kod kraju 2521 + 00, mod 97 == 1
-  const rearranged = c + '252100'
+  // NRB = [2 cyfry kontrolne][24 cyfry BBAN]. Standard IBAN mod-97:
+  // przenosimy 2 cyfry kontrolne na koniec, dopisujemy kod kraju PL -> "2521",
+  // a poprawny numer daje reszte z dzielenia przez 97 rowna 1.
+  const rearranged = c.slice(2) + '2521' + c.slice(0, 2)
   let rem = 0
   for (const ch of rearranged) {
     rem = (rem * 10 + (ch.charCodeAt(0) - 48)) % 97

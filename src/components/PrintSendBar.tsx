@@ -117,7 +117,7 @@ export function PrintSendBar({
               >
                 Kopiuj treść
               </MenuItem>
-              <div className="my-1 border-t border-stone-100" />
+              <div className="my-1 border-t border-white/10" />
               <p className="px-3 py-1 text-[11px] leading-tight text-stone-400">
                 {desktop
                   ? 'Aby wysłać PDF w załączniku: kliknij „Zapisz PDF”, a potem dołącz zapisany plik do wiadomości.'
@@ -143,7 +143,7 @@ function MenuItem({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-stone-700 transition hover:bg-stone-100"
+      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-stone-700 transition hover:bg-white/10 active:bg-white/10"
     >
       <span className="text-stone-400">{icon}</span>
       {children}

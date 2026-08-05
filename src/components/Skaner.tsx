@@ -260,7 +260,7 @@ export function Skaner({
             )}
             <div className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-white/25" />
           </div>
-          <div className="flex items-center justify-center gap-6 border-t border-white/10 px-4 py-5">
+          <div className="flex items-center justify-center gap-6 border-t border-white/10 px-4 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
             <button className="btn-outline !border-white/20 !text-white" onClick={() => fileRef.current?.click()}>
               <Upload size={18} /> Wgraj
             </button>
@@ -279,14 +279,9 @@ export function Skaner({
               <span className="w-[92px]" />
             )}
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={wgrajPlik}
-          />
+          {/* Bez capture="environment": na iPhone wymuszalo aparat i blokowalo wybor
+              z Galerii/Plikow. Zdjecie na miejscu robi juz przycisk migawki. */}
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={wgrajPlik} />
         </div>
       )}
 

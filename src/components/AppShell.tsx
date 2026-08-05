@@ -39,6 +39,7 @@ import { dozwoloneSciezki, nazwaRoli } from '../lib/auth'
 import { initials } from '../lib/format'
 import { Skaner } from './Skaner'
 import { StatusChip } from './CloudPanel'
+import { useCloud } from '../lib/cloud'
 
 interface NavItem {
   to: string
@@ -96,7 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {openMobile && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setOpenMobile(false)} />
-          <aside className="absolute left-0 top-0 flex h-full w-[280px] flex-col bg-[#0c0d13] shadow-pop animate-fade-in">
+          <aside className="absolute left-0 top-0 flex h-full w-[280px] flex-col bg-[#0c0d13] shadow-pop animate-fade-in pt-[env(safe-area-inset-top)]">
             <SidebarContent onClose={() => setOpenMobile(false)} />
           </aside>
         </div>
@@ -104,8 +105,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Kolumna glowna */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Topbar mobile */}
-        <header className="flex items-center gap-3 border-b border-white/[0.07] bg-[#0b0b10]/85 px-4 py-3 backdrop-blur lg:hidden">
+        {/* Topbar mobile – pt uwzglednia notch iPhone (safe-area) */}
+        <header className="flex items-center gap-3 border-b border-white/[0.07] bg-[#0b0b10]/85 px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
           <button className="btn-ghost !px-2" onClick={() => setOpenMobile(true)}>
             <Menu size={22} />
           </button>
@@ -115,6 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <PasekBleduZapisu />
+        <PasekChmury />
 
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 animate-fade-in">{children}</div>
@@ -125,7 +127,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <button
         onClick={() => setSkaner(true)}
         title="Skanuj dokument"
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-brand-600 px-4 py-3.5 font-semibold text-white shadow-pop transition hover:bg-brand-500 active:scale-95 no-print"
+        className="fixed right-5 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-40 flex items-center gap-2 rounded-full bg-brand-600 px-4 py-3.5 font-semibold text-white shadow-pop transition hover:bg-brand-500 active:scale-95 no-print"
       >
         <ScanLine size={20} />
         <span className="hidden sm:inline">Skanuj</span>
@@ -150,6 +152,32 @@ function PasekBleduZapisu() {
           (Eksport).
         </div>
       </div>
+    </div>
+  )
+}
+
+// Problem z chmura (offline / blad zapisu / wygasla sesja) MUSI byc widoczny takze
+// na telefonie - w mobilnym naglowku nie ma StatusChip, wiec bez tego paska iPhone
+// nie dawal zadnego sygnalu, ze dane przestaly plynac do chmury.
+function PasekChmury() {
+  const { status, blad } = useCloud()
+  if (status !== 'offline' && status !== 'blad' && status !== 'sesja') return null
+  const powaznie = status === 'blad' || status === 'sesja'
+  const txt =
+    status === 'offline'
+      ? 'Pracujesz offline – zmiany zapiszą się w chmurze automatycznie, gdy wróci internet.'
+      : blad || 'Problem z zapisem do chmury. Zmiany są bezpieczne na urządzeniu i wyślą się ponownie.'
+  return (
+    <div
+      className={cx(
+        'no-print flex items-start gap-2.5 border-b px-4 py-2.5 text-[13px]',
+        powaznie
+          ? 'border-red-500/30 bg-red-500/15 text-red-200'
+          : 'border-amber-500/30 bg-amber-500/12 text-amber-100',
+      )}
+    >
+      <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+      <span>{txt}</span>
     </div>
   )
 }
@@ -244,9 +272,11 @@ function UserFooter() {
       >
         <Lock size={16} />
       </button>
+      {/* To NIE jest wylogowanie z chmury (sesja i dane zostaja) - tylko powrot do
+          ekranu wyboru uzytkownika. Pelne rozlaczenie z chmura jest w Ustawieniach. */}
       <button
         onClick={logout}
-        title="Wyloguj"
+        title="Zmień użytkownika"
         className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-white"
       >
         <LogOut size={16} />
@@ -288,7 +318,10 @@ function FirmaSwitcher({ compact }: { compact?: boolean }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 right-0 z-20 mt-1.5 overflow-hidden rounded-xl border border-white/10 bg-[#14161f] p-1.5 shadow-pop animate-scale-in">
+          {/* right-0 + min-w: w wersji compact (waski przycisk na telefonie) menu bylo
+              scisniete do kilkudziesieciu px i nazwy sie lamaly. Jasny tekst - panel
+              jest ciemny, wiec text-stone-700 bylo nieczytelne bez najechania myszka. */}
+          <div className="absolute right-0 z-20 mt-1.5 min-w-[240px] overflow-hidden rounded-xl border border-white/10 bg-[#14161f] p-1.5 shadow-pop animate-scale-in">
             {firmy.map((f) => (
               <button
                 key={f.id}
@@ -296,16 +329,16 @@ function FirmaSwitcher({ compact }: { compact?: boolean }) {
                   setAktywna(f.id)
                   setOpen(false)
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left transition hover:bg-stone-100"
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left transition hover:bg-white/10 active:bg-white/10"
               >
                 <span
-                  className="grid h-6 w-6 place-items-center rounded-md text-white"
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-white"
                   style={{ background: f.kolor || '#0f5c3f' }}
                 >
                   <span className="text-[11px] font-bold">{f.wlasciciel[0]}</span>
                 </span>
                 <span className="flex-1 text-[13px] font-medium text-stone-700">{f.nazwa}</span>
-                {f.id === aktywnaId && <Check size={15} className="text-brand-700" />}
+                {f.id === aktywnaId && <Check size={15} className="shrink-0 text-brand-700" />}
               </button>
             ))}
           </div>

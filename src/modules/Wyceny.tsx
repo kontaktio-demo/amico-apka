@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Calculator,
@@ -259,8 +259,15 @@ function EdytorInner({ rec }: { rec: Wycena }) {
   const [uwagi, setUwagi] = useState<string[]>(() => b.ustawienia.standardoweUwagiWyceny.slice())
   const [sigTarget, setSigTarget] = useState<null | 'klient' | 'firma'>(null)
 
-  // Autozapis do bazy przy kazdej zmianie (offline-first)
+  // Autozapis do bazy przy kazdej zmianie (offline-first).
+  // Pomijamy pierwszy przebieg (samo otwarcie podgladu), zeby nie podbijac
+  // "zaktualizowano" i nie wrzucac wyceny na gore listy bez realnej zmiany.
+  const pierwszyRaz = useRef(true)
   useEffect(() => {
+    if (pierwszyRaz.current) {
+      pierwszyRaz.current = false
+      return
+    }
     upsert('wyceny', { ...w, zaktualizowano: nowISO() })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [w])
@@ -330,12 +337,26 @@ function EdytorInner({ rec }: { rec: Wycena }) {
     navigate('/wyceny')
   }
 
-  const zrobUmowe = () => {
+  const zrobUmowe = async () => {
+    const istn = b.umowy.find((u) => u.wycenaId === w.id)
+    if (istn) {
+      if (
+        await confirm(
+          `Z tej wyceny powstała już umowa ${istn.numer}. Otworzyć istniejącą umowę zamiast tworzyć kolejną?`,
+        )
+      ) {
+        navigate(`/umowy/${istn.id}`)
+        return
+      }
+      return
+    }
     upsert('wyceny', { ...w, zaktualizowano: nowISO() })
     const um: Umowa = {
       id: uid('um'),
       numer: kolejnyNumer('UM'),
-      typ: w.osobaFizyczna ? 'dzielo_8' : 'dzielo_23',
+      // Domyslnie standardowa stawka 23%. Obnizona 8% (spoleczny program mieszkaniowy)
+      // to swiadomy wybor - ustawia sie ja recznie w edytorze umowy.
+      typ: 'dzielo_23',
       firmaId: w.firmaId,
       klientId: w.klientId,
       wycenaId: w.id,
@@ -359,7 +380,19 @@ function EdytorInner({ rec }: { rec: Wycena }) {
     navigate(`/umowy/${um.id}`)
   }
 
-  const utworzZlecenie = () => {
+  const utworzZlecenie = async () => {
+    const istn = b.zlecenia.find((z) => z.wycenaId === w.id)
+    if (istn) {
+      if (
+        await confirm(
+          `Z tej wyceny powstało już zlecenie ${istn.numer}. Otworzyć istniejące zlecenie zamiast tworzyć kolejne?`,
+        )
+      ) {
+        navigate(`/zlecenia/${istn.id}`)
+        return
+      }
+      return
+    }
     upsert('wyceny', { ...w, zaktualizowano: nowISO() })
     const z: Zlecenie = {
       id: uid('zl'),
@@ -382,7 +415,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
     navigate(`/zlecenia/${z.id}`)
   }
 
-  const shareText = `Dzień dobry,\n\nw załączeniu wstępna wycena prac kamieniarskich ${w.numer}${
+  const shareText = `Dzień dobry,\n\nprzesyłam wstępną wycenę prac kamieniarskich ${w.numer}${
     w.nazwaMaterialu ? ` (${w.nazwaMaterialu})` : ''
   } na kwotę ${fmtPLN(sum.brutto)} brutto.\n\nPozdrawiam,\n${firma.wlasciciel}\n${firma.telefon}`
 

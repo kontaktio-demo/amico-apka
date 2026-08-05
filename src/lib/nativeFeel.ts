@@ -24,19 +24,9 @@ export function enableNativeFeel() {
     }
   })
 
-  // Podwojne stukniecie = zoom (dodatkowo do touch-action)
-  let lastTouchEnd = 0
-  document.addEventListener(
-    'touchend',
-    (e) => {
-      const now = Date.now()
-      if (now - lastTouchEnd <= 300 && e.cancelable) {
-        // nie blokuj pojedynczego tapniecia w pola formularza
-        const t = e.target as HTMLElement
-        if (!t.closest('input, textarea, select, [contenteditable], canvas')) e.preventDefault()
-      }
-      lastTouchEnd = now
-    },
-    { passive: false },
-  )
+  // CELOWO nie blokujemy juz podwojnego tapniecia. preventDefault na 'touchend'
+  // anulowal nastepujacy po nim 'click' na iOS, przez co co drugie szybkie tapniecie
+  // w przycisk/wiersz bylo cicho polykane. Poza tym po usunieciu user-scalable=no
+  // (WCAG - powiekszanie tekstu) podwojny tap-zoom i tak ma dzialac. Przypadkowy
+  // pinch-zoom nadal tlumia handlery 'gesturestart' powyzej.
 }

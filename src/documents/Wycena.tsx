@@ -1,6 +1,6 @@
 import type { Wycena, Firma } from '../lib/types'
 import { DocSheet } from './DocShell'
-import { podsumuj, fmtPLN, fmtDate, pozycjaNetto } from '../lib/format'
+import { podsumuj, fmtPLN, fmtNum, fmtDate, pozycjaNetto } from '../lib/format'
 import { SignatureView } from '../components/SignaturePad'
 
 // Odwzorowanie formularza "WSTĘPNA WYCENA PRAC KAMIENIARSKICH"
@@ -89,7 +89,7 @@ export function WycenaDoc({
                 <td style={cell(true)}>{i + 1}.</td>
                 <td style={{ ...cell(), textAlign: 'left' }}>{p.nazwa}</td>
                 <td style={cell(true)}>
-                  {p.ilosc} {p.jednostka}
+                  {fmtNum(p.ilosc)} {p.jednostka}
                 </td>
                 <td style={{ ...cell(), textAlign: 'right' }}>{fmtPLN(pozycjaNetto(p))}</td>
               </tr>

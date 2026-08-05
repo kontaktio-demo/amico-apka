@@ -54,6 +54,35 @@ function stanLicznika(s: AppState, key: string, prefix: string, rok: number): nu
   const stary = num[`${prefix}-${rok}`]
   return stary != null ? stary : 0
 }
+// Najwyzszy numer JUZ uzyty przez istniejacy dokument danego prefiksu/roku/firmy.
+// Dzieki temu, gdy dwa urzadzenia offline nadadza ten sam numer, po scaleniu kolejny
+// numer "przeskoczy" duplikat zamiast tworzyc go po raz kolejny.
+function maxUzytyNumer(s: AppState, prefix: string, rok: number, firmaId: string): number {
+  const re = new RegExp('^' + prefix + '\\s+(\\d+)/' + rok + '$')
+  const kolekcje: any[][] = [
+    s.baza.wyceny,
+    s.baza.umowy,
+    s.baza.zlecenia,
+    s.baza.faktury,
+    s.baza.protokoly,
+    s.baza.kp,
+    s.baza.raportyKasowe,
+    s.baza.ekspozycje,
+  ]
+  let max = 0
+  for (const kol of kolekcje) {
+    if (!kol) continue
+    for (const r of kol) {
+      if (!r || r.firmaId !== firmaId) continue
+      const m = re.exec(r.numer || '')
+      if (m) {
+        const n = Number(m[1])
+        if (n > max) max = n
+      }
+    }
+  }
+  return max
+}
 
 export const useStore = create<AppState>((setState, getState) => ({
   baza: pustaBaza(),
@@ -164,7 +193,8 @@ export const useStore = create<AppState>((setState, getState) => ({
     const rok = new Date().getFullYear()
     const st = getState()
     const key = numerKey(st, prefix, rok)
-    const kolejny = stanLicznika(st, key, prefix, rok) + 1
+    const firmaId = st.aktywnaFirma().id
+    const kolejny = Math.max(stanLicznika(st, key, prefix, rok), maxUzytyNumer(st, prefix, rok, firmaId)) + 1
     return `${prefix} ${kolejny}/${rok}`
   },
 
@@ -172,7 +202,10 @@ export const useStore = create<AppState>((setState, getState) => ({
     const rok = new Date().getFullYear()
     const s = getState()
     const key = numerKey(s, prefix, rok)
-    const kolejny = stanLicznika(s, key, prefix, rok) + 1
+    const firmaId = s.aktywnaFirma().id
+    // Bierzemy wyzsza z dwoch wartosci: licznika i realnie uzytego numeru - to eliminuje
+    // duplikaty numerow powstale przy pracy offline na dwoch urzadzeniach.
+    const kolejny = Math.max(stanLicznika(s, key, prefix, rok), maxUzytyNumer(s, prefix, rok, firmaId)) + 1
     setState((st) => ({
       baza: {
         ...st.baza,

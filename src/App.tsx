@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { PrintProvider } from './lib/print'
 import { ToastProvider } from './components/ui'
@@ -34,6 +34,7 @@ import { RoleGuard } from './components/RoleGuard'
 export default function App() {
   const init = useStore((s) => s.init)
   const hydrated = useStore((s) => s.hydrated)
+  const location = useLocation()
 
   useEffect(() => {
     init()
@@ -73,7 +74,7 @@ export default function App() {
       <PrintProvider>
         <AuthProvider>
           <AppShell>
-            <ErrorBoundary>
+            <ErrorBoundary resetKey={location.pathname}>
               <Routes>
                 <Route path="/" element={<Pulpit />} />
                 <Route

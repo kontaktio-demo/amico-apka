@@ -5,7 +5,10 @@ interface State {
   error: Error | null
 }
 
-export class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State> {
+export class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; resetKey?: string },
+  State
+> {
   state: State = { error: null }
 
   static getDerivedStateFromError(error: Error): State {
@@ -14,6 +17,14 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('AMICO – błąd widoku:', error, info)
+  }
+
+  // Gdy zmieni sie trasa (resetKey = sciezka), kasujemy ekran bledu - inaczej
+  // "Cos poszlo nie tak" zostawalo na ekranie mimo przejscia do innej zakladki.
+  componentDidUpdate(prev: { resetKey?: string }) {
+    if (this.state.error && prev.resetKey !== this.props.resetKey) {
+      this.setState({ error: null })
+    }
   }
 
   render() {

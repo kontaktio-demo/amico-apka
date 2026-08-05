@@ -232,8 +232,13 @@ function Edytor({ id }: { id: string }) {
   const splitSugerowany = sum.brutto > 15000
 
   const zapisz = () => {
-    // Numer "spalamy" dopiero teraz i tylko wtedy, gdy uzytkowniczka go nie nadpisala.
-    const numer = isNew && !numerZmienionyRecznie.current ? kolejnyNumer('FV') : f.numer
+    // Proforma NIE jest faktura VAT - musi miec osobna serie (PF), inaczej robilaby
+    // dziure w ciaglej numeracji FV. Zaliczkowa i koncowa to faktury VAT -> seria FV.
+    const prefix = f.typ === 'proforma' ? 'PF' : 'FV'
+    // Numer "spalamy" dopiero teraz. Gdy pole numeru zostalo recznie wyczyszczone
+    // (puste), tez nadajemy kolejny numer - faktura bez numeru to blad.
+    const recznyPusty = numerZmienionyRecznie.current && !f.numer.trim()
+    const numer = (isNew && !numerZmienionyRecznie.current) || recznyPusty ? kolejnyNumer(prefix) : f.numer
 
     // Dwa urzadzenia pracujace offline moga wygenerowac ten sam numer.
     // Nie blokujemy zapisu, ale nie pozwalamy, zeby duplikat przeszedl niezauwazony.
@@ -299,7 +304,20 @@ function Edytor({ id }: { id: string }) {
           <SectionCard title="Dane faktury" icon={<Receipt size={18} />}>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Typ dokumentu">
-                <Select value={f.typ} onChange={(e) => set('typ', e.target.value as FakturaTyp)}>
+                <Select
+                  value={f.typ}
+                  onChange={(e) => {
+                    const typ = e.target.value as FakturaTyp
+                    setF((prev) => {
+                      const next = { ...prev, typ }
+                      // Podglad numeru nadaza za typem (proforma -> PF), dopoki numeru
+                      // nie nadpisano recznie.
+                      if (isNew && !numerZmienionyRecznie.current)
+                        next.numer = podgladNumeru(typ === 'proforma' ? 'PF' : 'FV')
+                      return next
+                    })
+                  }}
+                >
                   {TYPY.map((t) => (
                     <option key={t.typ} value={t.typ}>
                       {t.nazwa}

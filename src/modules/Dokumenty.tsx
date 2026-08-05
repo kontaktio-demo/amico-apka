@@ -48,8 +48,11 @@ export default function Dokumenty() {
 
   // ---------------- listy ----------------
   const q = szukaj.trim().toLowerCase()
+  // Numeracja jest prowadzona OSOBNO dla kazdego podmiotu, wiec pokazujemy tylko
+  // dokumenty aktywnej firmy - inaczej na jednej liscie widac dwa rozne "KP 1/2026".
   const protokoly = b.protokoly
     .slice()
+    .filter((p) => p.firmaId === firma.id)
     .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
     .filter((p) => {
       if (!q) return true
@@ -58,6 +61,7 @@ export default function Dokumenty() {
     })
   const kpLista = b.kp
     .slice()
+    .filter((kp) => kp.firmaId === firma.id)
     .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
     .filter((kp) => {
       if (!q) return true
@@ -138,12 +142,12 @@ export default function Dokumenty() {
         <TabBtn active={tab === 'protokoly'} onClick={() => setTab('protokoly')} icon={<FileCheck2 size={16} />}>
           Protokoły odbioru
           <span className="ml-1.5 rounded-full bg-stone-100 px-1.5 text-[11px] text-stone-500">
-            {b.protokoly.length}
+            {protokoly.length}
           </span>
         </TabBtn>
         <TabBtn active={tab === 'kp'} onClick={() => setTab('kp')} icon={<Receipt size={16} />}>
           KP – Kasa Przyjmie
-          <span className="ml-1.5 rounded-full bg-stone-100 px-1.5 text-[11px] text-stone-500">{b.kp.length}</span>
+          <span className="ml-1.5 rounded-full bg-stone-100 px-1.5 text-[11px] text-stone-500">{kpLista.length}</span>
         </TabBtn>
         <div className="ml-auto w-full sm:w-64">
           <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po numerze, kliencie…" />

@@ -1,11 +1,13 @@
 import type { KP, Firma } from '../lib/types'
 import { DocSheet } from './DocShell'
-import { fmtPLN, fmtDate, kwotaSlownie } from '../lib/format'
+import { fmtPLN, fmtDate, fmtNIP, kwotaSlownie } from '../lib/format'
 import { SignatureView } from '../components/SignaturePad'
 
 // Klasyczny druk KASA PRZYJMIE (KP) – kasowy dowód wpłaty.
 export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDataUrl?: string }) {
-  const slownie = (kp.slownie && kp.slownie.trim()) || kwotaSlownie(kp.kwota)
+  const slownieRaw = (kp.slownie && kp.slownie.trim()) || kwotaSlownie(kp.kwota)
+  // Tylko pierwsza litera wielka - "capitalize" w CSS robilo Wielkie Litery Kazdego Slowa.
+  const slownie = slownieRaw ? slownieRaw.charAt(0).toUpperCase() + slownieRaw.slice(1) : slownieRaw
   const box: React.CSSProperties = { border: '1px solid #c9c4b6', borderRadius: 10, padding: '9px 12px' }
   const lab: React.CSSProperties = { color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }
   const val: React.CSSProperties = { fontSize: '9.5pt', fontWeight: 500, color: '#12130f' }
@@ -50,7 +52,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
         <div style={{ ...lab, fontWeight: 700, marginBottom: 3 }}>WYSTAWCA / KASA</div>
         <div style={val}>{firma.nazwa}</div>
         <div style={{ fontSize: '8.5pt', color: '#4a463f', marginTop: 1 }}>
-          {firma.ulica}, {firma.kod} {firma.miasto} · NIP: {firma.nip}
+          {firma.ulica}, {firma.kod} {firma.miasto} · NIP: {fmtNIP(firma.nip)}
         </div>
       </div>
 
@@ -91,7 +93,6 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
               minHeight: '1.15em',
               ...val,
               fontStyle: 'italic',
-              textTransform: 'capitalize',
             }}
           >
             {slownie}

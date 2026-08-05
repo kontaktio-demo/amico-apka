@@ -496,7 +496,16 @@ function KartaKlienta({ id }: { id: string }) {
     // powiazac z kartoteka.
     const zlecen = b.zlecenia.filter((z) => z.klientId === k.id).length
     const faktur = b.faktury.filter((f) => f.klientId === k.id).length
-    const powiazania = [zlecen && `${zlecen} zlecen`, faktur && `${faktur} faktur`].filter(Boolean).join(', ')
+    const wycen = b.wyceny.filter((w) => w.klientId === k.id).length
+    const umow = b.umowy.filter((u) => u.klientId === k.id).length
+    const powiazania = [
+      wycen && `${wycen} wycen`,
+      umow && `${umow} umów`,
+      zlecen && `${zlecen} zleceń`,
+      faktur && `${faktur} faktur`,
+    ]
+      .filter(Boolean)
+      .join(', ')
     const tresc = powiazania
       ? `Klient „${klientNazwa(k)}” ma powiązania (${powiazania}). Po usunięciu stracą one nazwę klienta. Operacja jest nieodwracalna. Usunąć mimo to?`
       : `Usunąć klienta „${klientNazwa(k)}” wraz z historią? Operacja jest nieodwracalna.`

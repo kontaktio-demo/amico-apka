@@ -50,6 +50,24 @@ function czyBladSesji(e: any): boolean {
   )
 }
 
+// Zamienia techniczny (czesto angielski) komunikat bledu na zrozumialy po polsku.
+// Dzieki temu pasek bledu chmury nie straszy uzytkownika "Failed to fetch".
+export function bladPoPolsku(e: any): string {
+  const m: string = (e?.message || e || '').toString()
+  if (!m) return 'Błąd połączenia z chmurą'
+  if (/failed to fetch|networkerror|network request failed|load failed|timeout/i.test(m))
+    return 'Brak połączenia z internetem – zmiany zapiszą się automatycznie, gdy wróci zasięg.'
+  if (/row-level security|permission denied|not authorized|403/i.test(m))
+    return 'Brak uprawnień do zapisu w chmurze – zaloguj się ponownie (Ustawienia → Chmura).'
+  if (/jwt|401|token|not authenticated|session/i.test(m))
+    return 'Sesja w chmurze wygasła – zaloguj się ponownie (Ustawienia → Chmura).'
+  if (/does not exist|schema cache|PGRST202|amico_/i.test(m))
+    return 'Baza w chmurze nie jest przygotowana – uruchom skrypt SQL (supabase/amico-schema.sql).'
+  if (/payload|too large|20\s?mb|size/i.test(m))
+    return 'Baza jest za duża do wysłania – zarchiwizuj stare skany (Ustawienia → Chmura).'
+  return 'Nie udało się zapisać w chmurze. Zmiany są bezpieczne na urządzeniu i wyślą się ponownie.'
+}
+
 // Sesja przestala byc wazna – przestajemy sie dobijac i prosimy o ponowne logowanie.
 // Dane lokalne zostaja nietkniete.
 async function obsluzWygaslaSesje() {
@@ -111,7 +129,7 @@ const setBazaWs = (ws: string) => localStorage.setItem(WS_KEY, ws)
 const AKT_WS = 'amico-workspace'
 export const zapamietajWorkspace = (ws: string) => localStorage.setItem(AKT_WS, ws)
 
-async function ustalWorkspace(imie: string) {
+export async function ustalWorkspace(imie: string) {
   const sesja = await sesjaChmury()
   const uid = sesja?.user.id
   const zapamietany = localStorage.getItem(AKT_WS)
@@ -265,7 +283,9 @@ export async function zsynchronizujUzytkownikaLokalnie(opts: {
     pinSalt: istniejacy?.pinSalt,
     webauthnId: istniejacy?.webauthnId,
     kolor: istniejacy?.kolor || '#3a4a7a',
-    aktywny: true,
+    // NIE wymuszamy true przy kazdym logowaniu - inaczej dezaktywowany pracownik
+    // reaktywuje sam siebie, a zmiana rozjezdza sie na wszystkie urzadzenia.
+    aktywny: istniejacy?.aktywny !== false,
     utworzono: istniejacy?.utworzono || nowISO(),
   }
   st.upsert('uzytkownicy', u)
@@ -353,7 +373,7 @@ async function zapisz(): Promise<void> {
     }
     C().ustaw({
       status: navigator.onLine ? 'blad' : 'offline',
-      blad: e?.message || 'Błąd zapisu do chmury',
+      blad: bladPoPolsku(e),
     })
   } finally {
     wTrakcie = false
@@ -476,7 +496,7 @@ export async function startSync(imie = '') {
     }
     C().ustaw({
       status: navigator.onLine ? 'blad' : 'offline',
-      blad: e?.message || 'Błąd połączenia z chmurą',
+      blad: bladPoPolsku(e),
     })
   }
 }

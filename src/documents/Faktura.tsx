@@ -1,6 +1,6 @@
 import type { Faktura, Firma } from '../lib/types'
 import { DocSheet, DocSignatures } from './DocShell'
-import { podsumuj, pozycjaNetto, round2, fmtPLN, fmtDate, fmtNIP, fmtKonto, kwotaSlownie } from '../lib/format'
+import { podsumuj, pozycjaNetto, round2, fmtPLN, fmtNum, fmtDate, fmtNIP, fmtKonto, kwotaSlownie } from '../lib/format'
 
 // ============================================================================
 // Faktura VAT / zaliczkowa / końcowa / proforma – wg art. 106e ustawy o VAT
@@ -120,7 +120,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
                   <td style={td('center')}>{i + 1}</td>
                   <td style={td('left')}>{p.nazwa}</td>
                   <td style={td('center')}>
-                    {p.ilosc} {p.jednostka}
+                    {fmtNum(p.ilosc)} {p.jednostka}
                   </td>
                   <td style={td('right')}>{fmtPLN(p.cenaNetto, { symbol: false })}</td>
                   <td style={td('right')}>{fmtPLN(netto, { symbol: false })}</td>
