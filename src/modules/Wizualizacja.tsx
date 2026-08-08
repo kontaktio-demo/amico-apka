@@ -122,7 +122,7 @@ export default function Wizualizacja() {
       const png = await svgNaPng(svg, 1400)
       const skan: Skan = {
         id: uid('skan'),
-        nazwa: `Wizualizacja – ${nazwaKamienia}`,
+        nazwa: `Wizualizacja - ${nazwaKamienia}`,
         kategoria: 'projekt',
         strony: [png],
         klientId: klientId || undefined,
@@ -141,7 +141,7 @@ export default function Wizualizacja() {
     <div>
       <PageHeader
         title="Wizualizacja projektu"
-        subtitle="Podgląd blatu w wybranym kamieniu – pokaż klientowi efekt „na żywo”"
+        subtitle='Podgląd blatu w wybranym kamieniu - pokaż klientowi efekt "na żywo"'
         icon={<Sparkles size={22} />}
         actions={
           <>
@@ -169,7 +169,7 @@ export default function Wizualizacja() {
                 />
               )}
               share={{
-                title: `Wizualizacja – ${nazwaKamienia}`,
+                title: `Wizualizacja - ${nazwaKamienia}`,
                 text: `Wizualizacja blatu: ${nazwaKamienia}, ${fmtNum(pow, 2)} m², wykończenie krawędzi: ${krawedz}.`,
               }}
               size="sm"
@@ -255,7 +255,7 @@ export default function Wizualizacja() {
             <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-3">
               <Field label="Klient">
                 <Select value={klientId} onChange={(e) => setKlientId(e.target.value)}>
-                  <option value="">– brak –</option>
+                  <option value="">- brak -</option>
                   {b.klienci.map((k) => (
                     <option key={k.id} value={k.id}>
                       {klientNazwa(k)}
@@ -265,7 +265,7 @@ export default function Wizualizacja() {
               </Field>
               <Field label="Zlecenie">
                 <Select value={zlecenieId} onChange={(e) => setZlecenieId(e.target.value)}>
-                  <option value="">– brak –</option>
+                  <option value="">- brak -</option>
                   {b.zlecenia.map((z) => (
                     <option key={z.id} value={z.id}>
                       {z.numer}
@@ -650,7 +650,7 @@ function WizualizacjaDoc({
             ['Obwód (obróbki)', `${fmtNum(obwod, 2)} mb`],
             ['Grubość', grubosc],
             ['Wykończenie krawędzi', krawedz],
-            ['Wycięcia', [zlew && 'zlew', plyta && 'płyta grzewcza'].filter(Boolean).join(', ') || '–'],
+            ['Wycięcia', [zlew && 'zlew', plyta && 'płyta grzewcza'].filter(Boolean).join(', ') || '-'],
           ].map(([k, v]) => (
             <tr key={k as string}>
               <td
@@ -670,7 +670,7 @@ function WizualizacjaDoc({
         </tbody>
       </table>
       <p style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 10 }}>
-        Wizualizacja poglądowa. Kamień naturalny cechuje niepowtarzalny rysunek i odcień – rzeczywisty wygląd może
+        Wizualizacja poglądowa. Kamień naturalny cechuje niepowtarzalny rysunek i odcień - rzeczywisty wygląd może
         różnić się od podglądu.
       </p>
     </DocSheet>

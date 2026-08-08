@@ -57,7 +57,7 @@ export default function Zadania() {
       .map((x) => ({ id: x.id, nazwa: `${x.imie} (zespół)` }))
     return [...u, ...p]
   }, [b.uzytkownicy, b.pracownicy])
-  const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '–'
+  const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '-'
 
   const widoczne = b.zadania.filter((z) => !tylkoMoje || z.przypisanyDo === user?.id)
 
@@ -103,7 +103,7 @@ export default function Zadania() {
               share={{
                 title: 'Lista zadań AMICO',
                 text: widoczne
-                  .map((z) => `• ${z.tytul} – ${nazwaOsoby(z.przypisanyDo)} (${fmtDate(z.termin)})`)
+                  .map((z) => `• ${z.tytul} - ${nazwaOsoby(z.przypisanyDo)} (${fmtDate(z.termin)})`)
                   .join('\n'),
               }}
               size="sm"
@@ -269,7 +269,7 @@ function EdytorZadania({
           <Input
             value={d.tytul}
             onChange={(e) => set({ tytul: e.target.value })}
-            placeholder="np. Pomiar u klienta – ul. Piotrkowska"
+            placeholder="np. Pomiar u klienta - ul. Piotrkowska"
             autoFocus
           />
         </Field>
@@ -279,7 +279,7 @@ function EdytorZadania({
         <div className="grid grid-cols-2 gap-3">
           <Field label="Przypisz do">
             <Select value={d.przypisanyDo || ''} onChange={(e) => set({ przypisanyDo: e.target.value || undefined })}>
-              <option value="">– nikt –</option>
+              <option value="">- nikt -</option>
               {osoby.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.nazwa}
@@ -304,7 +304,7 @@ function EdytorZadania({
           </Field>
           <Field label="Zlecenie">
             <Select value={d.zlecenieId || ''} onChange={(e) => set({ zlecenieId: e.target.value || undefined })}>
-              <option value="">– brak –</option>
+              <option value="">- brak -</option>
               {zlecenia.map((x) => (
                 <option key={x.id} value={x.id}>
                   {x.label}
@@ -314,7 +314,7 @@ function EdytorZadania({
           </Field>
           <Field label="Klient">
             <Select value={d.klientId || ''} onChange={(e) => set({ klientId: e.target.value || undefined })}>
-              <option value="">– brak –</option>
+              <option value="">- brak -</option>
               {klienci.map((x) => (
                 <option key={x.id} value={x.id}>
                   {x.label}

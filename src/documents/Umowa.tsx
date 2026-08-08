@@ -4,7 +4,7 @@ import { fmtPLN, fmtDate, fmtNIP, fmtKonto, kwotaSlownie } from '../lib/format'
 import { SignatureView } from '../components/SignaturePad'
 
 // ============================================================================
-// Umowa – pelna tresc dokumentu zaleznie od typu (dzielo / prowizyjna /
+// Umowa - pelna tresc dokumentu zaleznie od typu (dzielo / prowizyjna /
 // wspolpracy / oswiadczenie). Odwzorowanie oryginalnych wzorow AMICO.
 // ============================================================================
 
@@ -45,7 +45,7 @@ function Fill({ v, w }: { v?: React.ReactNode; w?: number }) {
         color: '#12130f',
       }}
     >
-      {ok ? v : ' '}
+      {ok ? v : ' '}
     </span>
   )
 }
@@ -97,7 +97,7 @@ function WykonawcaOpis({ firma }: { firma: Firma }) {
     <div style={P}>
       <span style={partyTitle}>{firma.nazwa}</span> z siedzibą w {firma.miasto} ({firma.kod}) przy ul. {firma.ulica},
       numer NIP: {fmtNIP(firma.nip)} reprezentowaną przez właściciela {firma.wlasciciel}, zwanego w dalszej części umowy
-      „Wykonawcą”
+      "Wykonawcą"
     </div>
   )
 }
@@ -117,8 +117,8 @@ function ZamawiajacyOpis({ u, pesel }: { u: Umowa; pesel?: boolean }) {
         <Fill v={pesel ? u.zamawiajacyPesel : u.zamawiajacyNip} w={150} /> telefon:{' '}
         <Fill v={u.zamawiajacyTelefon} w={150} />
       </div>
-      <div style={P}>zwanym w dalszej części umowy „Zamawiającym”</div>
-      <div style={P}>Zwanymi łącznie „Stronami”</div>
+      <div style={P}>zwanym w dalszej części umowy "Zamawiającym"</div>
+      <div style={P}>Zwanymi łącznie "Stronami"</div>
     </div>
   )
 }
@@ -180,15 +180,15 @@ function DzieloBody({
             <li style={LI}>
               Zamawiający oświadcza, iż mieszkanie (dom) nie spełnia wymogów dotyczących budownictwa objętego społecznym
               programem mieszkaniowym i przekracza następujące limity powierzchni użytkowej uprawniające do zastosowania
-              preferencyjnej stawki VAT (8%), tj.: budynki mieszkalne jednorodzinne – do 300 m² oraz lokale mieszkalne –
+              preferencyjnej stawki VAT (8%), tj.: budynki mieszkalne jednorodzinne - do 300 m² oraz lokale mieszkalne -
               do 150 m².
             </li>
           )}
           {variant === 'dzielo_8' && (
             <li style={LI}>
               Zamawiający oświadcza, iż nieruchomość spełnia wymogi dotyczące budownictwa objętego społecznym programem
-              mieszkaniowym i mieści się w limitach powierzchni użytkowej (budynki mieszkalne jednorodzinne – do 300 m²
-              oraz lokale mieszkalne – do 150 m²), co uprawnia do zastosowania preferencyjnej stawki VAT 8%.
+              mieszkaniowym i mieści się w limitach powierzchni użytkowej (budynki mieszkalne jednorodzinne - do 300 m²
+              oraz lokale mieszkalne - do 150 m²), co uprawnia do zastosowania preferencyjnej stawki VAT 8%.
             </li>
           )}
           {showPowierzchnia && (
@@ -235,7 +235,7 @@ function DzieloBody({
           )}
           {is23 && (
             <li style={LI}>
-              W przypadku niemożności wykonania pomiarów w deklarowanym terminie – termin wykonania prac kamieniarskich
+              W przypadku niemożności wykonania pomiarów w deklarowanym terminie - termin wykonania prac kamieniarskich
               ulega przesunięciu proporcjonalnie o dany okres.
             </li>
           )}
@@ -515,12 +515,12 @@ function ProwizyjnaBody({ u, firma }: { u: Umowa; firma: Firma }) {
       </div>
       <div style={P}>
         <span style={partyTitle}>{firma.nazwa}</span>, NIP: {fmtNIP(firma.nip)}, reprezentowaną przez {firma.wlasciciel}
-        , zwaną dalej „Zleceniodawcą”
+        , zwaną dalej "Zleceniodawcą"
       </div>
       <div style={{ ...P, textAlign: 'center', fontWeight: 700 }}>a</div>
       <div style={P}>
         <Fill v={u.zamawiajacyNazwa} w={300} />, <Fill v={u.zamawiajacyAdres} w={280} />, NIP:{' '}
-        <Fill v={u.zamawiajacyNip} w={140} />, zwanym dalej „Zleceniobiorcą”.
+        <Fill v={u.zamawiajacyNip} w={140} />, zwanym dalej "Zleceniobiorcą".
       </div>
       <div style={P}>
         Zważywszy na zgodną wolę współpracy w zakresie pozyskiwania Klientów na świadczone przez Zleceniodawcę Usługi,
@@ -661,7 +661,7 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
       <div style={P}>
         <span style={partyTitle}>{firma.marka || firma.nazwa}</span> z siedzibą w {firma.miasto} ({firma.kod}) przy ul.{' '}
         {firma.ulica}, numer NIP: {fmtNIP(firma.nip)} reprezentowaną przez {firma.wlasciciel}, zwaną w dalszej części
-        umowy „Wykonawcą”
+        umowy "Wykonawcą"
       </div>
       <div style={{ ...P, textAlign: 'center', fontWeight: 700 }}>a</div>
       <div style={P}>
@@ -673,8 +673,8 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
       <div style={P}>
         NIP: <Fill v={u.zamawiajacyNip} w={150} /> telefon: <Fill v={u.zamawiajacyTelefon} w={150} />
       </div>
-      <div style={P}>zwanym w dalszej części umowy „Sprzedawcą”</div>
-      <div style={P}>Zwanymi łącznie „Stronami”</div>
+      <div style={P}>zwanym w dalszej części umowy "Sprzedawcą"</div>
+      <div style={P}>Zwanymi łącznie "Stronami"</div>
 
       <DocSection n={nr()} title="Przedmiot umowy">
         <ol style={OL}>
@@ -879,7 +879,7 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
           </li>
           <li style={LI}>
             W przypadku uchybienia postanowieniu określonemu w pkt 1 Sprzedawca obowiązany będzie do zapłaty kary
-            umownej w wysokości dwukrotności kwoty obliczonej w sposób opisany w punkcie 7 sekcji „Stoisko ekspozycyjne”
+            umownej w wysokości dwukrotności kwoty obliczonej w sposób opisany w punkcie 7 sekcji "Stoisko ekspozycyjne"
             niniejszej umowy.
           </li>
           <li style={LI}>
@@ -960,9 +960,9 @@ function WspolpracyBody({ u, firma }: { u: Umowa; firma: Firma }) {
 // Tytuly umow
 // ============================================================================
 const TYTUL: Record<Umowa['typ'], string> = {
-  dzielo_23: 'UMOWA O DZIEŁO – 23% VAT',
-  dzielo_8: 'UMOWA O DZIEŁO – 8% VAT',
-  dzielo_8_23: 'UMOWA O DZIEŁO – 8/23% VAT',
+  dzielo_23: 'UMOWA O DZIEŁO - 23% VAT',
+  dzielo_8: 'UMOWA O DZIEŁO - 8% VAT',
+  dzielo_8_23: 'UMOWA O DZIEŁO - 8/23% VAT',
   prowizyjna: 'UMOWA PROWIZYJNA',
   wspolpracy: 'UMOWA WSPÓŁPRACY',
   oswiadczenie: 'OŚWIADCZENIE',

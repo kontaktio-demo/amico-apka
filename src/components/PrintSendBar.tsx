@@ -12,7 +12,7 @@ export interface ShareData {
   url?: string
 }
 
-// Uniwersalny pasek akcji: DRUKUJ / ZAPISZ PDF + WYSLIJ – obecny na kazdym dokumencie.
+// Uniwersalny pasek akcji: DRUKUJ / ZAPISZ PDF + WYSLIJ - obecny na kazdym dokumencie.
 export function PrintSendBar({
   getPrintNode,
   share,
@@ -59,7 +59,7 @@ export function PrintSendBar({
   const doWebShare = async () => {
     if (!share) return
     const r = await shareContent({ title: share.title, text: share.text, url: share.url })
-    if (r === 'unsupported') push('Udostępnianie niedostępne na tym urządzeniu – użyj e-mail / SMS', 'info')
+    if (r === 'unsupported') push('Udostępnianie niedostępne na tym urządzeniu - użyj e-mail / SMS', 'info')
     else if (r === 'error') push('Nie udało się udostępnić', 'err')
     setOpen(false)
   }
@@ -69,7 +69,7 @@ export function PrintSendBar({
       {extra}
       {desktop && (
         <button className={`btn-outline ${btn}`} onClick={doZapisuPdf} disabled={zapisuje}>
-          <FileDown size={size === 'sm' ? 15 : 17} /> {zapisuje ? 'Zapisywanie…' : 'Zapisz PDF'}
+          <FileDown size={size === 'sm' ? 15 : 17} /> {zapisuje ? 'Zapisywanie...' : 'Zapisz PDF'}
         </button>
       )}
       <button className={`btn-outline ${btn}`} onClick={() => print(getPrintNode())}>
@@ -120,8 +120,8 @@ export function PrintSendBar({
               <div className="my-1 border-t border-white/10" />
               <p className="px-3 py-1 text-[11px] leading-tight text-stone-400">
                 {desktop
-                  ? 'Aby wysłać PDF w załączniku: kliknij „Zapisz PDF”, a potem dołącz zapisany plik do wiadomości.'
-                  : 'Aby wysłać PDF w załączniku: kliknij „Drukuj / PDF”, zapisz jako PDF i dołącz do wiadomości.'}
+                  ? 'Aby wysłać PDF w załączniku: kliknij "Zapisz PDF", a potem dołącz zapisany plik do wiadomości.'
+                  : 'Aby wysłać PDF w załączniku: kliknij "Drukuj / PDF", zapisz jako PDF i dołącz do wiadomości.'}
               </p>
             </div>
           )}

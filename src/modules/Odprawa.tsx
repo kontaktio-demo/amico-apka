@@ -12,7 +12,7 @@ import type { Odprawa as OdprawaT, OdprawaSekcja, Pracownik } from '../lib/types
 function domyslneSekcje(pracownicy: Pracownik[]): OdprawaSekcja[] {
   const monterzy = pracownicy.filter((p) => p.rola === 'montaz' && p.aktywny)
   const montaze: OdprawaSekcja[] = monterzy.length
-    ? monterzy.map((p) => ({ klucz: `montaz_${p.id}`, tytul: `MONTAŻ – ${p.imie}`, pozycje: [] }))
+    ? monterzy.map((p) => ({ klucz: `montaz_${p.id}`, tytul: `MONTAŻ - ${p.imie}`, pozycje: [] }))
     : [{ klucz: 'montaze', tytul: 'MONTAŻE', pozycje: [] }]
   return [
     ...montaze,
@@ -60,7 +60,7 @@ export default function Odprawa() {
     if (!odprawa) return
     const s = odprawa.sekcje[idx]
     // Sekcja z wpisami znika bez sladu - pytamy, gdy jest co stracic.
-    if (s?.pozycje?.length && !(await confirm(`Usunąć sekcję „${s.tytul}” wraz z ${s.pozycje.length} pozycjami?`)))
+    if (s?.pozycje?.length && !(await confirm(`Usunąć sekcję "${s.tytul}" wraz z ${s.pozycje.length} pozycjami?`)))
       return
     zapisz(odprawa.sekcje.filter((_, i) => i !== idx))
   }
@@ -90,11 +90,11 @@ export default function Odprawa() {
   // Tresc do wyslania (SMS / e-mail / udostepnij)
   const shareText = odprawa
     ? [
-        `ODPRAWA – ${fmtDateLong(data)}`,
+        `ODPRAWA - ${fmtDateLong(data)}`,
         '',
         ...odprawa.sekcje.map((s) => {
           const poz = s.pozycje.filter((p) => p.trim())
-          return `${s.tytul}:\n${poz.length ? poz.map((p) => ` • ${p}`).join('\n') : ' –'}`
+          return `${s.tytul}:\n${poz.length ? poz.map((p) => ` • ${p}`).join('\n') : ' -'}`
         }),
       ].join('\n')
     : ''
@@ -103,7 +103,7 @@ export default function Odprawa() {
     <div>
       <PageHeader
         title="Odprawa dzienna"
-        subtitle="Dzienny plan pracy pracowni – montaże, pomiary, transport i rozliczenia"
+        subtitle="Dzienny plan pracy pracowni - montaże, pomiary, transport i rozliczenia"
         icon={<ClipboardList size={22} />}
         actions={
           odprawa && (
@@ -184,7 +184,7 @@ export default function Odprawa() {
 
                   <div className="space-y-1.5">
                     {s.pozycje.length === 0 && (
-                      <p className="px-1 py-2 text-[13px] text-stone-400">Brak pozycji – dodaj pierwszą linię.</p>
+                      <p className="px-1 py-2 text-[13px] text-stone-400">Brak pozycji - dodaj pierwszą linię.</p>
                     )}
                     {s.pozycje.map((p, li) => (
                       <div key={li} className="flex items-center gap-2">
@@ -192,7 +192,7 @@ export default function Odprawa() {
                         <Input
                           value={p}
                           onChange={(e) => setLinia(idx, li, e.target.value)}
-                          placeholder="Wpisz pozycję…"
+                          placeholder="Wpisz pozycję..."
                           className="!h-9 !py-1"
                         />
                         <button

@@ -61,7 +61,7 @@ export function drukujPdf(strony: string[], nazwa = 'skan'): boolean {
   return true
 }
 
-// Wyslanie PDF w zalaczniku – Web Share API (poziom 2), fallback: pobranie
+// Wyslanie PDF w zalaczniku - Web Share API (poziom 2), fallback: pobranie
 export async function udostepnijPdf(strony: string[], nazwa: string, opis?: string): Promise<'shared' | 'downloaded'> {
   const blob = pdfBlob(strony)
   const file = new File([blob], `${safeFilename(nazwa)}.pdf`, { type: 'application/pdf' })

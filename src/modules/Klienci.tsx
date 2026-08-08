@@ -51,7 +51,7 @@ import { uid } from '../lib/id'
 import type { Klient, KlientTyp, PipelineEtap, WpisHistorii, OsobyProjektu, KontrahentTyp, Firma } from '../lib/types'
 
 // ============================================================================
-// KLIENCI – CRM. Lista (/klienci) + Karta klienta (/klienci/:id)
+// KLIENCI - CRM. Lista (/klienci) + Karta klienta (/klienci/:id)
 // ============================================================================
 
 export default function Klienci() {
@@ -62,7 +62,7 @@ export default function Klienci() {
 
 // ---------- Maskowanie PESEL (RODO) ----------
 function maskPesel(p?: string): string {
-  if (!p) return '–'
+  if (!p) return '-'
   const c = p.replace(/\D/g, '')
   if (c.length < 2) return '•••••••••••'
   return `•••••••••${c.slice(-2)}`
@@ -116,7 +116,7 @@ function ListaKlientow() {
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="min-w-[240px] flex-1">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po nazwie, telefonie, mieście…" />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po nazwie, telefonie, mieście..." />
         </div>
         <Select value={etapF} onChange={(e) => setEtapF(e.target.value as 'all' | PipelineEtap)} className="w-auto">
           <option value="all">Wszystkie etapy</option>
@@ -314,7 +314,7 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
               <Input
                 value={f.pesel || ''}
                 onChange={(e) => set('pesel', e.target.value.replace(/\D/g, '').slice(0, 11))}
-                placeholder="–"
+                placeholder="-"
                 inputMode="numeric"
               />
             </Field>
@@ -344,7 +344,7 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
             <Input
               value={f.telefon || ''}
               onChange={(e) => set('telefon', e.target.value)}
-              placeholder="+48 …"
+              placeholder="+48 ..."
               inputMode="tel"
             />
           </Field>
@@ -375,7 +375,7 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
             <Input
               value={f.zrodlo || ''}
               onChange={(e) => set('zrodlo', e.target.value)}
-              placeholder="polecenie, Google, deweloper…"
+              placeholder="polecenie, Google, deweloper..."
             />
           </Field>
           <Field label="Etap">
@@ -390,7 +390,7 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
         </div>
 
         <Field label="Tagi" hint="Oddziel przecinkami, np. blat, łazienka, deweloper">
-          <Input value={tagiTxt} onChange={(e) => setTagiTxt(e.target.value)} placeholder="blat, kuchnia…" />
+          <Input value={tagiTxt} onChange={(e) => setTagiTxt(e.target.value)} placeholder="blat, kuchnia..." />
         </Field>
 
         <Field label="Osoba kontaktowa (opcjonalnie)">
@@ -491,7 +491,7 @@ function KartaKlienta({ id }: { id: string }) {
   }
 
   const usunKlienta = async () => {
-    // Ostrzegamy o powiazaniach – po usunieciu klienta jego zlecenia i wydarzenia
+    // Ostrzegamy o powiazaniach - po usunieciu klienta jego zlecenia i wydarzenia
     // straca nazwe ("brak klienta"), a faktur/umow z jego danymi nie da sie juz
     // powiazac z kartoteka.
     const zlecen = b.zlecenia.filter((z) => z.klientId === k.id).length
@@ -507,8 +507,8 @@ function KartaKlienta({ id }: { id: string }) {
       .filter(Boolean)
       .join(', ')
     const tresc = powiazania
-      ? `Klient „${klientNazwa(k)}” ma powiązania (${powiazania}). Po usunięciu stracą one nazwę klienta. Operacja jest nieodwracalna. Usunąć mimo to?`
-      : `Usunąć klienta „${klientNazwa(k)}” wraz z historią? Operacja jest nieodwracalna.`
+      ? `Klient "${klientNazwa(k)}" ma powiązania (${powiazania}). Po usunięciu stracą one nazwę klienta. Operacja jest nieodwracalna. Usunąć mimo to?`
+      : `Usunąć klienta "${klientNazwa(k)}" wraz z historią? Operacja jest nieodwracalna.`
     if (await confirm(tresc)) {
       remove('klienci', k.id)
       push('Usunięto klienta', 'ok')
@@ -536,7 +536,7 @@ function KartaKlienta({ id }: { id: string }) {
             <PrintSendBar
               getPrintNode={() => <KartaKlientaDoc k={k} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />}
               share={{
-                title: `Karta klienta – ${klientNazwa(k)}`,
+                title: `Karta klienta - ${klientNazwa(k)}`,
                 text: `${klientNazwa(k)}\n${k.telefon || ''}\n${k.email || ''}\n${adres}`,
                 to: k.email,
                 phone: k.telefon,
@@ -647,7 +647,7 @@ function KartaKlienta({ id }: { id: string }) {
                 <div>
                   <div className="label">NIP</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[14px] text-ink">{k.nip ? fmtNIP(k.nip) : '–'}</span>
+                    <span className="text-[14px] text-ink">{k.nip ? fmtNIP(k.nip) : '-'}</span>
                     {k.nip && !validNIP(k.nip) && (
                       <span
                         className="inline-flex items-center gap-1 text-[11.5px] text-amber-600"
@@ -663,10 +663,10 @@ function KartaKlienta({ id }: { id: string }) {
                   <div className="label">PESEL</div>
                   <button
                     className="text-[14px] text-ink underline decoration-dotted underline-offset-2"
-                    title={peselWidoczny ? 'Kliknij, aby ukryć' : 'Dane wrażliwe – kliknij, aby pokazać'}
+                    title={peselWidoczny ? 'Kliknij, aby ukryć' : 'Dane wrażliwe - kliknij, aby pokazać'}
                     onClick={() => setPeselWidoczny((v) => !v)}
                   >
-                    {k.pesel ? (peselWidoczny ? k.pesel : maskPesel(k.pesel)) : '–'}
+                    {k.pesel ? (peselWidoczny ? k.pesel : maskPesel(k.pesel)) : '-'}
                   </button>
                 </div>
               )}
@@ -718,7 +718,7 @@ function KartaKlienta({ id }: { id: string }) {
                         })
                       }
                     >
-                      <option value="">– nie przypisano –</option>
+                      <option value="">- nie przypisano -</option>
                       {opcje.map((kn) => (
                         <option key={kn.id} value={kn.id}>
                           {kn.nazwa}
@@ -752,7 +752,7 @@ function KartaKlienta({ id }: { id: string }) {
                 value={nowaNotatka}
                 onChange={(e) => setNowaNotatka(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && dodajWpis()}
-                placeholder="Dodaj wpis do historii…"
+                placeholder="Dodaj wpis do historii..."
                 className="flex-1"
               />
               <button className="btn-primary" onClick={dodajWpis}>
@@ -813,7 +813,7 @@ function KartaKlienta({ id }: { id: string }) {
             <Textarea
               value={k.daneDoPomiaru || ''}
               onChange={(e) => zapisz({ daneDoPomiaru: e.target.value })}
-              placeholder="Adres i szczegóły pomiaru, dostęp, piętro, kod do bramy…"
+              placeholder="Adres i szczegóły pomiaru, dostęp, piętro, kod do bramy..."
               rows={4}
             />
           </SectionCard>
@@ -822,7 +822,7 @@ function KartaKlienta({ id }: { id: string }) {
             <Textarea
               value={k.dodatkoweInfo || ''}
               onChange={(e) => zapisz({ dodatkoweInfo: e.target.value })}
-              placeholder="Preferencje, materiał, uwagi handlowe…"
+              placeholder="Preferencje, materiał, uwagi handlowe..."
               rows={4}
             />
           </SectionCard>
@@ -901,7 +901,7 @@ function EdytPole({
           className="w-full rounded-lg px-1 py-1 text-left text-[14px] text-ink transition hover:bg-stone-50"
           title="Kliknij, aby edytować"
         >
-          {value || <span className="text-stone-400">– dodaj –</span>}
+          {value || <span className="text-stone-400">- dodaj -</span>}
         </button>
       )}
     </div>
@@ -937,7 +937,7 @@ function TagiEdytor({ tagi, onChange }: { tagi: string[]; onChange: (t: string[]
           value={txt}
           onChange={(e) => setTxt(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && dodaj()}
-          placeholder="Nowy tag…"
+          placeholder="Nowy tag..."
           className="max-w-[200px]"
         />
         <button className="btn-outline btn-sm" onClick={dodaj}>

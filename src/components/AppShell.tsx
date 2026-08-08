@@ -105,7 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Kolumna glowna */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Topbar mobile – pt uwzglednia notch iPhone (safe-area) */}
+        {/* Topbar mobile - pt uwzglednia notch iPhone (safe-area) */}
         <header className="flex items-center gap-3 border-b border-white/[0.07] bg-[#0b0b10]/85 px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:hidden">
           <button className="btn-ghost !px-2" onClick={() => setOpenMobile(true)}>
             <Menu size={22} />
@@ -123,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Szybki skan – dostepny wszedzie (szczegolnie w terenie) */}
+      {/* Szybki skan - dostepny wszedzie (szczegolnie w terenie) */}
       <button
         onClick={() => setSkaner(true)}
         title="Skanuj dokument"
@@ -165,7 +165,7 @@ function PasekChmury() {
   const powaznie = status === 'blad' || status === 'sesja'
   const txt =
     status === 'offline'
-      ? 'Pracujesz offline – zmiany zapiszą się w chmurze automatycznie, gdy wróci internet.'
+      ? 'Pracujesz offline - zmiany zapiszą się w chmurze automatycznie, gdy wróci internet.'
       : blad || 'Problem z zapisem do chmury. Zmiany są bezpieczne na urządzeniu i wyślą się ponownie.'
   return (
     <div
@@ -366,7 +366,7 @@ function StorageStatus() {
   }, [])
 
   // W wersji desktopowej aplikacja jest juz zainstalowana, a dane trzyma
-  // katalog programu – zaproszenie do instalacji PWA nie ma tu sensu.
+  // katalog programu - zaproszenie do instalacji PWA nie ma tu sensu.
   if (desktop) {
     return (
       <div className="mt-2 px-3">

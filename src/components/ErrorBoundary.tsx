@@ -16,7 +16,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('AMICO – błąd widoku:', error, info)
+    console.error('AMICO - błąd widoku:', error, info)
   }
 
   // Gdy zmieni sie trasa (resetKey = sciezka), kasujemy ekran bledu - inaczej

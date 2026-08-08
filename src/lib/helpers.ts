@@ -1,7 +1,7 @@
 import type { Klient, Kontrahent, KontrahentTyp, PipelineEtap, Zlecenie, WycenaStatus, UmowaStatus } from './types'
 
 export function klientNazwa(k?: Klient | null): string {
-  if (!k) return '–'
+  if (!k) return '-'
   if (k.typ === 'firma') return k.nazwaFirmy || 'Firma bez nazwy'
   return [k.imie, k.nazwisko].filter(Boolean).join(' ') || 'Klient bez nazwy'
 }
@@ -75,9 +75,9 @@ export function umowaStatusInfo(s: UmowaStatus): { label: string; tone: string }
 }
 
 export const UMOWA_TYPY: { typ: string; nazwa: string; opis: string }[] = [
-  { typ: 'dzielo_23', nazwa: 'Umowa o dzieło – 23% VAT', opis: 'Osoba fizyczna, standardowa stawka VAT' },
-  { typ: 'dzielo_8', nazwa: 'Umowa o dzieło – 8% VAT', opis: 'Budownictwo objęte społecznym programem mieszkaniowym' },
-  { typ: 'dzielo_8_23', nazwa: 'Umowa o dzieło – 8/23% VAT', opis: 'Proporcja wg powierzchni (limit 300/150 m²)' },
+  { typ: 'dzielo_23', nazwa: 'Umowa o dzieło - 23% VAT', opis: 'Osoba fizyczna, standardowa stawka VAT' },
+  { typ: 'dzielo_8', nazwa: 'Umowa o dzieło - 8% VAT', opis: 'Budownictwo objęte społecznym programem mieszkaniowym' },
+  { typ: 'dzielo_8_23', nazwa: 'Umowa o dzieło - 8/23% VAT', opis: 'Proporcja wg powierzchni (limit 300/150 m²)' },
   { typ: 'wspolpracy', nazwa: 'Umowa współpracy ze sprzedawcą', opis: 'Ekspozycja kamienia, zobowiązanie zakupowe' },
   { typ: 'prowizyjna', nazwa: 'Umowa prowizyjna', opis: 'Pozyskiwanie klientów, prowizja 10%' },
   { typ: 'oswiadczenie', nazwa: 'Oświadczenie klienta', opis: 'Akceptacja właściwości kamienia naturalnego' },

@@ -4,7 +4,7 @@ import { AmicoWordmark } from '../components/Logo'
 import { fmtKonto, fmtNIP } from '../lib/format'
 
 // ============================================================================
-// Papier firmowy A4 – wspolny szablon wszystkich dokumentow AMICO
+// Papier firmowy A4 - wspolny szablon wszystkich dokumentow AMICO
 // ============================================================================
 
 export function DocSheet({
@@ -174,7 +174,7 @@ export function DocLine({ label, value, width }: { label: string; value?: React.
           fontSize: '9.5pt',
         }}
       >
-        {value || ' '}
+        {value || ' '}
       </span>
     </div>
   )

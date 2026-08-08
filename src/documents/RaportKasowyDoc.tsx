@@ -43,11 +43,11 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <span>
             <b style={{ color: '#4a463f' }}>OD:</b>{' '}
-            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.od) || '–'}</span>
+            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.od) || '-'}</span>
           </span>
           <span>
             <b style={{ color: '#4a463f' }}>DO:</b>{' '}
-            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.do) || '–'}</span>
+            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.do) || '-'}</span>
           </span>
         </div>
         <span>

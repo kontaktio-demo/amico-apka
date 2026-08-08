@@ -94,7 +94,7 @@ export const useStore = create<AppState>((setState, getState) => ({
     if (zapisana && zapisana.firmy?.length) {
       setState({ baza: migruj(zapisana), hydrated: true })
     } else {
-      // Start bez danych demo – demo mozna wczytac recznie w Ustawieniach.
+      // Start bez danych demo - demo mozna wczytac recznie w Ustawieniach.
       // (Losowe rekordy demo powodowalyby duplikaty po synchronizacji.)
       const pusta = pustaBaza()
       setState({ baza: pusta, hydrated: true })
@@ -110,11 +110,11 @@ export const useStore = create<AppState>((setState, getState) => ({
           if (getState().bladZapisu) setState({ bladZapisu: null })
         })
         .catch((e) => {
-          // np. QuotaExceededError – uzytkownik MUSI o tym wiedziec
+          // np. QuotaExceededError - uzytkownik MUSI o tym wiedziec
           setState({
             bladZapisu:
               e?.name === 'QuotaExceededError'
-                ? 'Brak miejsca na urządzeniu – zrób kopię i usuń stare skany.'
+                ? 'Brak miejsca na urządzeniu - zrób kopię i usuń stare skany.'
                 : 'Nie udało się zapisać danych lokalnie.',
           })
         })
@@ -127,7 +127,7 @@ export const useStore = create<AppState>((setState, getState) => ({
   },
 
   upsert: (key, item) => {
-    // znacznik zmiany – potrzebny do bezpiecznego scalania miedzy urzadzeniami
+    // znacznik zmiany - potrzebny do bezpiecznego scalania miedzy urzadzeniami
     const stamped: any = { ...(item as any), _zm: nowISO() }
     setState((s) => {
       const arr = s.baza[key] as any[]
@@ -151,7 +151,7 @@ export const useStore = create<AppState>((setState, getState) => ({
   },
 
   zastapBaze: (b) => {
-    // migruj – dane z chmury moga pochodzic z innej wersji aplikacji
+    // migruj - dane z chmury moga pochodzic z innej wersji aplikacji
     const m = migruj(b)
     setState({ baza: m })
     saveBaza(m).catch((e) => {
@@ -209,7 +209,7 @@ export const useStore = create<AppState>((setState, getState) => ({
     setState((st) => ({
       baza: {
         ...st.baza,
-        // _zm jest KONIECZNE – bez niego scalanie mogloby cofnac licznik i wygenerowac duplikaty numerow
+        // _zm jest KONIECZNE - bez niego scalanie mogloby cofnac licznik i wygenerowac duplikaty numerow
         ustawienia: {
           ...st.baza.ustawienia,
           numeracja: { ...st.baza.ustawienia.numeracja, [key]: kolejny },

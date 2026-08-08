@@ -52,7 +52,7 @@ const ROLE: { rola: Pracownik['rola']; nazwa: string }[] = [
 ]
 
 function fmtBytes(n?: number): string {
-  if (n === undefined || n === null) return '–'
+  if (n === undefined || n === null) return '-'
   const mb = n / (1024 * 1024)
   if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`
   if (mb >= 1) return `${mb.toFixed(1)} MB`
@@ -122,7 +122,7 @@ export default function Ustawienia() {
       )
         return
       const ok = importJSON(String(reader.result))
-      push(ok ? 'Kopia wczytana – dane zostały zastąpione' : 'Nieprawidłowy plik kopii', ok ? 'ok' : 'err')
+      push(ok ? 'Kopia wczytana - dane zostały zastąpione' : 'Nieprawidłowy plik kopii', ok ? 'ok' : 'err')
     }
     reader.onerror = () => push('Nie udało się odczytać pliku', 'err')
     reader.readAsText(file)
@@ -213,7 +213,7 @@ export default function Ustawienia() {
           }
         >
           {b.pracownicy.length === 0 ? (
-            <p className="py-6 text-center text-[13px] text-stone-400">Brak osób – dodaj pierwszą.</p>
+            <p className="py-6 text-center text-[13px] text-stone-400">Brak osób - dodaj pierwszą.</p>
           ) : (
             <div className="space-y-2">
               {b.pracownicy.map((p) => (
@@ -249,7 +249,7 @@ export default function Ustawienia() {
                   <button
                     className="btn-ghost !px-2 text-red-600"
                     onClick={async () => {
-                      if (await confirm(`Usunąć członka zespołu „${p.imie || 'bez nazwy'}”?`))
+                      if (await confirm(`Usunąć członka zespołu "${p.imie || 'bez nazwy'}"?`))
                         remove('pracownicy', p.id)
                     }}
                     title="Usuń"
@@ -412,7 +412,7 @@ export default function Ustawienia() {
             <Trash2 size={16} /> Wyczyść dane z tego urządzenia
           </button>
           <p className="mt-2 text-[12.5px] text-stone-500">
-            Usuwa kopię danych z tego urządzenia i wylogowuje z chmury. Dane firmy zostają na serwerze – po ponownym
+            Usuwa kopię danych z tego urządzenia i wylogowuje z chmury. Dane firmy zostają na serwerze - po ponownym
             zalogowaniu wrócą. Używaj, gdy oddajesz albo czyścisz to urządzenie.
           </p>
         </SectionCard>

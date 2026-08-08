@@ -190,7 +190,7 @@ export function SearchInput({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || 'Szukaj…'}
+        placeholder={placeholder || 'Szukaj...'}
         className="input pl-10"
       />
     </div>

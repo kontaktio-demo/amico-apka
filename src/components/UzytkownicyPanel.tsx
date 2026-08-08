@@ -36,7 +36,7 @@ export function UzytkownicyPanel() {
     const sol = losowaSol()
     upsert('uzytkownicy', { ...user, pinHash: await hashPin(pin, sol), pinSalt: sol })
     setPin('')
-    push('PIN ustawiony – możesz odblokowywać aplikację PIN-em')
+    push('PIN ustawiony - możesz odblokowywać aplikację PIN-em')
   }
   function usunPin() {
     if (!user) return
@@ -73,7 +73,7 @@ export function UzytkownicyPanel() {
       <SectionCard
         title="Twoje konto i zabezpieczenia"
         icon={<UserCog size={18} />}
-        desc="Szybkie odblokowanie aplikacji na tym urządzeniu – jak w telefonie."
+        desc="Szybkie odblokowanie aplikacji na tym urządzeniu - jak w telefonie."
       >
         {user && (
           <div className="space-y-5">
@@ -185,7 +185,7 @@ export function UzytkownicyPanel() {
                 }}
                 onUsun={async () => {
                   if (us.id === user?.id) return push('Nie można usunąć własnego konta', 'err')
-                  if (!(await confirm(`Usunąć użytkownika „${us.imie}”? Straci on dostęp do danych firmy.`))) return
+                  if (!(await confirm(`Usunąć użytkownika "${us.imie}"? Straci on dostęp do danych firmy.`))) return
                   // Najpierw odbieramy dostep w chmurze, potem kasujemy lokalnie.
                   // Konta lokalne (usr_*, bez konta w chmurze) pomijamy - RPC dotyczy uuid.
                   if (/^[0-9a-f-]{36}$/i.test(us.id)) {
@@ -312,7 +312,7 @@ function DodajUzytkownika({ onAdd }: { onAdd: (u: Uzytkownik) => void }) {
           <Select value={rola} onChange={(e) => setRola(e.target.value as Rola)}>
             {ROLE.map((r) => (
               <option key={r.rola} value={r.rola}>
-                {r.nazwa} – {r.opis}
+                {r.nazwa} - {r.opis}
               </option>
             ))}
           </Select>

@@ -3,12 +3,12 @@
 export function enableNativeFeel() {
   const prevent = (e: Event) => e.preventDefault()
 
-  // iOS Safari / standalone – gesty pinch-zoom
+  // iOS Safari / standalone - gesty pinch-zoom
   document.addEventListener('gesturestart', prevent, { passive: false })
   document.addEventListener('gesturechange', prevent, { passive: false })
   document.addEventListener('gestureend', prevent, { passive: false })
 
-  // Desktop – Ctrl/Cmd + kółko myszy = zoom przegladarki
+  // Desktop - Ctrl/Cmd + kółko myszy = zoom przegladarki
   document.addEventListener(
     'wheel',
     (e) => {
@@ -17,7 +17,7 @@ export function enableNativeFeel() {
     { passive: false },
   )
 
-  // Desktop – Ctrl/Cmd + (+ / - / 0) = zoom przegladarki
+  // Desktop - Ctrl/Cmd + (+ / - / 0) = zoom przegladarki
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0', 'Add', 'Subtract'].includes(e.key)) {
       e.preventDefault()

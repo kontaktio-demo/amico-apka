@@ -1,5 +1,5 @@
 // ============================================================================
-// AMICO – silnik skanera dokumentow (jak Adobe/Apple Scan)
+// AMICO - silnik skanera dokumentow (jak Adobe/Apple Scan)
 // Kadrowanie perspektywiczne (4 rogi -> prostokat) + filtry dokumentowe.
 // Wszystko lokalnie w przegladarce (Canvas), bez wysylania na zewnatrz.
 // ============================================================================
@@ -182,7 +182,7 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
     return canvas
   }
 
-  // czarno-bialy – progowanie adaptacyjne (integral image)
+  // czarno-bialy - progowanie adaptacyjne (integral image)
   const bw = adaptiveThreshold(gray, w, h, Math.max(8, Math.round(Math.max(w, h) / 40)), 10)
   for (let i = 0, p = 0; i < d.length; i += 4, p++) {
     d[i] = d[i + 1] = d[i + 2] = bw[p]

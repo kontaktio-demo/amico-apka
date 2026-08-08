@@ -32,7 +32,7 @@ function typNazwa(t: UmowaTyp): string {
 }
 
 // ============================================================================
-// Modul UMOWY – lista + edytor (route /umowy oraz /umowy/:id)
+// Modul UMOWY - lista + edytor (route /umowy oraz /umowy/:id)
 // ============================================================================
 export default function Umowy() {
   const { id } = useParams()
@@ -113,7 +113,7 @@ function Lista() {
 
       <div className="mb-4 flex flex-col gap-3">
         <div className="max-w-md">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po numerze lub zamawiającym…" />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po numerze lub zamawiającym..." />
         </div>
         <div className="flex flex-wrap gap-1.5">
           <Chip active={filtrTyp === 'wszystkie'} onClick={() => setFiltrTyp('wszystkie')}>
@@ -141,7 +141,7 @@ function Lista() {
         <EmptyState
           icon={<FileSignature size={26} />}
           title="Brak umów"
-          desc="Utwórz pierwszą umowę – wybierz typ, uzupełnij dane i zbierz podpisy."
+          desc="Utwórz pierwszą umowę - wybierz typ, uzupełnij dane i zbierz podpisy."
           action={
             <button className="btn-primary" onClick={() => setPickerOpen(true)}>
               <Plus size={17} /> Nowa umowa
@@ -170,10 +170,10 @@ function Lista() {
                     <tr key={u.id} className="row-hover cursor-pointer" onClick={() => nav(`/umowy/${u.id}`)}>
                       <td className="td font-semibold text-brand-700">{u.numer}</td>
                       <td className="td">{typNazwa(u.typ)}</td>
-                      <td className="td">{u.zamawiajacyNazwa || '–'}</td>
-                      <td className="td text-center whitespace-nowrap">{fmtDate(u.dataZawarcia) || '–'}</td>
+                      <td className="td">{u.zamawiajacyNazwa || '-'}</td>
+                      <td className="td text-center whitespace-nowrap">{fmtDate(u.dataZawarcia) || '-'}</td>
                       <td className="td text-right whitespace-nowrap">
-                        {u.wynagrodzenieBrutto != null ? fmtPLN(u.wynagrodzenieBrutto) : '–'}
+                        {u.wynagrodzenieBrutto != null ? fmtPLN(u.wynagrodzenieBrutto) : '-'}
                       </td>
                       <td className="td text-center">
                         <Badge tone={si.tone as any}>{si.label}</Badge>
@@ -197,7 +197,7 @@ function Lista() {
       )}
 
       {/* Wybor typu umowy */}
-      <Modal open={pickerOpen} onClose={() => setPickerOpen(false)} title="Nowa umowa – wybierz typ" size="lg">
+      <Modal open={pickerOpen} onClose={() => setPickerOpen(false)} title="Nowa umowa - wybierz typ" size="lg">
         <div className="grid gap-2 sm:grid-cols-2">
           {UMOWA_TYPY.map((t) => (
             <button
@@ -302,7 +302,7 @@ function Edytor({ umowaId }: { umowaId: string }) {
     <div>
       <PageHeader
         title={`${typNazwa(u.typ)}`}
-        subtitle={`${u.numer} · zawarta ${fmtDate(u.dataZawarcia) || '–'}`}
+        subtitle={`${u.numer} · zawarta ${fmtDate(u.dataZawarcia) || '-'}`}
         icon={<FileSignature size={22} />}
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -378,7 +378,7 @@ function Edytor({ umowaId }: { umowaId: string }) {
           <SectionCard title="Zamawiający" icon={<User size={17} />} desc="Uzupełnij z bazy klientów lub wpisz ręcznie">
             <Field label="Wybierz z bazy klientów">
               <Select value={u.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                <option value="">– wpis ręczny –</option>
+                <option value="">- wpis ręczny -</option>
                 {klienci.map((k) => (
                   <option key={k.id} value={k.id}>
                     {klientNazwa(k)}
@@ -441,7 +441,7 @@ function Edytor({ umowaId }: { umowaId: string }) {
                 <Textarea
                   value={u.przedmiot || ''}
                   onChange={(e) => set({ przedmiot: e.target.value })}
-                  placeholder="np. blaty kuchenne z konglomeratu, parapety…"
+                  placeholder="np. blaty kuchenne z konglomeratu, parapety..."
                 />
               </Field>
               {pokazPowierzchnia && (

@@ -146,11 +146,11 @@ export default function Dokumenty() {
           </span>
         </TabBtn>
         <TabBtn active={tab === 'kp'} onClick={() => setTab('kp')} icon={<Receipt size={16} />}>
-          KP – Kasa Przyjmie
+          KP - Kasa Przyjmie
           <span className="ml-1.5 rounded-full bg-stone-100 px-1.5 text-[11px] text-stone-500">{kpLista.length}</span>
         </TabBtn>
         <div className="ml-auto w-full sm:w-64">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po numerze, kliencie…" />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po numerze, kliencie..." />
         </div>
       </div>
 
@@ -188,8 +188,8 @@ export default function Dokumenty() {
                     return (
                       <tr key={p.id} className="row-hover">
                         <td className="td font-medium text-ink">{p.numer}</td>
-                        <td className="td">{nazwa || '–'}</td>
-                        <td className="td text-stone-500">{p.numerZamowienia || '–'}</td>
+                        <td className="td">{nazwa || '-'}</td>
+                        <td className="td text-stone-500">{p.numerZamowienia || '-'}</td>
                         <td className="td text-stone-500">{fmtDate(p.data)}</td>
                         <td className="td">
                           {p.podpisKlienta ? (
@@ -211,7 +211,7 @@ export default function Dokumenty() {
                               )}
                               share={{
                                 title: `Protokół odbioru ${p.numer}`,
-                                text: `Protokół odbioru ${p.numer} – ${nazwa}. Data: ${fmtDate(p.data)}.`,
+                                text: `Protokół odbioru ${p.numer} - ${nazwa}. Data: ${fmtDate(p.data)}.`,
                                 to: kl?.email,
                                 phone: p.klientTelefon || kl?.telefon,
                               }}
@@ -271,8 +271,8 @@ export default function Dokumenty() {
                     return (
                       <tr key={kp.id} className="row-hover">
                         <td className="td font-medium text-ink">{kp.numer}</td>
-                        <td className="td">{nazwa || '–'}</td>
-                        <td className="td text-stone-500">{kp.tytul || '–'}</td>
+                        <td className="td">{nazwa || '-'}</td>
+                        <td className="td text-stone-500">{kp.tytul || '-'}</td>
                         <td className="td text-right font-semibold text-ink">{fmtPLN(kp.kwota)}</td>
                         <td className="td text-stone-500">{fmtDate(kp.data)}</td>
                         <td className="td">
@@ -433,7 +433,7 @@ function ProtokolEditor({
             getPrintNode={() => <ProtokolDoc p={draft} firma={firma} logoDataUrl={logo} />}
             share={{
               title: `Protokół odbioru ${draft.numer}`,
-              text: `Protokół odbioru ${draft.numer} – ${nazwaKlienta}. Data: ${fmtDate(draft.data)}.`,
+              text: `Protokół odbioru ${draft.numer} - ${nazwaKlienta}. Data: ${fmtDate(draft.data)}.`,
               phone: draft.klientTelefon,
             }}
           />
@@ -450,7 +450,7 @@ function ProtokolEditor({
       <div className="space-y-4">
         <Field label="Klient z bazy (opcjonalnie)">
           <Select value={draft.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-            <option value="">– wpisz dane ręcznie –</option>
+            <option value="">- wpisz dane ręcznie -</option>
             {klienci.map((k) => (
               <option key={k.id} value={k.id}>
                 {klientNazwa(k)}
@@ -502,7 +502,7 @@ function ProtokolEditor({
             value={draft.odebraneElementy || ''}
             onChange={(e) => set('odebraneElementy', e.target.value)}
             rows={3}
-            placeholder="np. Blat kuchenny z granitu Steel Grey (2 szt.), parapety 3 szt…"
+            placeholder="np. Blat kuchenny z granitu Steel Grey (2 szt.), parapety 3 szt..."
           />
         </Field>
 
@@ -603,7 +603,7 @@ function KPEditor({
       <div className="space-y-4">
         <Field label="Klient z bazy (opcjonalnie)">
           <Select value={draft.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-            <option value="">– wpisz dane ręcznie –</option>
+            <option value="">- wpisz dane ręcznie -</option>
             {klienci.map((k) => (
               <option key={k.id} value={k.id}>
                 {klientNazwa(k)}

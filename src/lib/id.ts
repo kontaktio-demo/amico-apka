@@ -1,4 +1,4 @@
-// Generator ID (runtime aplikacji – crypto gdy dostepne)
+// Generator ID (runtime aplikacji - crypto gdy dostepne)
 export function uid(prefix = ''): string {
   const rnd =
     typeof crypto !== 'undefined' && 'randomUUID' in crypto

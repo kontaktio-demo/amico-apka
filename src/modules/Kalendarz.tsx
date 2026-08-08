@@ -158,7 +158,7 @@ export default function Kalendarz() {
     push(edycja ? 'Zapisano zmiany' : 'Dodano wydarzenie')
   }
   async function usun(w: Wydarzenie) {
-    if (await confirm(`Usunąć wydarzenie „${w.tytul}”?`)) {
+    if (await confirm(`Usunąć wydarzenie "${w.tytul}"?`)) {
       remove('wydarzenia', w.id)
       push('Usunięto wydarzenie', 'info')
     }
@@ -444,12 +444,12 @@ export default function Kalendarz() {
             <Input
               value={draft.tytul}
               onChange={(e) => setDraft({ ...draft, tytul: e.target.value })}
-              placeholder="np. Pomiar blatów – kuchnia"
+              placeholder="np. Pomiar blatów - kuchnia"
             />
           </Field>
           <Field label="Klient" className="col-span-2">
             <Select value={draft.klientId || ''} onChange={(e) => setDraft({ ...draft, klientId: e.target.value })}>
-              <option value="">– brak –</option>
+              <option value="">- brak -</option>
               {b.klienci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {klientNazwa(k)}
@@ -462,7 +462,7 @@ export default function Kalendarz() {
               value={draft.pracownikId || ''}
               onChange={(e) => setDraft({ ...draft, pracownikId: e.target.value })}
             >
-              <option value="">– brak –</option>
+              <option value="">- brak -</option>
               {b.pracownicy.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.imie}
@@ -521,7 +521,7 @@ function PlanTygodniaDoc({
           PLAN PRACY
         </div>
         <div style={{ fontSize: '9pt', color: '#6b6459', marginTop: 2 }}>
-          Tydzień {fmtDate(od)} – {fmtDate(doD)}
+          Tydzień {fmtDate(od)} - {fmtDate(doD)}
         </div>
       </div>
 
@@ -547,7 +547,7 @@ function PlanTygodniaDoc({
             <span>{fmtDate(d.iso)}</span>
           </div>
           {d.wydarzenia.length === 0 ? (
-            <div style={{ padding: '4px 9px', fontSize: '8pt', color: '#a9a496' }}>–</div>
+            <div style={{ padding: '4px 9px', fontSize: '8pt', color: '#a9a496' }}>-</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt' }}>
               <tbody>
@@ -558,7 +558,7 @@ function PlanTygodniaDoc({
                   return (
                     <tr key={w.id} style={{ borderTop: '1px solid #e6e2d8' }}>
                       <td style={{ padding: '3px 6px', width: 42, fontWeight: 600, color: '#12233a' }}>
-                        {w.godzina || '–'}
+                        {w.godzina || '-'}
                       </td>
                       <td style={{ padding: '3px 6px', width: 66 }}>
                         <span style={{ color: ti.kolor, fontWeight: 700 }}>{ti.nazwa}</span>

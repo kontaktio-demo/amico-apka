@@ -154,7 +154,7 @@ export function SignatureModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={rola ? `Podpis – ${rola}` : 'Podpis'}
+      title={rola ? `Podpis - ${rola}` : 'Podpis'}
       size="lg"
       footer={
         <>
@@ -249,7 +249,7 @@ export function SignatureField({
         </button>
       ) : (
         <button className="btn-outline w-full" onClick={onSign}>
-          <PenLine size={16} /> Podpisz {rola ? `– ${rola}` : ''}
+          <PenLine size={16} /> Podpisz {rola ? `- ${rola}` : ''}
         </button>
       )}
     </div>

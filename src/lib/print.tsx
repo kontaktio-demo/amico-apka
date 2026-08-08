@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { createPortal } from 'react-dom'
 
 // ============================================================================
-// Silnik DRUKU / PDF – renderuje dokument do #print-root i wywoluje window.print()
+// Silnik DRUKU / PDF - renderuje dokument do #print-root i wywoluje window.print()
 // Przegladarka pozwala "Zapisz jako PDF". Wysoka wiernosc, offline, polskie znaki.
 // ============================================================================
 
@@ -206,7 +206,7 @@ export function PrintProvider({ children }: { children: React.ReactNode }) {
 }
 
 // ============================================================================
-// WYSYLKA – Web Share API (priorytet), fallback mailto / sms / kopiuj
+// WYSYLKA - Web Share API (priorytet), fallback mailto / sms / kopiuj
 // ============================================================================
 
 export function canShareFiles(): boolean {

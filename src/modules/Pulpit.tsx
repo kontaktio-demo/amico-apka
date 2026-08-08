@@ -178,7 +178,7 @@ export default function Pulpit() {
             </div>
             {b.klienci.length === 0 ? (
               <p className="py-6 text-center text-[13px] text-stone-400">
-                Brak klientów – dodaj pierwszego w zakładce Klienci CRM.
+                Brak klientów - dodaj pierwszego w zakładce Klienci CRM.
               </p>
             ) : (
               <div className="divide-y divide-stone-100">
@@ -199,7 +199,7 @@ export default function Pulpit() {
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-[14px] font-medium text-ink">{klientNazwa(k)}</div>
-                          <div className="text-[12px] text-stone-400">{k.telefon || k.email || '–'}</div>
+                          <div className="text-[12px] text-stone-400">{k.telefon || k.email || '-'}</div>
                         </div>
                         <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
                       </Link>
@@ -322,7 +322,7 @@ function PulpitTeren({
               {wydarzeniaDzis.map((w) => (
                 <div key={w.id} className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
                   <span className="rounded-lg bg-white/[0.06] px-2.5 py-1 text-[13px] font-semibold text-white">
-                    {w.godzina || '–'}
+                    {w.godzina || '-'}
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[14px] font-medium text-ink">{w.tytul}</div>

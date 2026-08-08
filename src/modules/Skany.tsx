@@ -73,7 +73,7 @@ export default function Skany() {
 
       <div className="mb-5 flex flex-wrap gap-2">
         <div className="min-w-[220px] flex-1">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj: nazwa, zlecenie, klient…" />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj: nazwa, zlecenie, klient..." />
         </div>
         <Select className="w-auto" value={katFiltr} onChange={(e) => setKatFiltr(e.target.value)}>
           <option value="">Wszystkie kategorie</option>
@@ -89,7 +89,7 @@ export default function Skany() {
         <EmptyState
           icon={<ScanLine size={28} />}
           title="Brak skanów"
-          desc="Zeskanuj dokument, umowę, protokół albo kartkę z pomiaru – jak w Adobe Scan. Zapisze się jako PDF i przypniesz do zlecenia."
+          desc="Zeskanuj dokument, umowę, protokół albo kartkę z pomiaru - jak w Adobe Scan. Zapisze się jako PDF i przypniesz do zlecenia."
           action={
             <button className="btn-primary" onClick={() => setSkanerOtwarty(true)}>
               <ScanLine size={16} /> Skanuj dokument
@@ -147,7 +147,7 @@ export default function Skany() {
             push('Zapisano zmiany')
           }}
           onUsun={async () => {
-            if (await confirm(`Usunąć skan „${podglad.nazwa}”?`)) {
+            if (await confirm(`Usunąć skan "${podglad.nazwa}"?`)) {
               remove('skany', podglad.id)
               setPodglad(null)
               push('Usunięto skan', 'info')
@@ -204,7 +204,7 @@ function PodgladSkanu({
             className="btn-outline"
             onClick={() => {
               const okno = drukujPdf(d.strony, d.nazwa)
-              if (!okno) push('Zapisano PDF – otwórz go, aby wydrukować', 'ok')
+              if (!okno) push('Zapisano PDF - otwórz go, aby wydrukować', 'ok')
             }}
           >
             <Printer size={16} /> Drukuj
@@ -241,7 +241,7 @@ function PodgladSkanu({
           </Field>
           <Field label="Przypisz do zlecenia">
             <Select value={d.zlecenieId || ''} onChange={(e) => set({ zlecenieId: e.target.value || undefined })}>
-              <option value="">– brak –</option>
+              <option value="">- brak -</option>
               {zlecenia.map((z) => (
                 <option key={z.id} value={z.id}>
                   {z.label}
@@ -251,7 +251,7 @@ function PodgladSkanu({
           </Field>
           <Field label="Przypisz do klienta">
             <Select value={d.klientId || ''} onChange={(e) => set({ klientId: e.target.value || undefined })}>
-              <option value="">– brak –</option>
+              <option value="">- brak -</option>
               {klienci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.label}

@@ -40,7 +40,7 @@ export default function App() {
     init()
   }, [init])
 
-  // Po wczytaniu lokalnej bazy: jesli jest sesja w chmurze – wlacz synchronizacje
+  // Po wczytaniu lokalnej bazy: jesli jest sesja w chmurze - wlacz synchronizacje
   useEffect(() => {
     if (!hydrated) return
     sesjaChmury()
@@ -63,7 +63,7 @@ export default function App() {
       <div className="grid h-full place-items-center bg-stone-50">
         <div className="flex flex-col items-center gap-3 animate-fade-in">
           <LogoMark size={56} />
-          <div className="text-[13px] font-medium text-stone-400">Wczytywanie AMICO…</div>
+          <div className="text-[13px] font-medium text-stone-400">Wczytywanie AMICO...</div>
         </div>
       </div>
     )

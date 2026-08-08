@@ -1,5 +1,5 @@
 // ============================================================================
-// AMICO – model danych. Wszystko trzymane lokalnie (offline-first, IndexedDB).
+// AMICO - model danych. Wszystko trzymane lokalnie (offline-first, IndexedDB).
 // ============================================================================
 
 export type ID = string
@@ -501,7 +501,7 @@ export interface Skan {
   id: ID
   nazwa: string
   kategoria: SkanKategoria
-  strony: string[] // JPEG dataURL – kolejne strony/kartki po skanie i obróbce
+  strony: string[] // JPEG dataURL - kolejne strony/kartki po skanie i obróbce
   zlecenieId?: ID
   klientId?: ID
   notatka?: string
@@ -520,7 +520,7 @@ export interface Ustawienia {
 }
 
 // ---------- Synchronizacja ----------
-// Slad po usunietym rekordzie – dzieki temu usuniecie propaguje sie miedzy urzadzeniami
+// Slad po usunietym rekordzie - dzieki temu usuniecie propaguje sie miedzy urzadzeniami
 export interface Tombstone {
   k: string // nazwa kolekcji
   id: ID

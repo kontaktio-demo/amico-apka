@@ -2,7 +2,7 @@ import type { Odprawa, Firma } from '../lib/types'
 import { DocSheet } from './DocShell'
 import { fmtDate } from '../lib/format'
 
-// Odwzorowanie kartki "ODPRAWA" – dzienny plan pracy pracowni.
+// Odwzorowanie kartki "ODPRAWA" - dzienny plan pracy pracowni.
 // Uklad dwukolumnowy, kazda sekcja to ramka z zielonym naglowkiem i liniami do wpisywania.
 export function OdprawaDoc({ o, firma, logoDataUrl }: { o: Odprawa; firma: Firma; logoDataUrl?: string }) {
   const rok = (o.data && o.data.slice(0, 4)) || String(new Date().getFullYear())

@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null)
   const zdecydowano = useRef(false)
 
-  // Decyzja o ekranie startowym – TYLKO raz, po wczytaniu bazy.
+  // Decyzja o ekranie startowym - TYLKO raz, po wczytaniu bazy.
   useEffect(() => {
     if (!hydrated || zdecydowano.current) return
     zdecydowano.current = true
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(t)
   }, [widok, userId, user, uzytkownicy])
 
-  // Auto-blokada po bezczynnosci (5 min) – ochrona przy zgubieniu urzadzenia
+  // Auto-blokada po bezczynnosci (5 min) - ochrona przy zgubieniu urzadzenia
   useEffect(() => {
     if (widok !== 'in') return
     let t: ReturnType<typeof setTimeout>
@@ -169,12 +169,12 @@ function PierwszeUruchomienie({ onDone }: { onDone: (id: string) => void }) {
       <div>
         <h1 className="text-[19px] font-display font-semibold text-ink">Witaj w AMICO</h1>
         <p className="mt-1 text-[13px] leading-relaxed text-stone-400">
-          Jeśli masz już konto, zaloguj się – zobaczysz te same dane co na pozostałych urządzeniach.
+          Jeśli masz już konto, zaloguj się - zobaczysz te same dane co na pozostałych urządzeniach.
         </p>
       </div>
 
       <button className="btn-primary w-full btn-lg" onClick={() => setWybor('logowanie')}>
-        <Cloud size={18} /> Mam już konto – zaloguj się
+        <Cloud size={18} /> Mam już konto - zaloguj się
       </button>
 
       <button className="btn-outline w-full" onClick={() => setWybor('rejestracja')}>
@@ -381,7 +381,7 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
           localStorage.setItem(PIN_PROBY_KEY(user.id), String(n))
           if (n >= 5) {
             setTrybHaslo(true)
-            setErr('Za dużo prób PIN – dostęp PIN-em zablokowany. Zaloguj się hasłem.')
+            setErr('Za dużo prób PIN - dostęp PIN-em zablokowany. Zaloguj się hasłem.')
             setPin('')
           } else {
             setErr(`Błędny PIN (próba ${n}/5)`)

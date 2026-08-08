@@ -8,7 +8,7 @@ import { hashHasla, losowaSol, zapiszOstatniego } from './auth'
 import { nowISO } from './format'
 
 // ============================================================================
-// AMICO – synchronizacja z chmura (Supabase).
+// AMICO - synchronizacja z chmura (Supabase).
 // Model: cala baza firmy = jeden dokument JSON + licznik wersji (rev).
 // Zapis: CAS (compare-and-swap). Konflikt -> scalenie -> ponowna proba.
 // Zasada nadrzedna: ZADNA zmiana nie moze zginac ani zostac cicho nadpisana.
@@ -56,24 +56,24 @@ export function bladPoPolsku(e: any): string {
   const m: string = (e?.message || e || '').toString()
   if (!m) return 'Błąd połączenia z chmurą'
   if (/failed to fetch|networkerror|network request failed|load failed|timeout/i.test(m))
-    return 'Brak połączenia z internetem – zmiany zapiszą się automatycznie, gdy wróci zasięg.'
+    return 'Brak połączenia z internetem - zmiany zapiszą się automatycznie, gdy wróci zasięg.'
   if (/row-level security|permission denied|not authorized|403/i.test(m))
-    return 'Brak uprawnień do zapisu w chmurze – zaloguj się ponownie (Ustawienia → Chmura).'
+    return 'Brak uprawnień do zapisu w chmurze - zaloguj się ponownie (Ustawienia → Chmura).'
   if (/jwt|401|token|not authenticated|session/i.test(m))
-    return 'Sesja w chmurze wygasła – zaloguj się ponownie (Ustawienia → Chmura).'
+    return 'Sesja w chmurze wygasła - zaloguj się ponownie (Ustawienia → Chmura).'
   if (/does not exist|schema cache|PGRST202|amico_/i.test(m))
-    return 'Baza w chmurze nie jest przygotowana – uruchom skrypt SQL (supabase/amico-schema.sql).'
+    return 'Baza w chmurze nie jest przygotowana - uruchom skrypt SQL (supabase/amico-schema.sql).'
   if (/payload|too large|20\s?mb|size/i.test(m))
-    return 'Baza jest za duża do wysłania – zarchiwizuj stare skany (Ustawienia → Chmura).'
+    return 'Baza jest za duża do wysłania - zarchiwizuj stare skany (Ustawienia → Chmura).'
   return 'Nie udało się zapisać w chmurze. Zmiany są bezpieczne na urządzeniu i wyślą się ponownie.'
 }
 
-// Sesja przestala byc wazna – przestajemy sie dobijac i prosimy o ponowne logowanie.
+// Sesja przestala byc wazna - przestajemy sie dobijac i prosimy o ponowne logowanie.
 // Dane lokalne zostaja nietkniete.
 async function obsluzWygaslaSesje() {
   stopSync()
   try {
-    // scope: 'local' jest KLUCZOWE. Domyslne wylogowanie w Supabase jest globalne –
+    // scope: 'local' jest KLUCZOWE. Domyslne wylogowanie w Supabase jest globalne -
     // uniewaznia sesje na WSZYSTKICH urzadzeniach. Przez to potkniecie sesji w jednej
     // aplikacji (np. na komputerze) wyrzucalo uzytkownika takze z tabletu.
     await supabase.auth.signOut({ scope: 'local' })
@@ -83,7 +83,7 @@ async function obsluzWygaslaSesje() {
   useCloud.getState().ustaw({
     status: 'sesja',
     workspaceId: null,
-    blad: 'Sesja w chmurze wygasła – zaloguj się ponownie (Ustawienia → Chmura). Twoje dane są bezpieczne na urządzeniu.',
+    blad: 'Sesja w chmurze wygasła - zaloguj się ponownie (Ustawienia → Chmura). Twoje dane są bezpieczne na urządzeniu.',
   })
 }
 
@@ -196,7 +196,7 @@ export async function wylogujChmura() {
   // dane lezace na tym urzadzeniu. Skasowanie go sprawia, ze po zalogowaniu sie na
   // konto INNEJ firmy dane starej firmy zostalyby z nia scalone i wypchniete do chmury.
   // Wylogowanie dotyczy TYLKO tego urzadzenia. Bez scope: 'local' Supabase uniewaznia
-  // sesje wszedzie – wylogowanie sie na komputerze wyrzucalo tez z tabletu.
+  // sesje wszedzie - wylogowanie sie na komputerze wyrzucalo tez z tabletu.
   await supabase.auth.signOut({ scope: 'local' })
   C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
 }
@@ -253,7 +253,7 @@ export async function usunCzlonkaZChmury(userId: string) {
   if (error) throw error
 }
 
-// Lokalne konto (hash hasla/PIN zostaje TYLKO na urzadzeniu – nie trafia do chmury)
+// Lokalne konto (hash hasla/PIN zostaje TYLKO na urzadzeniu - nie trafia do chmury)
 export async function zsynchronizujUzytkownikaLokalnie(opts: {
   id: string
   imie: string
@@ -272,7 +272,7 @@ export async function zsynchronizujUzytkownikaLokalnie(opts: {
   const sol = istniejacy?.salt || losowaSol()
   const u: Uzytkownik = {
     id: opts.id,
-    // Przy zwyklym logowaniu nie ma pola "Imie i nazwisko" – wtedy zostawiamy
+    // Przy zwyklym logowaniu nie ma pola "Imie i nazwisko" - wtedy zostawiamy
     // imie, ktore juz znamy. Adres e-mail jako imie to ostatecznosc.
     imie: opts.imie || istniejacy?.imie || opts.email || 'Użytkownik',
     email: opts.email,
@@ -355,7 +355,7 @@ async function zapisz(): Promise<void> {
         return
       }
 
-      // Konflikt – ktos zapisal w miedzyczasie: scal i ponow
+      // Konflikt - ktos zapisal w miedzyczasie: scal i ponow
       setRev(ws, Number(r?.rev || 0))
       const scalona = scalBaze(useStore.getState().baza, (r?.data || {}) as Baza)
       stosujeZdalne = true
@@ -368,7 +368,7 @@ async function zapisz(): Promise<void> {
     brudne = true // NIGDY nie gubimy zmian
     if (czyBladSesji(e)) {
       wTrakcie = false
-      await obsluzWygaslaSesje() // bez sensu ponawiac – trzeba sie zalogowac
+      await obsluzWygaslaSesje() // bez sensu ponawiac - trzeba sie zalogowac
       return
     }
     C().ustaw({
@@ -397,7 +397,7 @@ async function pobierzIScal(ws: string) {
   setRev(ws, zdalny.rev)
 
   if (pustyStan(zdalny.data)) {
-    zaplanujZapis(0) // serwer pusty – wyslij to, co mamy lokalnie
+    zaplanujZapis(0) // serwer pusty - wyslij to, co mamy lokalnie
     return
   }
 
@@ -406,13 +406,13 @@ async function pobierzIScal(ws: string) {
   useStore.getState().zastapBaze(scalona)
   stosujeZdalne = false
 
-  // Czy scalony stan rozni sie od serwera? Jesli tak – mamy lokalne rekordy do wyslania.
+  // Czy scalony stan rozni sie od serwera? Jesli tak - mamy lokalne rekordy do wyslania.
   const rozne = stabilnyJson(bezSekretow(scalona)) !== stabilnyJson(zdalny.data)
   if (rozne) zaplanujZapis(300)
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }
 
-// Dane lokalne naleza do INNEJ firmy – nie wolno ich wmieszac. Bierzemy stan zdalny.
+// Dane lokalne naleza do INNEJ firmy - nie wolno ich wmieszac. Bierzemy stan zdalny.
 async function zastapLokalneZdalnym(ws: string) {
   const zdalny = await pobierzStan(ws)
   const nowa = zdalny && !pustyStan(zdalny.data) ? (zdalny.data as Baza) : pustaBaza()
@@ -436,7 +436,7 @@ function podlaczNasluch() {
 
 function onOnline() {
   if (C().workspaceId) zaplanujZapis(200)
-  else void startSync() // start byl offline – bootstrap sie nie udal, ponow
+  else void startSync() // start byl offline - bootstrap sie nie udal, ponow
 }
 function onOffline() {
   C().ustaw({ status: 'offline' })

@@ -78,7 +78,7 @@ function ryzyko8(p: Pozycja): boolean {
 }
 
 // ============================================================================
-// Wejscie modulu – lista lub edytor (route /wyceny/:id)
+// Wejscie modulu - lista lub edytor (route /wyceny/:id)
 // ============================================================================
 export default function Wyceny() {
   const { id } = useParams()
@@ -162,7 +162,7 @@ function Lista() {
             <input
               value={szukaj}
               onChange={(e) => setSzukaj(e.target.value)}
-              placeholder="Szukaj po numerze, kliencie, materiale…"
+              placeholder="Szukaj po numerze, kliencie, materiale..."
               className="input pl-10"
             />
           </div>
@@ -197,8 +197,8 @@ function Lista() {
                     return (
                       <tr key={w.id} className="row-hover cursor-pointer" onClick={() => navigate(`/wyceny/${w.id}`)}>
                         <td className="td font-medium text-ink">{w.numer}</td>
-                        <td className="td">{w.klientNazwa || <span className="text-stone-400">–</span>}</td>
-                        <td className="td text-stone-500">{w.nazwaMaterialu || '–'}</td>
+                        <td className="td">{w.klientNazwa || <span className="text-stone-400">-</span>}</td>
+                        <td className="td text-stone-500">{w.nazwaMaterialu || '-'}</td>
                         <td className="td text-right font-semibold">{fmtPLN(podsumuj(w.pozycje).brutto)}</td>
                         <td className="td text-stone-500">{fmtDate(w.zaktualizowano)}</td>
                         <td className="td">
@@ -367,7 +367,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
       zamawiajacyTelefon: w.klientTelefon,
       zamawiajacyEmail: w.klientEmail,
       adresRealizacji: w.miejsceAdres || w.klientAdres,
-      przedmiot: [w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' – '),
+      przedmiot: [w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' - '),
       wynagrodzenieBrutto: sum.brutto,
       pola: {},
       status: 'szkic',
@@ -399,7 +399,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
       numer: kolejnyNumer('ZL'),
       firmaId: w.firmaId,
       klientId: w.klientId,
-      tytul: [w.nazwaMaterialu, w.klientNazwa].filter(Boolean).join(' – ') || `Zlecenie ${w.numer}`,
+      tytul: [w.nazwaMaterialu, w.klientNazwa].filter(Boolean).join(' - ') || `Zlecenie ${w.numer}`,
       adres: w.miejsceAdres || w.klientAdres,
       osoby: {},
       etap: 'wycena',
@@ -451,7 +451,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Wybierz z bazy klientów" className="sm:col-span-2">
                 <Select value={w.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                  <option value="">– wpis ręczny / brak –</option>
+                  <option value="">- wpis ręczny / brak -</option>
                   {b.klienci.map((k) => (
                     <option key={k.id} value={k.id}>
                       {klientNazwa(k)} {k.telefon ? `· ${k.telefon}` : ''}
@@ -507,7 +507,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                 <Textarea
                   value={w.zakresPrac || ''}
                   onChange={(e) => set('zakresPrac', e.target.value)}
-                  placeholder="np. Blat kuchenny + wyspa, parapety wewnętrzne…"
+                  placeholder="np. Blat kuchenny + wyspa, parapety wewnętrzne..."
                 />
               </Field>
               <Field label="Nazwa materiału">
@@ -535,7 +535,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                   }}
                   className="!w-52"
                 >
-                  <option value="">+ z katalogu…</option>
+                  <option value="">+ z katalogu...</option>
                   {b.produkty
                     .filter((p) => p.aktywny)
                     .map((p) => (
@@ -646,7 +646,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                   {w.pozycje.length === 0 && (
                     <tr>
                       <td className="td text-center text-stone-400" colSpan={7}>
-                        Brak pozycji – dodaj z katalogu lub ręcznie.
+                        Brak pozycji - dodaj z katalogu lub ręcznie.
                       </td>
                     </tr>
                   )}
@@ -658,7 +658,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
               <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-[12.5px] text-amber-200">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                 <span>
-                  Zastosowano stawkę <b>8% na blacie</b>. To potencjalne ryzyko podatkowe – standardem dla blatów
+                  Zastosowano stawkę <b>8% na blacie</b>. To potencjalne ryzyko podatkowe - standardem dla blatów
                   kuchennych jest <b>23%</b>. Stawkę 8% stosuj wyłącznie dla budownictwa objętego społecznym programem
                   mieszkaniowym.
                 </span>

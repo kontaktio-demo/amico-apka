@@ -25,7 +25,7 @@ export async function clearBaza(): Promise<void> {
   await del(KEY)
 }
 
-// Trwale przechowywanie – chroni dane przed czyszczeniem przez przegladarke
+// Trwale przechowywanie - chroni dane przed czyszczeniem przez przegladarke
 export async function requestPersistence(): Promise<boolean> {
   if (navigator.storage && navigator.storage.persist) {
     try {

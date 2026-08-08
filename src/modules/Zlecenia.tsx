@@ -42,7 +42,7 @@ import type { Zlecenie, Firma, Klient, PipelineEtap } from '../lib/types'
 import { DocSheet, DocTitle, DocSection, DocLine } from '../documents/DocShell'
 
 // ============================================================================
-// Modul ZLECENIA – lista realizacji + widok szczegolowy z checklista etapow
+// Modul ZLECENIA - lista realizacji + widok szczegolowy z checklista etapow
 // ============================================================================
 
 export default function Zlecenia() {
@@ -102,7 +102,7 @@ function Lista() {
       />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-        <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po tytule, numerze lub kliencie…" />
+        <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po tytule, numerze lub kliencie..." />
       </div>
 
       <div className="no-print mb-4 flex flex-wrap gap-2">
@@ -148,7 +148,7 @@ function Lista() {
                     </div>
                     <div className="space-y-1 text-[13px] text-stone-500">
                       <div className="flex items-center gap-1.5">
-                        <Users size={14} className="text-stone-400" /> {kl ? klientNazwa(kl) : '– brak klienta'}
+                        <Users size={14} className="text-stone-400" /> {kl ? klientNazwa(kl) : '- brak klienta'}
                       </div>
                       {z.adres && (
                         <div className="flex items-center gap-1.5">
@@ -306,13 +306,13 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           <Input
             value={f.tytul}
             onChange={(e) => set({ tytul: e.target.value })}
-            placeholder="np. Blaty kuchenne – granit Steel Grey"
+            placeholder="np. Blaty kuchenne - granit Steel Grey"
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Klient">
             <Select value={f.klientId} onChange={(e) => set({ klientId: e.target.value })}>
-              <option value="">– bez klienta –</option>
+              <option value="">- bez klienta -</option>
               {b.klienci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {klientNazwa(k)}
@@ -328,7 +328,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Projektant">
             <Select value={f.projektantId} onChange={(e) => set({ projektantId: e.target.value })}>
-              <option value="">–</option>
+              <option value="">-</option>
               {projektanci.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nazwa}
@@ -338,7 +338,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           </Field>
           <Field label="Stolarz / studio">
             <Select value={f.stolarzId} onChange={(e) => set({ stolarzId: e.target.value })}>
-              <option value="">–</option>
+              <option value="">-</option>
               {stolarze.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nazwa}
@@ -348,7 +348,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           </Field>
           <Field label="Wykonawca">
             <Select value={f.wykonawcaId} onChange={(e) => set({ wykonawcaId: e.target.value })}>
-              <option value="">–</option>
+              <option value="">-</option>
               {wykonawcy.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nazwa}
@@ -358,7 +358,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           </Field>
           <Field label="Koordynator">
             <Select value={f.koordynatorId} onChange={(e) => set({ koordynatorId: e.target.value })}>
-              <option value="">–</option>
+              <option value="">-</option>
               {b.pracownicy.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.imie}
@@ -397,7 +397,7 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           <Textarea
             value={f.notatki}
             onChange={(e) => set({ notatki: e.target.value })}
-            placeholder="Dodatkowe informacje o realizacji…"
+            placeholder="Dodatkowe informacje o realizacji..."
           />
         </Field>
       </div>
@@ -430,7 +430,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   }
 
   const usun = async () => {
-    if (await confirm(`Usunąć zlecenie „${z.tytul}”? Tej operacji nie można cofnąć.`)) {
+    if (await confirm(`Usunąć zlecenie "${z.tytul}"? Tej operacji nie można cofnąć.`)) {
       remove('zlecenia', z.id)
       push('Zlecenie usunięte', 'ok')
       navigate('/zlecenia')
@@ -497,7 +497,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
       />
 
       <div className="grid gap-6 xl:grid-cols-3">
-        {/* Lewa kolumna – checklista + etap */}
+        {/* Lewa kolumna - checklista + etap */}
         <div className="space-y-6 xl:col-span-2">
           <SectionCard title="Etap główny" icon={<ClipboardList size={17} />}>
             <div className="flex flex-wrap gap-2">
@@ -557,13 +557,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
             <Textarea
               value={z.notatki || ''}
               onChange={(e) => update({ notatki: e.target.value || undefined })}
-              placeholder="Notatki dotyczące realizacji…"
+              placeholder="Notatki dotyczące realizacji..."
               rows={4}
             />
           </SectionCard>
         </div>
 
-        {/* Prawa kolumna – dane, daty, wartosci, powiazania */}
+        {/* Prawa kolumna - dane, daty, wartosci, powiazania */}
         <div className="space-y-6">
           <SectionCard title="Szczegóły" icon={<MapPin size={17} />}>
             <div className="space-y-3">
@@ -696,7 +696,7 @@ function Powiazanie({
       </span>
       <div className="flex items-center gap-2">
         <Select value={value || ''} onChange={(e) => onChange(e.target.value || undefined)} className="flex-1">
-          <option value="">– brak –</option>
+          <option value="">- brak -</option>
           {opcje.map((o) => (
             <option key={o.id} value={o.id}>
               {o.label}
@@ -732,7 +732,7 @@ function NieZnaleziono() {
 }
 
 // ============================================================================
-// DOKUMENT – karta zlecenia (wydruk / PDF)
+// DOKUMENT - karta zlecenia (wydruk / PDF)
 // ============================================================================
 export function ZlecenieDoc({
   z,
@@ -756,7 +756,7 @@ export function ZlecenieDoc({
 
       <DocSection n={1} title="Dane podstawowe">
         <DocLine label="Tytuł:" value={z.tytul} />
-        <DocLine label="Klient:" value={klient ? klientNazwa(klient) : '–'} />
+        <DocLine label="Klient:" value={klient ? klientNazwa(klient) : '-'} />
         <DocLine label="Adres realizacji:" value={z.adres} />
         <DocLine label="Etap główny:" value={ei.nazwa} />
       </DocSection>
@@ -768,8 +768,8 @@ export function ZlecenieDoc({
         </DocSection>
         {!ukryjKwoty && (
           <DocSection n={3} title="Wartość">
-            <DocLine label="Netto:" value={z.wartoscNetto != null ? fmtPLN(z.wartoscNetto) : '–'} />
-            <DocLine label="Brutto:" value={z.wartoscBrutto != null ? fmtPLN(z.wartoscBrutto) : '–'} />
+            <DocLine label="Netto:" value={z.wartoscNetto != null ? fmtPLN(z.wartoscNetto) : '-'} />
+            <DocLine label="Brutto:" value={z.wartoscBrutto != null ? fmtPLN(z.wartoscBrutto) : '-'} />
           </DocSection>
         )}
       </div>

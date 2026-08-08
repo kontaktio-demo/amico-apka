@@ -3,7 +3,7 @@ import { DocSheet } from './DocShell'
 import { fmtPLN, fmtDate, fmtNIP, kwotaSlownie } from '../lib/format'
 import { SignatureView } from '../components/SignaturePad'
 
-// Klasyczny druk KASA PRZYJMIE (KP) – kasowy dowód wpłaty.
+// Klasyczny druk KASA PRZYJMIE (KP) - kasowy dowód wpłaty.
 export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDataUrl?: string }) {
   const slownieRaw = (kp.slownie && kp.slownie.trim()) || kwotaSlownie(kp.kwota)
   // Tylko pierwsza litera wielka - "capitalize" w CSS robilo Wielkie Litery Kazdego Slowa.

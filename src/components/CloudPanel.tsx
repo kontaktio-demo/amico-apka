@@ -71,7 +71,7 @@ export function CloudPanel({
               // "already registered" tutaj oznacza: konto istnieje, ale podane haslo
               // bylo bledne (a nie "brak konta"). Nie mylimy uzytkownika.
               if (/already registered|User already/i.test(e2?.message || ''))
-                throw new Error('Nieprawidłowy e-mail lub hasło. To konto już istnieje – wpisz właściwe hasło.')
+                throw new Error('Nieprawidłowy e-mail lub hasło. To konto już istnieje - wpisz właściwe hasło.')
               throw e2
             }
           } else throw e
@@ -81,7 +81,7 @@ export function CloudPanel({
       }
 
       const sesja = await sesjaChmury()
-      if (!sesja) throw new Error('Brak sesji – sprawdź e-mail lub hasło')
+      if (!sesja) throw new Error('Brak sesji - sprawdź e-mail lub hasło')
 
       // "logowanie" = istniejacy czlonek. Uzywamy ustalWorkspace (pamieta wybrana
       // firme, a gdy jej brak - siega po istniejace czlonkostwo), a NIE bootstrapFirmy,
@@ -112,7 +112,7 @@ export function CloudPanel({
         zastapId: lokalnyUserId,
       })
 
-      push('Połączono z chmurą – dane będą synchronizowane')
+      push('Połączono z chmurą - dane będą synchronizowane')
       onZalogowano?.(userId)
     } catch (e: any) {
       const m: string = e?.message || 'Nie udało się połączyć'
@@ -121,19 +121,19 @@ export function CloudPanel({
         /failed to fetch|networkerror|network request failed|load failed/i.test(m)
       setErr(
         brakSieci
-          ? 'Brak połączenia z internetem. Do logowania potrzebny jest zasięg – spróbuj ponownie, gdy będziesz online.'
+          ? 'Brak połączenia z internetem. Do logowania potrzebny jest zasięg - spróbuj ponownie, gdy będziesz online.'
           : m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
-            ? 'Konto utworzone. Potwierdź e-mail (link w wiadomości), a potem zaloguj się. Aby zespół nie musiał tego robić: Supabase → Authentication → Sign In / Providers → Email → wyłącz „Confirm email”.'
+            ? 'Konto utworzone. Potwierdź e-mail (link w wiadomości), a potem zaloguj się. Aby zespół nie musiał tego robić: Supabase → Authentication → Sign In / Providers → Email → wyłącz "Confirm email".'
             : /Invalid login/i.test(m)
               ? tryb === 'logowanie'
                 ? 'Nieprawidłowy e-mail lub hasło. Uwaga: hasło do chmury bywa inne niż PIN, którym odblokowujesz aplikację na tablecie.'
                 : 'Nieprawidłowy e-mail lub hasło'
               : /already registered|User already/i.test(m)
-                ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”'
+                ? 'Ten e-mail ma już konto - wybierz "Zaloguj się"'
                 : /Wymagane logowanie/i.test(m)
-                  ? 'Sesja wygasła – zaloguj się ponownie'
+                  ? 'Sesja wygasła - zaloguj się ponownie'
                   : /amico_bootstrap|amico_join|does not exist|schema cache|PGRST202/i.test(m)
-                    ? 'Baza w chmurze nie jest przygotowana – uruchom skrypt SQL (supabase/amico-schema.sql)'
+                    ? 'Baza w chmurze nie jest przygotowana - uruchom skrypt SQL (supabase/amico-schema.sql)'
                     : m,
       )
     } finally {
@@ -161,12 +161,12 @@ export function CloudPanel({
         <div className="rounded-xl border border-white/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Ostatni zapis</div>
           <div className="mt-1 text-[14px] font-semibold text-ink">
-            {c.ostatniZapis ? fmtDateTime(c.ostatniZapis) : '–'}
+            {c.ostatniZapis ? fmtDateTime(c.ostatniZapis) : '-'}
           </div>
         </div>
         <div className="rounded-xl border border-white/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Rozmiar bazy</div>
-          <div className="mt-1 text-[14px] font-semibold text-ink">{c.rozmiarKB ? `${c.rozmiarKB} KB` : '–'}</div>
+          <div className="mt-1 text-[14px] font-semibold text-ink">{c.rozmiarKB ? `${c.rozmiarKB} KB` : '-'}</div>
         </div>
         <div className="rounded-xl border border-white/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Kod firmy (dla zespołu)</div>
@@ -179,7 +179,7 @@ export function CloudPanel({
               setTimeout(() => setSkopiowano(false), 1500)
             }}
           >
-            {c.joinCode || '–'}{' '}
+            {c.joinCode || '-'}{' '}
             {skopiowano ? (
               <Check size={14} className="text-emerald-400" />
             ) : (
@@ -191,7 +191,7 @@ export function CloudPanel({
 
       {c.rozmiarKB > 4000 && (
         <p className="text-[12px] text-amber-300">
-          Baza jest duża ({c.rozmiarKB} KB) – głównie przez skany. Rozważ archiwizowanie starych skanów.
+          Baza jest duża ({c.rozmiarKB} KB) - głównie przez skany. Rozważ archiwizowanie starych skanów.
         </p>
       )}
 
@@ -277,7 +277,7 @@ export function CloudPanel({
           <LogIn size={16} />
         )}
         {busy
-          ? 'Łączenie…'
+          ? 'Łączenie...'
           : tryb === 'rejestracja'
             ? 'Załóż konto i połącz'
             : tryb === 'dolacz'
@@ -286,7 +286,7 @@ export function CloudPanel({
       </button>
       <p className="text-[12px] text-stone-500">
         Logowanie w chmurze pozwala korzystać z <b>tego samego konta na wielu urządzeniach</b>. Aplikacja nadal działa
-        offline – zmiany dosynchronizują się po odzyskaniu internetu.
+        offline - zmiany dosynchronizują się po odzyskaniu internetu.
       </p>
     </form>
   )
@@ -307,10 +307,10 @@ export function StatusChip() {
   const { status } = useCloud()
   const map: Record<string, { l: string; tone: BadgeTone; ikona: React.ReactNode }> = {
     off: { l: 'Tylko lokalnie', tone: 'stone', ikona: <CloudOff size={13} /> },
-    laczenie: { l: 'Łączenie…', tone: 'blue', ikona: <RefreshCw size={13} className="animate-spin" /> },
-    zapisywanie: { l: 'Zapisywanie…', tone: 'blue', ikona: <RefreshCw size={13} className="animate-spin" /> },
+    laczenie: { l: 'Łączenie...', tone: 'blue', ikona: <RefreshCw size={13} className="animate-spin" /> },
+    zapisywanie: { l: 'Zapisywanie...', tone: 'blue', ikona: <RefreshCw size={13} className="animate-spin" /> },
     ok: { l: 'Zsynchronizowano', tone: 'green', ikona: <Cloud size={13} /> },
-    offline: { l: 'Offline – zapisze się później', tone: 'amber', ikona: <CloudOff size={13} /> },
+    offline: { l: 'Offline - zapisze się później', tone: 'amber', ikona: <CloudOff size={13} /> },
     blad: { l: 'Błąd zapisu', tone: 'red', ikona: <AlertTriangle size={13} /> },
     sesja: { l: 'Zaloguj ponownie do chmury', tone: 'amber', ikona: <AlertTriangle size={13} /> },
   }

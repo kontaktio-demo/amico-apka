@@ -201,7 +201,7 @@ function RaportyTab({ firma }: { firma: Firma }) {
                     <div className="flex items-center gap-2">
                       <span className="text-[15px] font-semibold text-ink">{r.numer}</span>
                       <Badge tone="stone">
-                        {fmtDate(r.od)} – {fmtDate(r.do)}
+                        {fmtDate(r.od)} - {fmtDate(r.do)}
                       </Badge>
                       {r.podpis && <Badge tone="green">Podpisany</Badge>}
                     </div>
@@ -222,7 +222,7 @@ function RaportyTab({ firma }: { firma: Firma }) {
                       )}
                       share={{
                         title: `Raport kasowy ${r.numer}`,
-                        text: `Raport kasowy ${r.numer} (${fmtDate(r.od)}–${fmtDate(r.do)})\nPrzychody: ${fmtPLN(
+                        text: `Raport kasowy ${r.numer} (${fmtDate(r.od)}-${fmtDate(r.do)})\nPrzychody: ${fmtPLN(
                           o.przychod,
                         )}\nRozchody: ${fmtPLN(o.rozchod)}\nSaldo: ${fmtPLN(o.saldo)}`,
                       }}
@@ -297,7 +297,7 @@ function RaportEditor({
             getPrintNode={() => <RaportKasowyDoc r={draft} firma={firma} logoDataUrl={logoDataUrl} />}
             share={{
               title: `Raport kasowy ${draft.numer}`,
-              text: `Raport kasowy ${draft.numer} (${fmtDate(draft.od)}–${fmtDate(draft.do)}) · Saldo ${fmtPLN(o.saldo)}`,
+              text: `Raport kasowy ${draft.numer} (${fmtDate(draft.od)}-${fmtDate(draft.do)}) · Saldo ${fmtPLN(o.saldo)}`,
             }}
           />
           <div className="flex-1" />
@@ -350,7 +350,7 @@ function RaportEditor({
                 {draft.wiersze.length === 0 && (
                   <tr>
                     <td className="td text-center text-stone-400" colSpan={6}>
-                      Brak wierszy – dodaj pierwszy obrót.
+                      Brak wierszy - dodaj pierwszy obrót.
                     </td>
                   </tr>
                 )}
@@ -494,7 +494,7 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
   }
 
   const usun = async (p: Przelew) => {
-    if (await confirm(`Usunąć przelew dla „${p.odbiorca}”?`)) {
+    if (await confirm(`Usunąć przelew dla "${p.odbiorca}"?`)) {
       remove('przelewy', p.id)
       push('Przelew usunięty', 'info')
     }
@@ -556,7 +556,7 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
         </div>
         {kontoBlad && (
           <p className="mt-2 flex items-center gap-1.5 text-[12.5px] text-amber-700">
-            <AlertTriangle size={14} /> Numer rachunku nie przechodzi walidacji NRB – sprawdź przed wysłaniem.
+            <AlertTriangle size={14} /> Numer rachunku nie przechodzi walidacji NRB - sprawdź przed wysłaniem.
           </p>
         )}
       </SectionCard>
@@ -607,8 +607,8 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
                           </span>
                         )}
                       </td>
-                      <td className="td font-mono text-[13px] text-stone-500">{p.konto ? fmtKonto(p.konto) : '–'}</td>
-                      <td className="td">{p.tytul || '–'}</td>
+                      <td className="td font-mono text-[13px] text-stone-500">{p.konto ? fmtKonto(p.konto) : '-'}</td>
+                      <td className="td">{p.tytul || '-'}</td>
                       <td className="td text-right font-semibold">{fmtPLN(p.kwota)}</td>
                       <td className="td">{fmtDate(p.data)}</td>
                       <td className="td">
@@ -648,7 +648,7 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
   )
 }
 
-// Dokument do druku – zestawienie przelewow
+// Dokument do druku - zestawienie przelewow
 function PrzelewyDoc({ firma, przelewy, logoDataUrl }: { firma: Firma; przelewy: Przelew[]; logoDataUrl?: string }) {
   const doZaplaty = przelewy.filter((p) => p.status === 'do_zaplaty').reduce((a, p) => a + (p.kwota || 0), 0)
   const razem = przelewy.reduce((a, p) => a + (p.kwota || 0), 0)
@@ -759,7 +759,7 @@ function ObrotTab({ firma }: { firma: Firma }) {
 
   const dodaj = () => {
     if (!form.zaCo.trim()) {
-      push('Podaj opis („za co”)', 'err')
+      push('Podaj opis ("za co")', 'err')
       return
     }
     upsert('obrot', form)
@@ -844,13 +844,13 @@ function ObrotTab({ firma }: { firma: Firma }) {
                   {pozycje.map((p) => (
                     <tr key={p.id} className="row-hover">
                       <td className="td text-right font-semibold text-brand-700">
-                        {p.przychod ? fmtPLN(p.przychod) : '–'}
+                        {p.przychod ? fmtPLN(p.przychod) : '-'}
                       </td>
                       <td className="td text-right font-semibold text-red-600">
-                        {p.rozchod ? fmtPLN(p.rozchod) : '–'}
+                        {p.rozchod ? fmtPLN(p.rozchod) : '-'}
                       </td>
-                      <td className="td">{p.zaCo || '–'}</td>
-                      <td className="td">{p.kto || '–'}</td>
+                      <td className="td">{p.zaCo || '-'}</td>
+                      <td className="td">{p.kto || '-'}</td>
                       <td className="td">{fmtDate(p.data)}</td>
                       <td className="td">
                         <button className="btn-ghost !px-2 text-red-600" onClick={() => usun(p)}>
@@ -878,7 +878,7 @@ function ObrotTab({ firma }: { firma: Firma }) {
   )
 }
 
-// Dokument do druku – zestawienie obrotu pienieznego
+// Dokument do druku - zestawienie obrotu pienieznego
 function ObrotDoc({ firma, pozycje, logoDataUrl }: { firma: Firma; pozycje: ObrotPozycja[]; logoDataUrl?: string }) {
   const sumaPrzychod = pozycje.reduce((a, p) => a + (p.przychod || 0), 0)
   const sumaRozchod = pozycje.reduce((a, p) => a + (p.rozchod || 0), 0)

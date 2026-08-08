@@ -14,7 +14,7 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
   const wzor = pustaBaza()
   const out: any = { ...wzor }
 
-  // 1) Tombstones – najnowszy wpis per (kolekcja,id)
+  // 1) Tombstones - najnowszy wpis per (kolekcja,id)
   const tomby = new Map<string, string>()
   for (const t of [...(lokalna.usuniete || []), ...(zdalna.usuniete || [])]) {
     if (!t?.k || !t?.id) continue
@@ -23,7 +23,7 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
     if (!prev || t.t > prev) tomby.set(key, t.t)
   }
 
-  // 2) Kolekcje – suma rekordow, nowszy wygrywa, skasowane odpadaja
+  // 2) Kolekcje - suma rekordow, nowszy wygrywa, skasowane odpadaja
   for (const k of Object.keys(wzor) as (keyof Baza)[]) {
     if (k === 'usuniete') continue
     if (!Array.isArray((wzor as any)[k])) continue
@@ -60,11 +60,11 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
       return { k: key.slice(0, i), id: key.slice(i + 2), t }
     })
     .filter((x) => x.t > granica)
-    // Stala kolejnosc tombstonow – z tego samego powodu co przy kolekcjach wyzej.
+    // Stala kolejnosc tombstonow - z tego samego powodu co przy kolekcjach wyzej.
     .sort((a, b) => `${a.k}::${a.id}`.localeCompare(`${b.k}::${b.id}`))
 
-  // 4) Ustawienia – nowsze wygrywaja, ALE licznik numeracji scalamy przez MAX.
-  // (licznik jest monotoniczny – cofniecie = duplikaty numerow faktur/umow!)
+  // 4) Ustawienia - nowsze wygrywaja, ALE licznik numeracji scalamy przez MAX.
+  // (licznik jest monotoniczny - cofniecie = duplikaty numerow faktur/umow!)
   const lu: any = lokalna.ustawienia
   const ru: any = zdalna.ustawienia
   const wygrany: any = !ru ? lu : !lu ? ru : zm(lu) >= zm(ru) ? lu : ru
@@ -96,7 +96,7 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
   return out as Baza
 }
 
-// Kopia bazy BEZ sekretow – tylko taka trafia do chmury.
+// Kopia bazy BEZ sekretow - tylko taka trafia do chmury.
 // (hashe hasel/PIN i klucze biometrii sa danymi urzadzenia, nie firmy)
 export function bezSekretow(b: Baza): Baza {
   const kopia: any = { ...b }

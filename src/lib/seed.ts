@@ -38,7 +38,7 @@ const firmaMilena: Firma = {
   kolor: '#166b45',
 }
 
-// UWAGA: identyfikatory seeda MUSZA byc stabilne (nie losowe) – inaczej dwa urzadzenia
+// UWAGA: identyfikatory seeda MUSZA byc stabilne (nie losowe) - inaczej dwa urzadzenia
 // utworzylyby te same rekordy z roznymi id i po synchronizacji powstalyby duplikaty.
 const slug = (s: string): string =>
   s
@@ -81,7 +81,7 @@ const produkty: Produkt[] = [
   P('Pomiar z natury / wykonanie szablonów', 'usluga', 'usł', 0, 23),
   P('Montaż', 'usluga', 'usł', 0, 23),
   P('Transport', 'usluga', 'usł', 0, 23),
-  P('Zlew podblatowy – montaż', 'usluga', 'szt', 0, 23),
+  P('Zlew podblatowy - montaż', 'usluga', 'szt', 0, 23),
   P('Wycięcie pod płytę grzewczą', 'usluga', 'szt', 0, 23),
   P('Impregnacja kamienia', 'usluga', 'm²', 0, 23),
   // Granity
@@ -117,8 +117,8 @@ const KLAUZULA_PODPIS =
 
 const STANDARDOWE_UWAGI = [
   'Zgłoszenie gotowości do wykonania pomiaru do cięcia drogą mailową na adres biuro@amicco.pl lub SMS na numer 795 040 609.',
-  'Za każdy nieuzasadniony przyjazd ekipy montażowej i brak możliwości wykonania pomiarów – opłata dodatkowa 200 zł netto + VAT.',
-  'Na pomiarze musi być osoba decyzyjna do uzgodnień – warunek konieczny.',
+  'Za każdy nieuzasadniony przyjazd ekipy montażowej i brak możliwości wykonania pomiarów - opłata dodatkowa 200 zł netto + VAT.',
+  'Na pomiarze musi być osoba decyzyjna do uzgodnień - warunek konieczny.',
   'Muszą być zakupione wszystkie akcesoria typu: zlew, bateria, dozownik, płyta grzewcza, gniazda nablatowe, okap.',
   'Kamieniarze nie podłączają zlewu hydraulicznie, ani płyty grzewczej elektrycznie. Mocują akcesoria do kamienia.',
   'Ledy i oświetlenie instaluje elektryk lub stolarz.',

@@ -3,7 +3,7 @@ import { DocSheet, DocSignatures } from './DocShell'
 import { podsumuj, pozycjaNetto, round2, fmtPLN, fmtNum, fmtDate, fmtNIP, fmtKonto, kwotaSlownie } from '../lib/format'
 
 // ============================================================================
-// Faktura VAT / zaliczkowa / końcowa / proforma – wg art. 106e ustawy o VAT
+// Faktura VAT / zaliczkowa / końcowa / proforma - wg art. 106e ustawy o VAT
 // ============================================================================
 
 const TYP_TYTUL: Record<Faktura['typ'], string> = {
@@ -90,7 +90,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
         <Meta l="Data sprzedaży" v={fmtDate(f.dataSprzedazy) || fmtDate(f.dataWystawienia)} />
         <Meta l="Termin płatności" v={fmtDate(f.terminPlatnosci)} />
         <Meta l="Sposób płatności" v={f.sposobPlatnosci ? SPOSOB_TYTUL[f.sposobPlatnosci] : 'Przelew'} />
-        <Meta l="Nr konta" v={konto ? fmtKonto(konto) : '–'} colSpan={2} />
+        <Meta l="Nr konta" v={konto ? fmtKonto(konto) : '-'} colSpan={2} />
       </div>
 
       {/* Pozycje */}
@@ -222,7 +222,7 @@ function Meta({ l, v, colSpan }: { l: string; v?: string; colSpan?: number }) {
     >
       <span style={{ color: '#6b6459', fontSize: '8pt', whiteSpace: 'nowrap' }}>{l}:</span>
       <span style={{ fontSize: '9pt', fontWeight: 600, color: '#12130f', fontVariantNumeric: 'tabular-nums' }}>
-        {v || '–'}
+        {v || '-'}
       </span>
     </div>
   )

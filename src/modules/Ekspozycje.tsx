@@ -237,7 +237,7 @@ export default function Ekspozycje() {
                     })
                   }}
                 >
-                  <option value="">– wybierz z kontrahentów –</option>
+                  <option value="">- wybierz z kontrahentów -</option>
                   {sprzedawcy.map((k) => (
                     <option key={k.id} value={k.id}>
                       {k.nazwa}
@@ -491,7 +491,7 @@ function KartaEkspozycji({
             getPrintNode={() => <RozliczenieEkspozycjiDoc e={e} firma={firma} logoDataUrl={logoDataUrl} />}
             share={{
               title: `Rozliczenie ekspozycji ${e.numer}`,
-              text: `Rozliczenie ekspozycji ${e.numer} – ${tytul}. Zobowiązanie: ${fmtPLN(zob)}, zrealizowano: ${fmtPLN(zreal)} (${procent.toFixed(
+              text: `Rozliczenie ekspozycji ${e.numer} - ${tytul}. Zobowiązanie: ${fmtPLN(zob)}, zrealizowano: ${fmtPLN(zreal)} (${procent.toFixed(
                 1,
               )}%).`,
               to: shareTo,

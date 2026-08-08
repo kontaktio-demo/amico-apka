@@ -1,8 +1,8 @@
 import type { Rola } from './types'
 
 // ============================================================================
-// AMICO – lokalne uwierzytelnianie (offline). Hasla PBKDF2, PIN, biometria WebAuthn.
-// To wygodna blokada aplikacji na urzadzeniu (nie serwer) – dane i tak sa lokalne.
+// AMICO - lokalne uwierzytelnianie (offline). Hasla PBKDF2, PIN, biometria WebAuthn.
+// To wygodna blokada aplikacji na urzadzeniu (nie serwer) - dane i tak sa lokalne.
 // ============================================================================
 
 // ---------- Base64 ----------
@@ -156,7 +156,7 @@ export function nazwaRoli(r: Rola): string {
   return ROLE.find((x) => x.rola === r)?.nazwa || r
 }
 
-// Dostep do sekcji nawigacji wg roli (sciezki dozwolone) – zasada najmniejszych uprawnien
+// Dostep do sekcji nawigacji wg roli (sciezki dozwolone) - zasada najmniejszych uprawnien
 export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
   if (rola === 'wlasciciel' || rola === 'kierownik') return 'all'
   if (rola === 'biuro')
@@ -180,7 +180,7 @@ export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
       '/ustawienia',
       '/pomoc',
     ]
-  // montazysta – wylacznie zakres terenowy: bez CRM, wycen, umow, faktur, finansow,
+  // montazysta - wylacznie zakres terenowy: bez CRM, wycen, umow, faktur, finansow,
   // ekspozycji, ustawien i cennika (/produkty to lista cen). Wartosc wlasnego zlecenia
   // pozostaje widoczna, bo montazysta wystawia na miejscu KP i musi wiedziec, ile pobrac.
   return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/wizualizacja', '/dokumenty', '/pomoc']

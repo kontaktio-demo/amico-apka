@@ -68,7 +68,7 @@ export function WycenaDoc({
       <div style={{ ...box, marginTop: 10 }}>
         <div style={secHead}>3 · ZAKRES PRAC I NAZWA MATERIAŁU</div>
         <div style={{ minHeight: 26, fontSize: '9.5pt', color: '#12130f' }}>
-          {[w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' – ') || ' '}
+          {[w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' - ') || ' '}
         </div>
       </div>
 
@@ -172,7 +172,7 @@ function Row({ l, v }: { l: string; v?: string }) {
       <span
         style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}
       >
-        {v || ' '}
+        {v || ' '}
       </span>
     </div>
   )

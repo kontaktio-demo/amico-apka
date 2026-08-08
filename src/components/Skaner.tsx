@@ -188,7 +188,7 @@ export function Skaner({
         br: { x: rogi.br.x * captured.width, y: rogi.br.y * captured.height },
         bl: { x: rogi.bl.x * captured.width, y: rogi.bl.y * captured.height },
       }
-      // 1500 px + q0.78 – czytelny dokument przy rozsadnym rozmiarze (wazne dla synchronizacji)
+      // 1500 px + q0.78 - czytelny dokument przy rozsadnym rozmiarze (wazne dla synchronizacji)
       const warped = kadrujPerspektywe(captured, rp, 1500)
       const warpJpeg = canvasNaJpeg(warped, 0.85)
       const filtered = zastosujFiltr(warped, filtr)
@@ -253,7 +253,7 @@ export function Skaner({
                 <Camera size={40} className="mx-auto mb-3 opacity-50" />
                 <p className="text-[14px]">
                   {czyDesktop()
-                    ? 'Ten komputer nie ma kamery. Kliknij „Wgraj” i wybierz zdjęcie lub skan dokumentu – kadrowanie i filtry działają tak samo.'
+                    ? 'Ten komputer nie ma kamery. Kliknij "Wgraj" i wybierz zdjęcie lub skan dokumentu - kadrowanie i filtry działają tak samo.'
                     : 'Brak dostępu do kamery. Możesz wgrać zdjęcie dokumentu z pliku.'}
                 </p>
               </div>
@@ -366,7 +366,7 @@ export function Skaner({
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Nazwa dokumentu">
-                  <Input value={nazwa} onChange={(e) => setNazwa(e.target.value)} placeholder="np. Umowa – Kowalski" />
+                  <Input value={nazwa} onChange={(e) => setNazwa(e.target.value)} placeholder="np. Umowa - Kowalski" />
                 </Field>
                 <Field label="Kategoria">
                   <Select value={kategoria} onChange={(e) => setKategoria(e.target.value as SkanKategoria)}>
@@ -379,7 +379,7 @@ export function Skaner({
                 </Field>
                 <Field label="Przypisz do zlecenia">
                   <Select value={zlId} onChange={(e) => setZlId(e.target.value)}>
-                    <option value="">– brak –</option>
+                    <option value="">- brak -</option>
                     {b.zlecenia.map((z) => (
                       <option key={z.id} value={z.id}>
                         {z.numer} · {z.tytul}
@@ -389,7 +389,7 @@ export function Skaner({
                 </Field>
                 <Field label="Przypisz do klienta">
                   <Select value={klId} onChange={(e) => setKlId(e.target.value)}>
-                    <option value="">– brak –</option>
+                    <option value="">- brak -</option>
                     {b.klienci.map((k) => (
                       <option key={k.id} value={k.id}>
                         {klientNazwa(k)}

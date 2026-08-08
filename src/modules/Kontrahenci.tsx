@@ -95,7 +95,7 @@ export default function Kontrahenci() {
   }
 
   const usun = async (k: Kontrahent) => {
-    if (await confirm(`Usunąć kontrahenta „${k.nazwa}”? Operacja jest nieodwracalna.`)) {
+    if (await confirm(`Usunąć kontrahenta "${k.nazwa}"? Operacja jest nieodwracalna.`)) {
       remove('kontrahenci', k.id)
       push('Usunięto kontrahenta', 'info')
     }
@@ -171,16 +171,16 @@ export default function Kontrahenci() {
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="w-full max-w-sm">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder={`Szukaj w: ${typInfo.lm}…`} />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder={`Szukaj w: ${typInfo.lm}...`} />
         </div>
         <PrintSendBar
           getPrintNode={() => (
             <KontrahenciDoc firma={firma} typNazwa={typInfo.lm} lista={lista} logoDataUrl={logoDataUrl} />
           )}
           share={{
-            title: `Kontakty – ${typInfo.lm}`,
+            title: `Kontakty - ${typInfo.lm}`,
             text: lista
-              .map((k) => `${k.nazwa}${k.firma ? ` (${k.firma})` : ''} – tel. ${k.telefon || '–'} – ${k.email || '–'}`)
+              .map((k) => `${k.nazwa}${k.firma ? ` (${k.firma})` : ''} - tel. ${k.telefon || '-'} - ${k.email || '-'}`)
               .join('\n'),
           }}
         />
@@ -425,11 +425,11 @@ function EdycjaModal({
           <Textarea
             value={k.notatki || ''}
             onChange={(e) => set('notatki', e.target.value)}
-            placeholder="Ustalenia, warunki współpracy, uwagi…"
+            placeholder="Ustalenia, warunki współpracy, uwagi..."
           />
         </Field>
 
-        {/* Sekcja prowizji – tylko dla kategorii prowizyjnych */}
+        {/* Sekcja prowizji - tylko dla kategorii prowizyjnych */}
         {pokazProwizje && (
           <SectionCard
             title="Prowizje"
@@ -540,7 +540,7 @@ export function KontrahenciDoc({
   return (
     <DocSheet firma={firma} logoDataUrl={logoDataUrl}>
       <DocTitle sub={`Wygenerowano: ${fmtDate(today())} · pozycji: ${lista.length}`}>
-        Lista kontaktów – {typNazwa}
+        Lista kontaktów - {typNazwa}
       </DocTitle>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 8 }}>
         <thead>
@@ -561,10 +561,10 @@ export function KontrahenciDoc({
                 {k.nazwa}
                 {k.nip ? <div style={{ fontSize: '7.5pt', color: '#6b6459' }}>NIP: {fmtNIP(k.nip)}</div> : null}
               </td>
-              <td style={td}>{k.firma || '–'}</td>
-              <td style={td}>{k.telefon || '–'}</td>
-              <td style={td}>{k.email || '–'}</td>
-              <td style={td}>{[k.specjalizacja, k.branza].filter(Boolean).join(' · ') || '–'}</td>
+              <td style={td}>{k.firma || '-'}</td>
+              <td style={td}>{k.telefon || '-'}</td>
+              <td style={td}>{k.email || '-'}</td>
+              <td style={td}>{[k.specjalizacja, k.branza].filter(Boolean).join(' · ') || '-'}</td>
             </tr>
           ))}
           {lista.length === 0 && (
@@ -577,7 +577,7 @@ export function KontrahenciDoc({
         </tbody>
       </table>
       <div style={{ marginTop: 10, fontSize: '8pt', color: '#6b6459' }}>
-        Kategoria kontrahentów: <b>{typNazwa}</b>. Dokument informacyjny – {firma.nazwa}.
+        Kategoria kontrahentów: <b>{typNazwa}</b>. Dokument informacyjny - {firma.nazwa}.
       </div>
     </DocSheet>
   )

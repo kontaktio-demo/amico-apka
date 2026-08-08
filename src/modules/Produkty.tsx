@@ -44,7 +44,7 @@ function kategoriaInfo(k: ProduktKategoria) {
 const JEDNOSTKI: Unit[] = ['m²', 'mb', 'szt', 'kpl', 'usł', 'h']
 const VAT_STAWKI: VatRate[] = [8, 23]
 
-// Formularz – cena jako string dla wygody wpisywania
+// Formularz - cena jako string dla wygody wpisywania
 interface Form {
   id: string
   nazwa: string
@@ -155,7 +155,7 @@ export default function Produkty() {
   }
 
   async function usun(p: Produkt) {
-    if (await confirm(`Usunąć „${p.nazwa}” z katalogu?`)) {
+    if (await confirm(`Usunąć "${p.nazwa}" z katalogu?`)) {
       remove('produkty', p.id)
       push('Usunięto produkt', 'ok')
     }
@@ -174,7 +174,7 @@ export default function Produkty() {
                 <CennikDoc produkty={widoczne} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />
               )}
               share={{
-                title: `Cennik – ${firma.nazwa}`,
+                title: `Cennik - ${firma.nazwa}`,
                 text: cennikTekst(widoczne, firma),
               }}
               labelPrint="Drukuj cennik"
@@ -188,7 +188,7 @@ export default function Produkty() {
 
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="lg:w-80">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj nazwy, producenta, koloru…" />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj nazwy, producenta, koloru..." />
         </div>
         <div className="flex flex-wrap gap-1.5">
           <Chip active={filtr === 'all'} onClick={() => setFiltr('all')} label="Wszystkie" n={licznik('all')} />
@@ -210,7 +210,7 @@ export default function Produkty() {
           title="Brak produktów"
           desc={
             produkty.length === 0
-              ? 'Dodaj pierwszą pozycję do katalogu – materiał, usługę lub akcesorium.'
+              ? 'Dodaj pierwszą pozycję do katalogu - materiał, usługę lub akcesorium.'
               : 'Żaden produkt nie pasuje do wybranych filtrów.'
           }
           action={
@@ -287,7 +287,7 @@ export default function Produkty() {
               </Select>
             </Field>
 
-            <Field label="Cena netto (zł)" hint="Wpisz 0 lub zostaw puste → „wg wyceny”">
+            <Field label="Cena netto (zł)" hint='Wpisz 0 lub zostaw puste → "wg wyceny"'>
               <Input
                 inputMode="decimal"
                 value={edit.cena}
@@ -334,7 +334,7 @@ export default function Produkty() {
               <Textarea
                 value={edit.opis}
                 onChange={(e) => setEdit({ ...edit, opis: e.target.value })}
-                placeholder="Dodatkowe informacje, wykończenie krawędzi, uwagi…"
+                placeholder="Dodatkowe informacje, wykończenie krawędzi, uwagi..."
               />
             </Field>
 
@@ -438,9 +438,9 @@ function cenaLub(p: Produkt): string {
 function cennikTekst(produkty: Produkt[], firma: Firma): string {
   const linie = produkty.map((p) => {
     const dod = [p.producent, p.kolor, p.grubosc].filter(Boolean).join(', ')
-    return `• ${p.nazwa}${dod ? ` (${dod})` : ''} – ${cenaLub(p)} (VAT ${p.vat}%)`
+    return `• ${p.nazwa}${dod ? ` (${dod})` : ''} - ${cenaLub(p)} (VAT ${p.vat}%)`
   })
-  return `Cennik – ${firma.nazwa}\n\n${linie.join('\n')}`
+  return `Cennik - ${firma.nazwa}\n\n${linie.join('\n')}`
 }
 
 // ---------- Dokument: Cennik (wydruk / PDF) ----------
@@ -524,9 +524,9 @@ export function CennikDoc({
                   <tr key={p.id}>
                     <td style={{ ...cell, textAlign: 'left', fontWeight: 500 }}>{p.nazwa}</td>
                     <td style={{ ...cell, textAlign: 'left' }}>
-                      {[p.producent, p.kolor].filter(Boolean).join(' · ') || '–'}
+                      {[p.producent, p.kolor].filter(Boolean).join(' · ') || '-'}
                     </td>
-                    <td style={{ ...cell, textAlign: 'center' }}>{p.grubosc || '–'}</td>
+                    <td style={{ ...cell, textAlign: 'center' }}>{p.grubosc || '-'}</td>
                     <td style={{ ...cell, textAlign: 'center' }}>{p.jednostka}</td>
                     <td style={{ ...cell, textAlign: 'right', fontWeight: 600 }}>
                       {p.cenaNetto > 0 ? fmtPLN(p.cenaNetto) : 'wg wyceny'}
@@ -541,7 +541,7 @@ export function CennikDoc({
       )}
 
       <div style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 6 }}>
-        Ceny netto, orientacyjne. Ostateczna wycena po obmiarze z natury. Ceny oznaczone „wg wyceny” ustalane
+        Ceny netto, orientacyjne. Ostateczna wycena po obmiarze z natury. Ceny oznaczone "wg wyceny" ustalane
         indywidualnie.
       </div>
     </DocSheet>
