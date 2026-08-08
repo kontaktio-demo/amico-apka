@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "AMICO – system do zarzadzania pracownia kamieniarska (PWA + aplikacja desktopowa)",
+  "description": "AMICO - system do zarzadzania pracownia kamieniarska (PWA + aplikacja desktopowa)",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",

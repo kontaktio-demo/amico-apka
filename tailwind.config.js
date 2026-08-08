@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // AMICO – ciemny, monochromatyczny motyw ze strony amico.kontaktio.pl
+        // AMICO - ciemny, monochromatyczny motyw ze strony amico.kontaktio.pl
         // Skala "stone" = neutralne tło/tekst (polaryzacja jak w motywie jasnym,
         // ale wartości dobrane pod ciemne tło).
         stone: {
@@ -20,7 +20,7 @@ export default {
           800: '#f0f1f3',
           900: '#f7f7f8',
         },
-        // Akcent – chłodny stalowo-granatowy (nawiązanie do navy #0E1224)
+        // Akcent - chłodny stalowo-granatowy (nawiązanie do navy #0E1224)
         brand: {
           50: '#151a2e',
           100: '#1b2140',

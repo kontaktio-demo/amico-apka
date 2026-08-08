@@ -1,5 +1,5 @@
 // ============================================================================
-// AMICO – aplikacja desktopowa (Windows).
+// AMICO - aplikacja desktopowa (Windows).
 //
 // Ta sama aplikacja co w przegladarce (ten sam kod z katalogu dist/), ten sam
 // silnik Chromium, ta sama baza w chmurze. Roznice sa tylko tam, gdzie desktop
@@ -109,7 +109,7 @@ function utworzOkno() {
     minHeight: 680,
     show: false,
     backgroundColor: '#0b0b10',
-    title: 'AMICO – Pracownia Kamieniarska',
+    title: 'AMICO - Pracownia Kamieniarska',
     autoHideMenuBar: true,
     icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
@@ -130,7 +130,7 @@ function utworzOkno() {
     glowneOkno = null
   })
 
-  // Zoom wylaczony – aplikacja ma wygladac dokladnie tak samo na kazdym komputerze
+  // Zoom wylaczony - aplikacja ma wygladac dokladnie tak samo na kazdym komputerze
   glowneOkno.webContents.on('did-finish-load', () => {
     glowneOkno.webContents.setVisualZoomLevelLimits(1, 1)
     glowneOkno.webContents.setZoomFactor(1)
@@ -201,8 +201,8 @@ function ustawMenu() {
             dialog.showMessageBox(glowneOkno, {
               type: 'info',
               title: 'O programie',
-              message: 'AMICO – Pracownia Kamieniarska',
-              detail: `Wersja ${app.getVersion()}\n\nDane zapisują się na tym komputerze i – po zalogowaniu do chmury – synchronizują z pozostałymi urządzeniami.`,
+              message: 'AMICO - Pracownia Kamieniarska',
+              detail: `Wersja ${app.getVersion()}\n\nDane zapisują się na tym komputerze i - po zalogowaniu do chmury - synchronizują z pozostałymi urządzeniami.`,
               buttons: ['OK'],
             })
           },
@@ -245,7 +245,7 @@ function zarejestrujProtokol() {
 }
 
 // ---------------------------------------------------------------------------
-// Natywny zapis PDF – przewaga desktopu nad przegladarka:
+// Natywny zapis PDF - przewaga desktopu nad przegladarka:
 // jeden klik zamiast okna drukowania i "Zapisz jako PDF".
 // ---------------------------------------------------------------------------
 ipcMain.handle('amico:zapisz-pdf', async (zdarzenie, { nazwa }) => {
@@ -280,7 +280,7 @@ ipcMain.handle('amico:wersja', () => app.getVersion())
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
-// Jedna instancja – drugie uruchomienie tylko podnosi istniejace okno
+// Jedna instancja - drugie uruchomienie tylko podnosi istniejace okno
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {

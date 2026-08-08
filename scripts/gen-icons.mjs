@@ -1,4 +1,4 @@
-// Generuje ikony PWA (PNG) z oryginalnego znaku AMICO (granatowy kafelek + białe „M").
+// Generuje ikony PWA (PNG) z oryginalnego znaku AMICO (granatowy kafelek + białe "M").
 import sharp from 'sharp'
 import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'

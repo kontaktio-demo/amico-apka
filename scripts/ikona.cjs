@@ -18,7 +18,7 @@ async function main() {
   )
   const ico = await pngNaIco(warianty)
   fs.writeFileSync(cel, ico)
-  console.log(`Zapisano ${path.relative(process.cwd(), cel)} – rozmiary ${ROZMIARY.join(', ')} (${(ico.length / 1024).toFixed(0)} KB)`)
+  console.log(`Zapisano ${path.relative(process.cwd(), cel)} - rozmiary ${ROZMIARY.join(', ')} (${(ico.length / 1024).toFixed(0)} KB)`)
 }
 
 main().catch((e) => {

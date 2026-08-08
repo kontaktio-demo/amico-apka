@@ -3,7 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// AMICO – Pracownia Kamieniarska. PWA offline-first, hostowana na Vercel.
+// AMICO - Pracownia Kamieniarska. PWA offline-first, hostowana na Vercel.
 export default defineConfig({
   plugins: [
     react(),
@@ -12,7 +12,7 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'AMICO – Pracownia Kamieniarska',
+        name: 'AMICO - Pracownia Kamieniarska',
         short_name: 'AMICO',
         description: 'System zarzadzania pracownia kamieniarska: CRM, oferty, umowy, faktury, raporty.',
         theme_color: '#0b0b10',
