@@ -170,7 +170,12 @@ export default function Wizualizacja() {
               )}
               share={{
                 title: `Wizualizacja - ${nazwaKamienia}`,
-                text: `Wizualizacja blatu: ${nazwaKamienia}, ${fmtNum(pow, 2)} m², wykończenie krawędzi: ${krawedz}.`,
+                text:
+                  `Wizualizacja blatu ${nazwaKamienia}${kat ? ` (${kat})` : ''}. ` +
+                  `Kształt: ${ksztalt === 'prosty' ? `${a}×${b2} cm` : `L ${a}×${b2} + ${a2}×${b3} cm`}. ` +
+                  `Powierzchnia ${fmtNum(pow, 2)} m², obwód ${fmtNum(obwod, 2)} mb. ` +
+                  `Grubość ${grubosc}, krawędź ${krawedz}. ` +
+                  `Wycięcia: ${[zlew && 'zlew', plyta && 'płyta grzewcza'].filter(Boolean).join(', ') || 'brak'}.`,
               }}
               size="sm"
             />

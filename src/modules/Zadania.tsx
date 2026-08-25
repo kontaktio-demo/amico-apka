@@ -70,7 +70,12 @@ export default function Zadania() {
   }, [b.uzytkownicy, b.pracownicy])
   const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '-'
 
-  const widoczne = b.zadania.filter((z) => !tylkoMoje || z.przypisanyDo === user?.id)
+  // Prywatnosc zadan: wlasciciel i kierownik widza wszystkie; pozostali (biuro/montazysta)
+  // widza TYLKO swoje przypisane - spojnie z pulpitem.
+  const widziWszystkie = user?.rola === 'wlasciciel' || user?.rola === 'kierownik'
+  const widoczne = b.zadania.filter((z) =>
+    widziWszystkie ? !tylkoMoje || z.przypisanyDo === user?.id : z.przypisanyDo === user?.id,
+  )
 
   function nowe() {
     setEdycja({
@@ -114,7 +119,18 @@ export default function Zadania() {
               share={{
                 title: 'Lista zadań AMICO',
                 text: widoczne
-                  .map((z) => `• ${z.tytul} - ${(z.przypisanyDoNazwa || nazwaOsoby(z.przypisanyDo))} (${fmtDate(z.termin)})`)
+                  .map((z) => {
+                    const kto = z.przypisanyDoNazwa || nazwaOsoby(z.przypisanyDo)
+                    const kiedy = [fmtDate(z.termin), z.godzina].filter(Boolean).join(', ')
+                    const kontekst = z.zlecenieId
+                      ? b.zlecenia.find((x) => x.id === z.zlecenieId)?.numer
+                      : z.klientId
+                        ? klientNazwa(b.klienci.find((x) => x.id === z.klientId))
+                        : ''
+                    return `• ${z.tytul}${z.opis ? ' – ' + z.opis : ''} — ${kto}${kiedy ? ', ' + kiedy : ''}${
+                      kontekst ? ' [' + kontekst + ']' : ''
+                    }${z.priorytet === 'wysoki' ? ' (WAŻNE)' : ''}`
+                  })
                   .join('\n'),
               }}
               size="sm"

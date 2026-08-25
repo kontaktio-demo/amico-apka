@@ -212,7 +212,7 @@ export default function Dokumenty() {
                               )}
                               share={{
                                 title: `Protokół odbioru ${p.numer}`,
-                                text: `Protokół odbioru ${p.numer} - ${nazwa}. Data: ${fmtDate(p.data)}.`,
+                                text: `Protokół odbioru ${p.numer} - ${nazwa}.${p.numerZamowienia ? ` Zamówienie: ${p.numerZamowienia}.` : ''} Data: ${fmtDate(p.data)}.`,
                                 to: kl?.email,
                                 phone: p.klientTelefon || kl?.telefon,
                               }}
@@ -289,7 +289,7 @@ export default function Dokumenty() {
                               )}
                               share={{
                                 title: `Dowód KP ${kp.numer}`,
-                                text: `Dowód wpłaty KP ${kp.numer} na kwotę ${fmtPLN(kp.kwota)} od: ${nazwa}. Data: ${fmtDate(kp.data)}.`,
+                                text: `Dowód wpłaty KP ${kp.numer} na kwotę ${fmtPLN(kp.kwota)} od: ${nazwa}.${kp.tytul ? ` Tytułem: ${kp.tytul}.` : ''} Data: ${fmtDate(kp.data)}.`,
                                 to: kl?.email,
                                 phone: kl?.telefon,
                               }}
@@ -434,8 +434,9 @@ function ProtokolEditor({
             getPrintNode={() => <ProtokolDoc p={draft} firma={firma} logoDataUrl={logo} />}
             share={{
               title: `Protokół odbioru ${draft.numer}`,
-              text: `Protokół odbioru ${draft.numer} - ${nazwaKlienta}. Data: ${fmtDate(draft.data)}.`,
-              phone: draft.klientTelefon,
+              text: `Protokół odbioru ${draft.numer} - ${nazwaKlienta}.${draft.numerZamowienia ? ` Zamówienie: ${draft.numerZamowienia}.` : ''} Data: ${fmtDate(draft.data)}.`,
+              to: klienci.find((k) => k.id === draft.klientId)?.email,
+              phone: draft.klientTelefon || klienci.find((k) => k.id === draft.klientId)?.telefon,
             }}
           />
           <div className="flex-1" />
@@ -579,7 +580,9 @@ function KPEditor({
             getPrintNode={() => <KPDoc kp={{ ...draft, slownie }} firma={firma} logoDataUrl={logo} />}
             share={{
               title: `Dowód KP ${draft.numer}`,
-              text: `Dowód wpłaty KP ${draft.numer} na kwotę ${fmtPLN(draft.kwota)} od: ${nazwaWplacajacego}. Data: ${fmtDate(draft.data)}.`,
+              text: `Dowód wpłaty KP ${draft.numer} na kwotę ${fmtPLN(draft.kwota)} od: ${nazwaWplacajacego}.${draft.tytul ? ` Tytułem: ${draft.tytul}.` : ''} Data: ${fmtDate(draft.data)}.`,
+              to: klienci.find((k) => k.id === draft.klientId)?.email,
+              phone: klienci.find((k) => k.id === draft.klientId)?.telefon,
             }}
           />
           <div className="flex-1" />

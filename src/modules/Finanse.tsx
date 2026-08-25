@@ -222,9 +222,11 @@ function RaportyTab({ firma }: { firma: Firma }) {
                       )}
                       share={{
                         title: `Raport kasowy ${r.numer}`,
-                        text: `Raport kasowy ${r.numer} (${fmtDate(r.od)}-${fmtDate(r.do)})\nPrzychody: ${fmtPLN(
-                          o.przychod,
-                        )}\nRozchody: ${fmtPLN(o.rozchod)}\nSaldo: ${fmtPLN(o.saldo)}`,
+                        text: `Raport kasowy ${r.numer} — ${firma.nazwa} (${fmtDate(r.od)}-${fmtDate(
+                          r.do,
+                        )})\nPrzychody: ${fmtPLN(o.przychod)}\nRozchody: ${fmtPLN(o.rozchod)}\nSaldo: ${fmtPLN(
+                          o.saldo,
+                        )}`,
                       }}
                     />
                     <button className="btn-outline btn-sm" onClick={() => setEdytowany(r)}>
@@ -297,7 +299,9 @@ function RaportEditor({
             getPrintNode={() => <RaportKasowyDoc r={draft} firma={firma} logoDataUrl={logoDataUrl} />}
             share={{
               title: `Raport kasowy ${draft.numer}`,
-              text: `Raport kasowy ${draft.numer} (${fmtDate(draft.od)}-${fmtDate(draft.do)}) · Saldo ${fmtPLN(o.saldo)}`,
+              text: `Raport kasowy ${draft.numer} — ${firma.nazwa} (${fmtDate(draft.od)}-${fmtDate(
+                draft.do,
+              )})\nPrzychody: ${fmtPLN(o.przychod)}\nRozchody: ${fmtPLN(o.rozchod)}\nSaldo: ${fmtPLN(o.saldo)}`,
             }}
           />
           <div className="flex-1" />
@@ -572,7 +576,9 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
               )}
               share={{
                 title: 'Zestawienie przelewów',
-                text: `Zestawienie przelewów (${przelewy.length}) · Do zapłaty: ${fmtPLN(sumaDoZaplaty)}`,
+                text: `Zestawienie przelewów — ${firma.nazwa} (${fmtDate(today())}). Pozycji: ${przelewy.length}. Do zapłaty: ${fmtPLN(
+                  sumaDoZaplaty,
+                )}. Razem: ${fmtPLN(przelewy.reduce((s, p) => s + (p.kwota || 0), 0))}.`,
               }}
             />
           </div>
@@ -819,9 +825,9 @@ function ObrotTab({ firma }: { firma: Firma }) {
               getPrintNode={() => <ObrotDoc firma={firma} pozycje={pozycje} logoDataUrl={b.ustawienia.logoDataUrl} />}
               share={{
                 title: 'Zestawienie obrotu pieniężnego',
-                text: `Obrót pieniężny · Przychody ${fmtPLN(sumaPrzychod)} · Rozchody ${fmtPLN(
-                  sumaRozchod,
-                )} · Saldo ${fmtPLN(saldo)}`,
+                text: `Obrót pieniężny — ${firma.nazwa} (${fmtDate(today())}). Przychody ${fmtPLN(
+                  sumaPrzychod,
+                )} · Rozchody ${fmtPLN(sumaRozchod)} · Saldo ${fmtPLN(saldo)}.`,
               }}
             />
           </div>

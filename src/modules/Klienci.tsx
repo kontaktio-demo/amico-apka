@@ -537,7 +537,19 @@ function KartaKlienta({ id }: { id: string }) {
               getPrintNode={() => <KartaKlientaDoc k={k} firma={firma} logoDataUrl={b.ustawienia.logoDataUrl} />}
               share={{
                 title: `Karta klienta - ${klientNazwa(k)}`,
-                text: `${klientNazwa(k)}\n${k.telefon || ''}\n${k.email || ''}\n${adres}`,
+                text: [
+                  klientNazwa(k),
+                  k.typ === 'firma' && k.nip ? `NIP: ${k.nip}` : '',
+                  k.telefon ? `tel. ${k.telefon}` : '',
+                  k.email || '',
+                  adres,
+                  k.osobaKontaktowa?.imieNazwisko
+                    ? `Os. kontaktowa: ${k.osobaKontaktowa.imieNazwisko}${k.osobaKontaktowa.telefon ? ', tel. ' + k.osobaKontaktowa.telefon : ''}`
+                    : '',
+                  k.daneDoPomiaru ? `Dojazd / pomiar: ${k.daneDoPomiaru}` : '',
+                ]
+                  .filter(Boolean)
+                  .join('\n'),
                 to: k.email,
                 phone: k.telefon,
               }}

@@ -539,12 +539,15 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   ].filter((o) => o.v)
 
   const shareText = [
-    `Zlecenie ${z.numer}: ${z.tytul}`,
+    `Zlecenie ${z.numer}${z.tytul ? ': ' + z.tytul : ''}`,
+    `Data: ${fmtDate(dataZlecenia(z))}`,
     klient ? `Klient: ${klientNazwa(klient)}` : '',
+    klient?.telefon ? `Tel. klienta: ${klient.telefon}` : '',
     z.adres ? `Adres: ${z.adres}` : '',
     `Etap: ${ei.nazwa}`,
     z.dataPomiaru ? `Pomiar: ${fmtDate(z.dataPomiaru)}` : '',
     z.dataMontazu ? `Montaż: ${fmtDate(z.dataMontazu)}` : '',
+    ...osoby.map((o) => `${o.label}: ${o.v}`),
     ukryjKwoty
       ? ''
       : z.wartoscBrutto
@@ -552,6 +555,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
         : z.wartoscNetto
           ? `Wartość netto: ${fmtPLN(z.wartoscNetto)}`
           : '',
+    z.notatki ? `Uwagi: ${z.notatki}` : '',
   ]
     .filter(Boolean)
     .join('\n')

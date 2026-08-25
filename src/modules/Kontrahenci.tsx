@@ -180,7 +180,12 @@ export default function Kontrahenci() {
           share={{
             title: `Kontakty - ${typInfo.lm}`,
             text: lista
-              .map((k) => `${k.nazwa}${k.firma ? ` (${k.firma})` : ''} - tel. ${k.telefon || '-'} - ${k.email || '-'}`)
+              .map((k) => {
+                const spec = [k.specjalizacja, k.branza].filter(Boolean).join(' · ')
+                return `${k.nazwa}${k.firma ? ` (${k.firma})` : ''} - tel. ${k.telefon || '-'} - ${k.email || '-'}${
+                  spec ? ' - ' + spec : ''
+                }`
+              })
               .join('\n'),
           }}
         />

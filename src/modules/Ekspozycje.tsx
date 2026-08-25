@@ -491,9 +491,11 @@ function KartaEkspozycji({
             getPrintNode={() => <RozliczenieEkspozycjiDoc e={e} firma={firma} logoDataUrl={logoDataUrl} />}
             share={{
               title: `Rozliczenie ekspozycji ${e.numer}`,
-              text: `Rozliczenie ekspozycji ${e.numer} - ${tytul}. Zobowiązanie: ${fmtPLN(zob)}, zrealizowano: ${fmtPLN(zreal)} (${procent.toFixed(
-                1,
-              )}%).`,
+              text: `Rozliczenie ekspozycji ${e.numer} - ${tytul}. Zobowiązanie: ${fmtPLN(zob)}, zrealizowano: ${fmtPLN(
+                zreal,
+              )} (${procent.toFixed(1)}%), pozostało: ${fmtPLN(Math.max(0, zob - zreal))}.${
+                e.dataDo ? ` Termin realizacji: ${fmtDate(e.dataDo)}.` : ''
+              }`,
               to: shareTo,
               phone: sharePhone,
             }}

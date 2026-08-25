@@ -418,7 +418,9 @@ function EdytorInner({ rec }: { rec: Wycena }) {
 
   const shareText = `Dzień dobry,\n\nprzesyłam wstępną wycenę prac kamieniarskich ${w.numer}${
     w.nazwaMaterialu ? ` (${w.nazwaMaterialu})` : ''
-  } na kwotę ${fmtPLN(sum.brutto)} brutto.\n\nPozdrawiam,\n${firma.wlasciciel}\n${firma.telefon}`
+  } na kwotę ${fmtPLN(sum.brutto)} brutto.${
+    w.waznosc ? `\nOferta ważna do ${fmtDate(w.waznosc)}.` : ''
+  }\n\nPozdrawiam,\n${firma.wlasciciel}\n${firma.telefon}`
 
   return (
     <div>

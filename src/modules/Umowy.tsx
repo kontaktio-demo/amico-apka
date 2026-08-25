@@ -294,7 +294,15 @@ function Edytor({ umowaId }: { umowaId: string }) {
 
   const share = {
     title: `${typNazwa(u.typ)} ${u.numer}`,
-    text: `Przesyłam ${typNazwa(u.typ).toLowerCase()} nr ${u.numer}${u.zamawiajacyNazwa ? ` dla ${u.zamawiajacyNazwa}` : ''}. W razie pytań pozostaję do dyspozycji.`,
+    text: [
+      `Przesyłam ${typNazwa(u.typ).toLowerCase()} nr ${u.numer}${u.zamawiajacyNazwa ? ` dla ${u.zamawiajacyNazwa}` : ''}.`,
+      u.przedmiot ? `Przedmiot: ${u.przedmiot}.` : '',
+      u.wynagrodzenieBrutto != null ? `Wynagrodzenie: ${fmtPLN(u.wynagrodzenieBrutto)}.` : '',
+      u.dataZawarcia ? `Data zawarcia: ${fmtDate(u.dataZawarcia)}.` : '',
+      'W razie pytań pozostaję do dyspozycji.',
+    ]
+      .filter(Boolean)
+      .join(' '),
     to: u.zamawiajacyEmail,
     phone: u.zamawiajacyTelefon,
   }

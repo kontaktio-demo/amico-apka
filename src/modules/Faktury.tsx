@@ -21,7 +21,7 @@ import { PrintSendBar } from '../components/PrintSendBar'
 import { FakturaDoc } from '../documents/Faktura'
 import { klientNazwa, klientAdres } from '../lib/helpers'
 import { KlientPicker } from '../components/KlientPicker'
-import { fmtPLN, fmtDate, today, nowISO, podsumuj, pozycjaNetto, kwotaSlownie, parseNum } from '../lib/format'
+import { fmtPLN, fmtKonto, fmtDate, today, nowISO, podsumuj, pozycjaNetto, kwotaSlownie, parseNum } from '../lib/format'
 import { uid } from '../lib/id'
 import type { Faktura, FakturaTyp, FakturaStatus, Pozycja, Unit, VatRate, Klient } from '../lib/types'
 
@@ -261,6 +261,11 @@ function Edytor({ id }: { id: string }) {
   }
 
   const klient = f.klientId ? b.klienci.find((k) => k.id === f.klientId) : undefined
+  // Jedna, KOMPLETNA tresc udostepniania - ta sama w naglowku i w podgladzie.
+  const fakturaShareText =
+    `Faktura ${f.numer} dla ${f.nabywcaNazwa || 'nabywcy'} na kwotę ${fmtPLN(sum.brutto)}. ` +
+    `Termin płatności: ${fmtDate(f.terminPlatnosci) || 'wg ustaleń'}.` +
+    (f.sposobPlatnosci === 'przelew' && f.konto ? ` Nr konta: ${fmtKonto(f.konto)}.` : '')
   const docNode = (
     <FakturaDoc
       f={{ ...f, pozycje: f.pozycje.map((p, i) => ({ ...p, lp: i + 1 })) }}
@@ -287,7 +292,7 @@ function Edytor({ id }: { id: string }) {
               getPrintNode={() => docNode}
               share={{
                 title: `Faktura ${f.numer}`,
-                text: `Faktura ${f.numer} dla ${f.nabywcaNazwa || 'nabywcy'} na kwotę ${fmtPLN(sum.brutto)}. Termin płatności: ${fmtDate(f.terminPlatnosci) || 'wg ustaleń'}.`,
+                text: fakturaShareText,
                 to: klient?.email,
                 phone: klient?.telefon,
               }}
@@ -584,7 +589,7 @@ function Edytor({ id }: { id: string }) {
               getPrintNode={() => docNode}
               share={{
                 title: `Faktura ${f.numer}`,
-                text: `Faktura ${f.numer} dla ${f.nabywcaNazwa || 'nabywcy'} na kwotę ${fmtPLN(sum.brutto)}.`,
+                text: fakturaShareText,
                 to: klient?.email,
                 phone: klient?.telefon,
               }}
