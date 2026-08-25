@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Users,
@@ -6,18 +7,24 @@ import {
   ClipboardList,
   CalendarDays,
   Wallet,
-  ArrowRight,
   TrendingUp,
   Plus,
   Receipt,
   Store,
+  Star,
+  Check,
+  Circle,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { PageHeader, Stat, Card, CardBody, Badge, BADGE_CLASS, type BadgeTone } from '../components/ui'
-import { fmtPLN, fmtDate, today } from '../lib/format'
+import { PageHeader, Stat, Card, CardBody, Badge, BADGE_CLASS, cx, type BadgeTone } from '../components/ui'
+import { fmtPLN, fmtDate, today, nowISO } from '../lib/format'
 import { klientNazwa, etapInfo, PIPELINE } from '../lib/helpers'
 import { podsumuj } from '../lib/format'
+import { uid } from '../lib/id'
 import { useAuth } from '../components/Auth'
+import type { Zadanie } from '../lib/types'
 import { ListTodo, ScanLine, MapPin, CalendarClock } from 'lucide-react'
 
 export default function Pulpit() {
@@ -65,7 +72,10 @@ export default function Pulpit() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* GLOWNA rzecz na pulpicie: zadania "kto co robi" w stylu Microsoft To Do */}
+      <ZadaniaToDo />
+
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
           label="Klienci"
           value={b.klienci.length}
@@ -225,6 +235,262 @@ export default function Pulpit() {
         </Card>
       </div>
     </div>
+  )
+}
+
+// ============================================================================
+// Zadania na pulpicie w stylu Microsoft To Do - proste zaznaczanie + przydzial
+// ============================================================================
+function ZadaniaToDo() {
+  const b = useStore((s) => s.baza)
+  const upsert = useStore((s) => s.upsert)
+  const { user } = useAuth()
+
+  // Osoby do przydzialu: uzytkownicy (konta) + pracownicy (zespol), bez duplikatow po imieniu.
+  const osoby = useMemo(() => {
+    const u = b.uzytkownicy
+      .filter((x) => x.aktywny !== false)
+      .map((x) => ({ id: x.id, nazwa: x.imie, kolor: x.kolor as string | undefined }))
+    const imiona = new Set(u.map((x) => x.nazwa.trim().toLowerCase()))
+    const p = b.pracownicy
+      .filter((x) => !imiona.has((x.imie || '').trim().toLowerCase()))
+      .map((x) => ({ id: x.id, nazwa: x.imie, kolor: undefined as string | undefined }))
+    return [...u, ...p]
+  }, [b.uzytkownicy, b.pracownicy])
+  const osobaById = (id?: string) => osoby.find((o) => o.id === id)
+  const inicjaly = (n: string) =>
+    n
+      .split(' ')
+      .map((s) => s[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join('')
+      .toUpperCase()
+
+  const [filtr, setFiltr] = useState<string>('all')
+  const [tekst, setTekst] = useState('')
+  const [przypDo, setPrzypDo] = useState<string>(user?.id || '')
+  const [termin, setTermin] = useState('')
+  const [pokazZrob, setPokazZrob] = useState(false)
+
+  const t = today()
+  const pasuje = (z: Zadanie) =>
+    filtr === 'all' ? true : filtr === 'moje' ? z.przypisanyDo === user?.id : z.przypisanyDo === filtr
+
+  const aktywne = b.zadania
+    .filter((z) => z.status !== 'zrobione' && pasuje(z))
+    .sort((a, c) => {
+      const wa = a.priorytet === 'wysoki' ? 0 : 1
+      const wc = c.priorytet === 'wysoki' ? 0 : 1
+      if (wa !== wc) return wa - wc
+      return (a.termin || '9999-99-99').localeCompare(c.termin || '9999-99-99')
+    })
+  const zrobione = b.zadania
+    .filter((z) => z.status === 'zrobione' && pasuje(z))
+    .sort((a, c) => c.zaktualizowano.localeCompare(a.zaktualizowano))
+
+  const dodaj = () => {
+    const ttl = tekst.trim()
+    if (!ttl) return
+    upsert('zadania', {
+      id: uid('zad'),
+      tytul: ttl,
+      przypisanyDo: przypDo || undefined,
+      termin: termin || undefined,
+      priorytet: 'sredni',
+      status: 'do_zrobienia',
+      utworzono: nowISO(),
+      zaktualizowano: nowISO(),
+    } as Zadanie)
+    setTekst('')
+    setTermin('')
+  }
+  const toggle = (z: Zadanie) =>
+    upsert('zadania', {
+      ...z,
+      status: z.status === 'zrobione' ? 'do_zrobienia' : 'zrobione',
+      zaktualizowano: nowISO(),
+    })
+  const gwiazdka = (z: Zadanie) =>
+    upsert('zadania', { ...z, priorytet: z.priorytet === 'wysoki' ? 'sredni' : 'wysoki', zaktualizowano: nowISO() })
+  const przypisz = (z: Zadanie, id: string) =>
+    upsert('zadania', { ...z, przypisanyDo: id || undefined, zaktualizowano: nowISO() })
+
+  return (
+    <Card className="mt-6">
+      <CardBody>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+            <ListTodo size={18} className="text-brand-700" /> Zadania — kto co robi
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            <FiltrPill active={filtr === 'all'} onClick={() => setFiltr('all')}>
+              Wszystkie
+            </FiltrPill>
+            <FiltrPill active={filtr === 'moje'} onClick={() => setFiltr('moje')}>
+              Moje
+            </FiltrPill>
+            {osoby.map((o) => (
+              <FiltrPill key={o.id} active={filtr === o.id} onClick={() => setFiltr(o.id)}>
+                {o.nazwa.split(' ')[0]}
+              </FiltrPill>
+            ))}
+          </div>
+        </div>
+
+        {/* Szybkie dodawanie (jak "Dodaj zadanie" w To Do) */}
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-2">
+          <Plus size={18} className="ml-1 shrink-0 text-brand-700" />
+          <input
+            value={tekst}
+            onChange={(e) => setTekst(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') dodaj()
+            }}
+            placeholder="Dodaj zadanie…"
+            className="min-w-[140px] flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-stone-500"
+          />
+          <select
+            value={przypDo}
+            onChange={(e) => setPrzypDo(e.target.value)}
+            className="rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
+            title="Przydziel osobie"
+          >
+            <option value="">Nieprzypisane</option>
+            {osoby.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.nazwa}
+              </option>
+            ))}
+          </select>
+          <input
+            type="date"
+            value={termin}
+            onChange={(e) => setTermin(e.target.value)}
+            className="rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
+            title="Termin"
+          />
+          <button className="btn-primary btn-sm" onClick={dodaj} disabled={!tekst.trim()}>
+            Dodaj
+          </button>
+        </div>
+
+        {/* Lista aktywnych */}
+        {aktywne.length === 0 ? (
+          <p className="py-6 text-center text-[13px] text-stone-400">
+            Brak zadań{filtr !== 'all' ? ' w tym widoku' : ''}. Dodaj pierwsze powyżej.
+          </p>
+        ) : (
+          <div className="space-y-0.5">
+            {aktywne.map((z) => (
+              <div
+                key={z.id}
+                className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/[0.03]"
+              >
+                <button
+                  onClick={() => toggle(z)}
+                  className="shrink-0 text-stone-400 transition hover:text-brand-700"
+                  title="Oznacz jako zrobione"
+                >
+                  <Circle size={20} />
+                </button>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[14px] text-ink">{z.tytul}</div>
+                  {z.termin && (
+                    <div className={cx('text-[11.5px]', z.termin < t ? 'text-red-400' : 'text-stone-400')}>
+                      {fmtDate(z.termin)}
+                      {z.godzina ? `, ${z.godzina}` : ''}
+                    </div>
+                  )}
+                </div>
+                <span
+                  className="hidden shrink-0 items-center gap-1.5 sm:inline-flex"
+                  title={osobaById(z.przypisanyDo)?.nazwa || 'nieprzypisane'}
+                >
+                  {osobaById(z.przypisanyDo) ? (
+                    <span
+                      className="grid h-6 w-6 place-items-center rounded-full text-[9.5px] font-bold text-white"
+                      style={{ background: osobaById(z.przypisanyDo)?.kolor || '#3a4a7a' }}
+                    >
+                      {inicjaly(osobaById(z.przypisanyDo)!.nazwa)}
+                    </span>
+                  ) : null}
+                </span>
+                <select
+                  value={z.przypisanyDo || ''}
+                  onChange={(e) => przypisz(z, e.target.value)}
+                  className="max-w-[120px] shrink-0 rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-[12px] text-stone-500 transition hover:border-white/10"
+                  title="Przydziel osobie"
+                >
+                  <option value="">— przydziel —</option>
+                  {osoby.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.nazwa}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => gwiazdka(z)}
+                  className={cx(
+                    'shrink-0 transition',
+                    z.priorytet === 'wysoki' ? 'text-amber-400' : 'text-stone-500 hover:text-amber-400',
+                  )}
+                  title="Ważne"
+                >
+                  <Star size={17} fill={z.priorytet === 'wysoki' ? 'currentColor' : 'none'} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Zrobione - zwijane */}
+        {zrobione.length > 0 && (
+          <div className="mt-3 border-t border-white/[0.06] pt-2">
+            <button
+              onClick={() => setPokazZrob((v) => !v)}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-stone-500 transition hover:text-white"
+            >
+              {pokazZrob ? <ChevronDown size={15} /> : <ChevronRight size={15} />} Zrobione ({zrobione.length})
+            </button>
+            {pokazZrob && (
+              <div className="mt-1 space-y-0.5">
+                {zrobione.map((z) => (
+                  <div key={z.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5">
+                    <button
+                      onClick={() => toggle(z)}
+                      className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-white"
+                      title="Cofnij"
+                    >
+                      <Check size={13} strokeWidth={3} />
+                    </button>
+                    <span className="min-w-0 flex-1 truncate text-[13.5px] text-stone-400 line-through">{z.tytul}</span>
+                    <span className="shrink-0 text-[11px] text-stone-500">
+                      {osobaById(z.przypisanyDo)?.nazwa.split(' ')[0] || ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </CardBody>
+    </Card>
+  )
+}
+
+function FiltrPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        active
+          ? 'rounded-full bg-white/10 px-3 py-1 text-[12.5px] font-medium text-white'
+          : 'rounded-full border border-white/10 bg-white/[0.02] px-3 py-1 text-[12.5px] font-medium text-stone-500 hover:border-brand-300'
+      }
+    >
+      {children}
+    </button>
   )
 }
 

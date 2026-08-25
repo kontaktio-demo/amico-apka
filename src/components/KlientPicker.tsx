@@ -165,11 +165,11 @@ function NowyKlientInline({
   onZapisz: (k: Klient) => void
   onAnuluj: () => void
 }) {
-  // Domyslamy sie: jesli wpisana nazwa ma 2+ slowa -> osoba (imie nazwisko), inaczej pole zostaje.
+  // Zasada firmowa: NAZWISKO IMIE. Pierwsze slowo = nazwisko, reszta = imie.
   const slowa = wstepnaNazwa.trim().split(/\s+/).filter(Boolean)
   const [typ, setTyp] = useState<KlientTyp>('osoba')
-  const [imie, setImie] = useState(slowa[0] || '')
-  const [nazwisko, setNazwisko] = useState(slowa.slice(1).join(' ') || '')
+  const [nazwisko, setNazwisko] = useState(slowa[0] || '')
+  const [imie, setImie] = useState(slowa.slice(1).join(' ') || '')
   const [nazwaFirmy, setNazwaFirmy] = useState(typ === 'firma' ? wstepnaNazwa.trim() : '')
   const [nip, setNip] = useState('')
   const [telefon, setTelefon] = useState('')
@@ -233,11 +233,11 @@ function NowyKlientInline({
       <div className="space-y-3">
         {typ === 'osoba' ? (
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Imię">
-              <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Jan" autoFocus />
-            </Field>
             <Field label="Nazwisko">
-              <Input value={nazwisko} onChange={(e) => setNazwisko(e.target.value)} placeholder="np. Kowalski" />
+              <Input value={nazwisko} onChange={(e) => setNazwisko(e.target.value)} placeholder="np. Kowalski" autoFocus />
+            </Field>
+            <Field label="Imię">
+              <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Jan" />
             </Field>
           </div>
         ) : (

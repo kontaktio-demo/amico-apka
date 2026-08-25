@@ -296,15 +296,15 @@ function NowyKlientModal({ open, onClose }: { open: boolean; onClose: () => void
 
         {f.typ === 'osoba' ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Imię">
-              <Input value={f.imie || ''} onChange={(e) => set('imie', e.target.value)} placeholder="np. Jan" />
-            </Field>
             <Field label="Nazwisko">
               <Input
                 value={f.nazwisko || ''}
                 onChange={(e) => set('nazwisko', e.target.value)}
                 placeholder="np. Kowalski"
               />
+            </Field>
+            <Field label="Imię">
+              <Input value={f.imie || ''} onChange={(e) => set('imie', e.target.value)} placeholder="np. Jan" />
             </Field>
             <Field
               label="PESEL (opcjonalnie)"

@@ -3,7 +3,8 @@ import type { Klient, Kontrahent, KontrahentTyp, PipelineEtap, Zlecenie, WycenaS
 export function klientNazwa(k?: Klient | null): string {
   if (!k) return '-'
   if (k.typ === 'firma') return k.nazwaFirmy || 'Firma bez nazwy'
-  return [k.imie, k.nazwisko].filter(Boolean).join(' ') || 'Klient bez nazwy'
+  // Zasada firmowa: zawsze NAZWISKO IMIE (segregacja i szukanie po nazwisku).
+  return [k.nazwisko, k.imie].filter(Boolean).join(' ') || 'Klient bez nazwy'
 }
 export function klientAdres(k?: Klient | null): string {
   if (!k) return ''
