@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Delete, Fingerprint, LogIn, UserPlus, KeyRound, ArrowLeft, Cloud, Users } from 'lucide-react'
+import { Delete, Fingerprint, LogIn, UserPlus, KeyRound } from 'lucide-react'
 import { useStore } from '../lib/store'
 import type { Uzytkownik, Rola } from '../lib/types'
 import { initials } from '../lib/format'
@@ -16,9 +16,17 @@ import {
   odblokujBiometria,
   nazwaRoli,
 } from '../lib/auth'
+import {
+  zalogujChmura,
+  zarejestrujChmura,
+  sesjaChmury,
+  startSync,
+  zsynchronizujUzytkownikaLokalnie,
+  wejscieDoAmico,
+  zapamietajWorkspace,
+} from '../lib/cloud'
 import { Logo } from './Logo'
 import { Field, Input } from './ui'
-import { CloudPanel, type Tryb } from './CloudPanel'
 
 interface AuthCtx {
   user: Uzytkownik | null
@@ -118,13 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthShell>
-      {widok === 'onboarding' && <PierwszeUruchomienie onDone={zaloguj} />}
-      {widok === 'login' && (
-        <>
-          <Login onLogin={zaloguj} />
-          <ChmuraLogowanie onZalogowano={zaloguj} />
-        </>
-      )}
+      {(widok === 'onboarding' || widok === 'login') && <LogowanieAMICO onZalogowano={zaloguj} />}
       {widok === 'lock' && user && (
         <Lock user={user} onUnlock={() => setWidok('in')} onSwitch={() => setWidok('login')} />
       )}
@@ -132,77 +134,127 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ---------- Pierwsze uruchomienie ----------
-// AMICO to wewnetrzny system firmy - KAZDE konto jest kontem w chmurze, zeby te same
-// dane byly na wszystkich urzadzeniach (tablet, komputer) i w bazie. Nie ma trybu
-// "tylko na tym urzadzeniu" - dane firmy nie moga siedziec w wyspach na jednym sprzecie.
-type Wybor = 'menu' | Tryb
+// ---------- Logowanie AMICO (proste: e-mail + haslo) ----------
+// Jeden ekran dla calej firmy AMICO. Zadnych kodow, wyboru "zakladam/dolaczam",
+// listy profili ani osobnego "zaloguj przez chmure". Konto zawsze jest w chmurze,
+// wiec te same dane sa na kazdym urzadzeniu. "Zaloz konto" laczy sie z ta sama firma.
+function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }) {
+  const [rejestracja, setRejestracja] = useState(false)
+  const [imie, setImie] = useState('')
+  const [email, setEmail] = useState('')
+  const [haslo, setHaslo] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
 
-function PierwszeUruchomienie({ onDone }: { onDone: (id: string) => void }) {
-  const [wybor, setWybor] = useState<Wybor>('menu')
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setErr('')
+    setBusy(true)
+    try {
+      if (rejestracja) await zarejestrujChmura(email.trim(), haslo)
+      else await zalogujChmura(email.trim(), haslo)
 
-  if (wybor !== 'menu') {
-    return (
-      <div>
-        <button
-          className="mb-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-stone-400 hover:text-white"
-          onClick={() => setWybor('menu')}
-        >
-          <ArrowLeft size={14} /> Wróć
-        </button>
-        <CloudPanel bezRamki onZalogowano={onDone} trybStartowy={wybor} />
-      </div>
-    )
+      const sesja = await sesjaChmury()
+      if (!sesja) throw new Error('Brak sesji – sprawdź e-mail i hasło')
+
+      // Wejscie do jedynej firmy AMICO (dolaczenie / utworzenie jesli to pierwsze konto).
+      const wynik = await wejscieDoAmico(imie.trim())
+      zapamietajWorkspace(wynik.workspaceId)
+      // Kolejnosc: najpierw pobranie/scalenie stanu firmy, potem lokalne konto.
+      await startSync(imie.trim())
+      // Jesli na liscie jest juz rekord tej osoby po E-MAILU (np. dodany wczesniej
+      // recznie z lokalnym id 'usr_...'), scalamy go z kontem chmurowym zamiast tworzyc
+      // duplikat - inaczej ta sama osoba pojawilaby sie dwa razy.
+      const mail = (sesja.user.email || email).trim().toLowerCase()
+      const doZastapienia = useStore
+        .getState()
+        .baza.uzytkownicy.find((u) => (u.email || '').trim().toLowerCase() === mail && u.id !== sesja.user.id)?.id
+      const userId = await zsynchronizujUzytkownikaLokalnie({
+        id: sesja.user.id,
+        imie: imie.trim(),
+        email: sesja.user.email || email.trim(),
+        rola: wynik.rola,
+        haslo,
+        zastapId: doZastapienia,
+      })
+      onZalogowano(userId)
+    } catch (e: any) {
+      const m: string = e?.message || ''
+      const brakSieci =
+        (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+        /failed to fetch|networkerror|network request failed|load failed/i.test(m)
+      setErr(
+        brakSieci
+          ? 'Brak internetu. Do zalogowania potrzebny jest zasięg – spróbuj ponownie, gdy będziesz online.'
+          : /Invalid login/i.test(m)
+            ? 'Nieprawidłowy e-mail lub hasło.'
+            : /already registered|User already/i.test(m)
+              ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”.'
+              : m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
+                ? 'Potwierdź e-mail (link w wiadomości), zanim się zalogujesz.'
+                : /amico_wejscie|amico_bootstrap|schema cache|PGRST202|does not exist/i.test(m)
+                  ? 'Baza w chmurze nie jest jeszcze gotowa – uruchom skrypt SQL AMICO.'
+                  : 'Nie udało się zalogować. Sprawdź e-mail i hasło.',
+      )
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
-    <div className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <div>
-        <h1 className="text-[19px] font-display font-semibold text-ink">Witaj w AMICO</h1>
+        <h1 className="text-[19px] font-display font-semibold text-ink">
+          {rejestracja ? 'Załóż konto AMICO' : 'Zaloguj się'}
+        </h1>
         <p className="mt-1 text-[13px] leading-relaxed text-stone-400">
-          Jeśli masz już konto, zaloguj się - zobaczysz te same dane co na pozostałych urządzeniach.
+          {rejestracja ? 'Podaj imię, e-mail i hasło.' : 'Podaj e-mail i hasło.'}
         </p>
       </div>
 
-      <button className="btn-primary w-full btn-lg" onClick={() => setWybor('logowanie')}>
-        <Cloud size={18} /> Mam już konto - zaloguj się
+      {rejestracja && (
+        <Field label="Imię i nazwisko">
+          <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Jan Kowalski" autoFocus />
+        </Field>
+      )}
+      <Field label="E-mail">
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="np. imie@amicco.pl"
+          autoComplete="username"
+          autoFocus={!rejestracja}
+        />
+      </Field>
+      <Field label="Hasło">
+        <Input
+          type="password"
+          value={haslo}
+          onChange={(e) => setHaslo(e.target.value)}
+          placeholder="Wpisz hasło"
+          autoComplete={rejestracja ? 'new-password' : 'current-password'}
+        />
+      </Field>
+
+      {err && <p className="text-[12.5px] text-red-400">{err}</p>}
+
+      <button className="btn-primary w-full btn-lg" disabled={busy}>
+        {rejestracja ? <UserPlus size={18} /> : <LogIn size={18} />}
+        {busy ? 'Chwileczkę…' : rejestracja ? 'Załóż konto' : 'Zaloguj'}
       </button>
 
-      <button className="btn-outline w-full" onClick={() => setWybor('rejestracja')}>
-        <UserPlus size={17} /> Zakładam AMICO pierwszy raz
+      <button
+        type="button"
+        className="w-full text-center text-[13px] text-stone-400 transition hover:text-white"
+        onClick={() => {
+          setRejestracja((v) => !v)
+          setErr('')
+        }}
+      >
+        {rejestracja ? 'Mam już konto — zaloguj się' : 'Pierwszy raz? Załóż konto'}
       </button>
-
-      <button className="btn-outline w-full" onClick={() => setWybor('dolacz')}>
-        <Users size={17} /> Dołączam do firmy (mam kod)
-      </button>
-
-      <p className="border-t border-white/10 pt-3 text-center text-[12px] leading-relaxed text-stone-500">
-        Do pierwszego logowania potrzebny jest internet. Później aplikacja działa też offline i sama synchronizuje
-        zmiany, gdy wróci zasięg.
-      </p>
-    </div>
-  )
-}
-
-// Logowanie przez chmure (synchronizacja miedzy urzadzeniami)
-function ChmuraLogowanie({ onZalogowano }: { onZalogowano: (id: string) => void }) {
-  const [otwarte, setOtwarte] = useState(false)
-  if (!otwarte) {
-    return (
-      <div className="mt-5 border-t border-white/10 pt-4 text-center">
-        <button
-          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-700 transition hover:text-white"
-          onClick={() => setOtwarte(true)}
-        >
-          <Cloud size={14} /> Zaloguj przez chmurę (te same dane na innych urządzeniach)
-        </button>
-      </div>
-    )
-  }
-  return (
-    <div className="mt-5 border-t border-white/10 pt-4">
-      <CloudPanel bezRamki onZalogowano={onZalogowano} />
-    </div>
+    </form>
   )
 }
 
@@ -233,101 +285,6 @@ function Avatar({ u, size = 44 }: { u: { imie: string; kolor?: string }; size?: 
   )
 }
 
-// ---------- Login (email + haslo) ----------
-function Login({ onLogin }: { onLogin: (id: string) => void }) {
-  const wszyscy = useStore((s) => s.baza.uzytkownicy)
-  // Tylko konta, ktore mozna odblokowac NA TYM urzadzeniu (maja lokalne haslo)
-  // i nie zostaly wylaczone (aktywny !== false). Konta wspolpracownikow przychodza
-  // z chmury bez sekretow - te loguja sie przez panel chmury, a nie z tej listy.
-  const uzytkownicy = wszyscy.filter((u) => u.hasloHash && u.salt && u.aktywny !== false)
-  const [sel, setSel] = useState<string | null>(uzytkownicy.length === 1 ? uzytkownicy[0].id : null)
-  const [haslo, setHaslo] = useState('')
-  const [err, setErr] = useState('')
-  const [busy, setBusy] = useState(false)
-  const user = uzytkownicy.find((u) => u.id === sel)
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-    setErr('')
-    setBusy(true)
-    try {
-      const ok = await sprawdzHaslo(haslo, user.salt, user.hasloHash)
-      if (ok) onLogin(user.id)
-      else setErr('Nieprawidłowe hasło.')
-    } catch {
-      setErr('Nie udało się zweryfikować hasła. Spróbuj ponownie.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  if (!user) {
-    if (uzytkownicy.length === 0) {
-      return (
-        <div className="space-y-2">
-          <h1 className="text-[18px] font-display font-semibold text-ink">Zaloguj się</h1>
-          <p className="text-[13px] leading-relaxed text-stone-400">
-            Na tym urządzeniu nie ma jeszcze zapisanego hasła. Zaloguj się przez chmurę tym samym e-mailem i hasłem co
-            na pozostałych urządzeniach.
-          </p>
-        </div>
-      )
-    }
-    return (
-      <div className="space-y-3">
-        <h1 className="text-[18px] font-display font-semibold text-ink">Wybierz użytkownika</h1>
-        <div className="space-y-2">
-          {uzytkownicy.map((u) => (
-            <button
-              key={u.id}
-              onClick={() => setSel(u.id)}
-              className="flex w-full items-center gap-3 rounded-xl border border-white/10 p-3 text-left transition hover:bg-white/[0.04]"
-            >
-              <Avatar u={u} />
-              <span className="flex-1">
-                <span className="block text-[14.5px] font-semibold text-ink">{u.imie}</span>
-                <span className="block text-[12px] text-stone-500">{nazwaRoli(u.rola)}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-4">
-      <button
-        type="button"
-        onClick={() => setSel(null)}
-        className="flex items-center gap-1.5 text-[12.5px] text-stone-500 hover:text-white"
-      >
-        <ArrowLeft size={14} /> Zmień użytkownika
-      </button>
-      <div className="flex items-center gap-3">
-        <Avatar u={user} />
-        <div>
-          <div className="text-[15px] font-semibold text-ink">{user.imie}</div>
-          <div className="text-[12px] text-stone-500">{user.email}</div>
-        </div>
-      </div>
-      <Field label="Hasło">
-        <Input
-          type="password"
-          value={haslo}
-          onChange={(e) => setHaslo(e.target.value)}
-          placeholder="Wpisz hasło"
-          autoFocus
-        />
-      </Field>
-      {err && <p className="text-[12.5px] text-red-400">{err}</p>}
-      <button className="btn-primary w-full btn-lg" disabled={busy}>
-        <LogIn size={18} /> Zaloguj
-      </button>
-    </form>
-  )
-}
 
 // ---------- Lock (szybkie odblokowanie) ----------
 // Licznik bledow PIN trzymamy w localStorage (per konto), inaczej po odswiezeniu

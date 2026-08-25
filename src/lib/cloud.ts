@@ -235,6 +235,29 @@ export async function dolaczDoFirmy(kod: string, imie: string) {
   return { workspaceId: r.workspace_id as string, rola: r.rola as Rola, joinCode: r.join_code as string }
 }
 
+// Proste "wejscie" do JEDYNEJ firmy AMICO - uzywane przez uproszczone logowanie
+// (sam e-mail + haslo, bez kodow i wyboru "zakladam/dolaczam"). Serwerowa funkcja
+// amico_wejscie: dolacza konto do istniejacej firmy, a jesli firmy jeszcze nie ma -
+// tworzy ja (pierwsze konto = wlasciciel). Gdy serwer nie ma jeszcze tej funkcji
+// (nie uruchomiono SQL), spadamy do dotychczasowej sciezki, zeby nic nie przestalo dzialac.
+export async function wejscieDoAmico(imie: string) {
+  const { data, error } = await supabase.rpc('amico_wejscie', { p_imie: imie })
+  if (error) {
+    // Fallback TYLKO gdy funkcji nie ma jeszcze na serwerze (nie uruchomiono SQL).
+    // PGRST202 = PostgREST nie znalazl funkcji. NIE lapiemy bledow RUNTIME w srodku
+    // funkcji, zeby ich nie maskowac i nie zmieniac po cichu zachowania.
+    const kod = (error as any)?.code || ''
+    if (kod === 'PGRST202' || /PGRST202|Could not find the function/i.test(error.message || '')) {
+      return ustalWorkspace(imie) // istniejacy czlonek trafia do swojej firmy
+    }
+    throw error
+  }
+  const r = Array.isArray(data) ? data[0] : data
+  if (!r) throw new Error('Nie udało się wejść do firmy AMICO')
+  zapamietajWorkspace(r.workspace_id as string)
+  return { workspaceId: r.workspace_id as string, rola: r.rola as Rola, joinCode: r.join_code as string }
+}
+
 export async function zmienRoleWChmurze(userId: string, rola: Rola) {
   const ws = C().workspaceId
   if (!ws) return
