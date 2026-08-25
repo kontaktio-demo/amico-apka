@@ -266,15 +266,36 @@ function ZadaniaToDo() {
     return wynik
   }, [b.uzytkownicy, b.pracownicy])
   const osobaById = (id?: string) => osoby.find((o) => o.id === id)
-  // Zamienia wpisane imie na przydzial: pasuje do osoby z konta/zespolu -> jej id;
-  // inaczej zapisuje jako dowolna nazwa (osoba BEZ konta). Puste = nieprzypisane.
-  const rozpoznaj = (nazwa: string): { przypisanyDo?: string; przypisanyDoNazwa?: string } => {
-    const n = nazwa.trim()
-    if (!n) return { przypisanyDo: undefined, przypisanyDoNazwa: undefined }
-    const o = osoby.find((x) => x.nazwa.trim().toLowerCase() === n.toLowerCase())
-    return o ? { przypisanyDo: o.id, przypisanyDoNazwa: undefined } : { przypisanyDo: undefined, przypisanyDoNazwa: n }
+  // Zamienia wpis (mozna KILKA osob po przecinku) na przydzial. Osoby z kont/zespolu
+  // -> ich id (pierwsza = glowna, reszta = wspolni, tez widza zadanie). Jedna dowolna
+  // nazwa bez konta -> przypisanyDoNazwa. Puste = nieprzypisane.
+  const rozpoznaj = (
+    wpis: string,
+  ): { przypisanyDo?: string; przypisanyDoNazwa?: string; wspolniPrzypisani?: string[] } => {
+    const czesci = wpis
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (!czesci.length) return { przypisanyDo: undefined, przypisanyDoNazwa: undefined, wspolniPrzypisani: undefined }
+    const ids: string[] = []
+    let custom: string | undefined
+    for (const c of czesci) {
+      const o = osoby.find((x) => x.nazwa.trim().toLowerCase() === c.toLowerCase())
+      if (o) {
+        if (!ids.includes(o.id)) ids.push(o.id)
+      } else if (!custom) custom = c
+    }
+    const [glowny, ...reszta] = ids
+    return {
+      przypisanyDo: glowny || undefined,
+      przypisanyDoNazwa: glowny ? undefined : custom,
+      wspolniPrzypisani: reszta.length ? reszta : undefined,
+    }
   }
-  const nazwaPrzypisanego = (z: Zadanie) => z.przypisanyDoNazwa || osobaById(z.przypisanyDo)?.nazwa || ''
+  const nazwaPrzypisanego = (z: Zadanie) =>
+    [z.przypisanyDoNazwa || osobaById(z.przypisanyDo)?.nazwa, ...(z.wspolniPrzypisani || []).map((id) => osobaById(id)?.nazwa)]
+      .filter(Boolean)
+      .join(', ')
   const kolorPrzypisanego = (z: Zadanie) => osobaById(z.przypisanyDo)?.kolor || '#6b7280'
   const inicjaly = (n: string) =>
     n
@@ -295,12 +316,12 @@ function ZadaniaToDo() {
   // Widocznosc: wlasciciel i kierownik widza WSZYSTKIE zadania (i moga filtrowac po osobie).
   // Pozostali (biuro/montazysta) widza TYLKO swoje przypisane - zadania sa prywatne.
   const widziWszystkie = user?.rola === 'wlasciciel' || user?.rola === 'kierownik'
-  const moje = (z: Zadanie) => z.przypisanyDo === user?.id
+  const moje = (z: Zadanie) => z.przypisanyDo === user?.id || (z.wspolniPrzypisani || []).includes(user?.id || '')
   const pasuje = (z: Zadanie) => {
     if (!widziWszystkie) return moje(z)
     if (filtr === 'all') return true
     if (filtr === 'moje') return moje(z)
-    return z.przypisanyDo === filtr
+    return z.przypisanyDo === filtr || (z.wspolniPrzypisani || []).includes(filtr)
   }
 
   const aktywne = b.zadania
@@ -392,9 +413,9 @@ function ZadaniaToDo() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') dodaj()
             }}
-            placeholder="Dla kogo"
-            className="w-32 rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
-            title="Przydziel osobie (można wpisać dowolne imię)"
+            placeholder="Dla kogo (kilka po przecinku)"
+            className="w-44 rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
+            title="Przydziel osobie/osobom – kilka oddziel przecinkiem, można też wpisać dowolne imię"
           />
           <input
             type="date"

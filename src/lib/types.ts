@@ -485,8 +485,9 @@ export interface Zadanie {
   id: ID
   tytul: string
   opis?: string
-  przypisanyDo?: ID // pracownikId lub uzytkownikId (osoba z konta/zespolu)
+  przypisanyDo?: ID // glowna osoba z konta/zespolu (pracownikId lub uzytkownikId)
   przypisanyDoNazwa?: string // dowolna osoba BEZ konta (wpisana z reki), gdy brak przypisanyDo
+  wspolniPrzypisani?: ID[] // dodatkowe osoby (konta) ktore TEZ widza to zadanie
   klientId?: ID
   zlecenieId?: ID
   termin?: ISODate
