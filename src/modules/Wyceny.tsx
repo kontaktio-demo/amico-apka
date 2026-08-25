@@ -399,6 +399,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
       numer: kolejnyNumer('ZL'),
       firmaId: w.firmaId,
       klientId: w.klientId,
+      data: today(),
       tytul: [w.nazwaMaterialu, w.klientNazwa].filter(Boolean).join(' - ') || `Zlecenie ${w.numer}`,
       adres: w.miejsceAdres || w.klientAdres,
       osoby: {},

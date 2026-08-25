@@ -301,7 +301,8 @@ export interface Zlecenie {
   numer: string
   firmaId: ID
   klientId?: ID
-  tytul: string
+  data?: ISODate // data zlecenia (domyslnie dzien utworzenia) - do sortowania/segregacji
+  tytul: string // opcjonalny opis; glownym identyfikatorem jest numer + data
   adres?: string
   osoby: OsobyProjektu
   etap: PipelineEtap

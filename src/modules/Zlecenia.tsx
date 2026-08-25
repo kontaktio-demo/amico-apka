@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useState, useMemo, useEffect } from 'react'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   ClipboardList,
   Plus,
@@ -15,6 +15,10 @@ import {
   ClipboardCheck,
   Receipt,
   StickyNote,
+  ScanLine,
+  FileText,
+  Hash,
+  ArrowDownUp,
 } from 'lucide-react'
 import { useStore } from '../lib/store'
 import {
@@ -34,16 +38,26 @@ import {
   useConfirm,
 } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
+import { KlientPicker } from '../components/KlientPicker'
+import { Skaner } from '../components/Skaner'
 import { useAuth } from '../components/Auth'
 import { fmtPLN, fmtDate, parseNum, nowISO, today } from '../lib/format'
-import { klientNazwa, PIPELINE, etapInfo, domyslneEtapyZlecenia } from '../lib/helpers'
+import { klientNazwa, klientAdres, PIPELINE, etapInfo, domyslneEtapyZlecenia } from '../lib/helpers'
 import { uid } from '../lib/id'
-import type { Zlecenie, Firma, Klient, PipelineEtap } from '../lib/types'
+import type { Zlecenie, Firma, Klient, PipelineEtap, Skan } from '../lib/types'
 import { DocSheet, DocTitle, DocSection, DocLine } from '../documents/DocShell'
 
 // ============================================================================
 // Modul ZLECENIA - lista realizacji + widok szczegolowy z checklista etapow
 // ============================================================================
+
+// Data zlecenia do sortowania/segregacji (z.data, a jak brak - dzien utworzenia).
+const dataZlecenia = (z: Zlecenie) => z.data || (z.utworzono ? z.utworzono.slice(0, 10) : '')
+// Klucz sortowania po numerze "ZL 12/2026" -> rok*100000 + numer (rosnaco).
+const numerSortKey = (n: string) => {
+  const m = /(\d+)\s*\/\s*(\d{4})/.exec(n || '')
+  return m ? Number(m[2]) * 100000 + Number(m[1]) : 0
+}
 
 export default function Zlecenia() {
   const { id } = useParams<{ id: string }>()
@@ -64,6 +78,8 @@ function Lista() {
   const ukryjKwoty = user?.rola === 'montazysta'
   const [szukaj, setSzukaj] = useState('')
   const [filtr, setFiltr] = useState<PipelineEtap | 'all'>('all')
+  const [rok, setRok] = useState<string>('all')
+  const [sortuj, setSortuj] = useState<'data-desc' | 'data-asc' | 'numer'>('data-desc')
   const [openNowe, setOpenNowe] = useState(false)
 
   const klientMap = useMemo(() => {
@@ -72,18 +88,34 @@ function Lista() {
     return m
   }, [b.klienci])
 
+  const lata = useMemo(() => {
+    const s = new Set<string>()
+    b.zlecenia.forEach((z) => {
+      const d = dataZlecenia(z)
+      if (d) s.add(d.slice(0, 4))
+    })
+    return [...s].sort((a, c) => c.localeCompare(a))
+  }, [b.zlecenia])
+
   const widoczne = useMemo(() => {
     const q = szukaj.trim().toLowerCase()
-    return b.zlecenia
+    const lista = b.zlecenia
       .filter((z) => (filtr === 'all' ? true : z.etap === filtr))
+      .filter((z) => (rok === 'all' ? true : dataZlecenia(z).slice(0, 4) === rok))
       .filter((z) => {
         if (!q) return true
         const kl = z.klientId ? klientNazwa(klientMap.get(z.klientId)) : ''
         return [z.tytul, z.numer, kl].filter(Boolean).some((s) => s.toLowerCase().includes(q))
       })
       .slice()
-      .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
-  }, [b.zlecenia, filtr, szukaj, klientMap])
+    lista.sort((a, c) => {
+      if (sortuj === 'numer') return numerSortKey(c.numer) - numerSortKey(a.numer)
+      const da = dataZlecenia(a)
+      const dc = dataZlecenia(c)
+      return sortuj === 'data-asc' ? da.localeCompare(dc) : dc.localeCompare(da)
+    })
+    return lista
+  }, [b.zlecenia, filtr, rok, sortuj, szukaj, klientMap])
 
   const licznik = (e: PipelineEtap | 'all') =>
     e === 'all' ? b.zlecenia.length : b.zlecenia.filter((z) => z.etap === e).length
@@ -101,8 +133,31 @@ function Lista() {
         }
       />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-        <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po tytule, numerze lub kliencie..." />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="min-w-[220px] flex-1">
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj po numerze, kliencie lub opisie..." />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <ArrowDownUp size={15} className="text-stone-400" />
+          <Select className="w-auto" value={sortuj} onChange={(e) => setSortuj(e.target.value as typeof sortuj)}>
+            <option value="data-desc">Data: najnowsze</option>
+            <option value="data-asc">Data: najstarsze</option>
+            <option value="numer">Numer zlecenia</option>
+          </Select>
+        </div>
+        {lata.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <CalendarDays size={15} className="text-stone-400" />
+            <Select className="w-auto" value={rok} onChange={(e) => setRok(e.target.value)}>
+              <option value="all">Wszystkie lata</option>
+              {lata.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
       </div>
 
       <div className="no-print mb-4 flex flex-wrap gap-2">
@@ -141,11 +196,14 @@ function Lista() {
                   <CardBody>
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="truncate text-[15px] font-semibold text-ink">{z.tytul}</div>
-                        <div className="text-[12px] text-stone-400">{z.numer}</div>
+                        <div className="truncate text-[15px] font-semibold text-ink">{z.numer}</div>
+                        <div className="flex items-center gap-1.5 text-[12px] text-stone-400">
+                          <CalendarDays size={12} /> {fmtDate(dataZlecenia(z)) || '—'}
+                        </div>
                       </div>
                       <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
                     </div>
+                    {z.tytul && <div className="mb-2 line-clamp-2 text-[13px] text-stone-500">{z.tytul}</div>}
                     <div className="space-y-1 text-[13px] text-stone-500">
                       <div className="flex items-center gap-1.5">
                         <Users size={14} className="text-stone-400" /> {kl ? klientNazwa(kl) : '- brak klienta'}
@@ -203,9 +261,10 @@ function FiltrChip({ active, onClick, label, n }: { active: boolean; onClick: ()
 
 // ---------- NOWE ZLECENIE ----------
 interface FormState {
-  tytul: string
+  data: string
   klientId: string
   adres: string
+  tytul: string // opcjonalny opis
   projektantId: string
   stolarzId: string
   wykonawcaId: string
@@ -217,9 +276,10 @@ interface FormState {
   notatki: string
 }
 const pustyForm: FormState = {
-  tytul: '',
+  data: '',
   klientId: '',
   adres: '',
+  tytul: '',
   projektantId: '',
   stolarzId: '',
   wykonawcaId: '',
@@ -236,29 +296,40 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
   const firma = useStore((s) => s.aktywnaFirma)()
   const upsert = useStore((s) => s.upsert)
   const kolejnyNumer = useStore((s) => s.kolejnyNumer)
+  const podgladNumeru = useStore((s) => s.podgladNumeru)
   const { push } = useToast()
   const navigate = useNavigate()
-  const [f, setF] = useState<FormState>(pustyForm)
+  const [f, setF] = useState<FormState>(() => ({ ...pustyForm, data: today() }))
 
   const set = (patch: Partial<FormState>) => setF((prev) => ({ ...prev, ...patch }))
+
+  // Swiezy formularz przy kazdym otwarciu (data = dzis).
+  useEffect(() => {
+    if (open) setF({ ...pustyForm, data: today() })
+  }, [open])
 
   const projektanci = b.kontrahenci.filter((k) => k.typ === 'projektant')
   const stolarze = b.kontrahenci.filter((k) => k.typ === 'stolarz' || k.typ === 'studio_kuchenne')
   const wykonawcy = b.kontrahenci.filter((k) => k.typ === 'wykonawca')
 
-  const zapisz = () => {
-    if (!f.tytul.trim()) {
-      push('Podaj tytuł zlecenia', 'err')
-      return
-    }
+  // Wybor klienta -> automatycznie zaciaga jego adres do zlecenia (mozna nadpisac).
+  const wybierzKlienta = (klientId: string | undefined, klient?: Klient) => {
+    setF((prev) => ({
+      ...prev,
+      klientId: klientId || '',
+      adres: klient ? klientAdres(klient) || prev.adres : prev.adres,
+    }))
+  }
+
+  const zapisz = (skanuj: boolean) => {
     const kl = f.klientId ? b.klienci.find((k) => k.id === f.klientId) : undefined
-    const adres =
-      f.adres.trim() || (kl ? [kl.ulica, [kl.kod, kl.miasto].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '')
+    const adres = f.adres.trim() || (kl ? klientAdres(kl) : '')
     const nowe: Zlecenie = {
       id: uid('zl'),
       numer: kolejnyNumer('ZL'),
       firmaId: firma.id,
       klientId: f.klientId || undefined,
+      data: f.data || today(),
       tytul: f.tytul.trim(),
       adres: adres || undefined,
       osoby: {
@@ -279,9 +350,9 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
     }
     upsert('zlecenia', nowe)
     push('Zlecenie utworzone', 'ok')
-    setF(pustyForm)
+    setF({ ...pustyForm, data: today() })
     onClose()
-    navigate(`/zlecenia/${nowe.id}`)
+    navigate(`/zlecenia/${nowe.id}`, skanuj ? { state: { skanuj: true } } : undefined)
   }
 
   return (
@@ -295,35 +366,42 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
           <button className="btn-ghost" onClick={onClose}>
             Anuluj
           </button>
-          <button className="btn-primary" onClick={zapisz}>
+          <button className="btn-outline" onClick={() => zapisz(true)}>
+            <ScanLine size={16} /> Utwórz i skanuj
+          </button>
+          <button className="btn-primary" onClick={() => zapisz(false)}>
             <Check size={16} /> Utwórz zlecenie
           </button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="Tytuł zlecenia" required>
+        {/* Numer nadawany automatycznie + data zlecenia */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Numer zlecenia" hint="Nadawany automatycznie przy zapisie">
+            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[14px] font-semibold text-ink">
+              <Hash size={15} className="text-brand-700" /> {podgladNumeru('ZL')}
+            </div>
+          </Field>
+          <Field label="Data zlecenia">
+            <Input type="date" value={f.data} onChange={(e) => set({ data: e.target.value })} />
+          </Field>
+        </div>
+
+        {/* Klient - wyszukiwarka z automatycznym zaciaganiem danych + tworzenie w locie */}
+        <KlientPicker value={f.klientId || undefined} onChange={wybierzKlienta} autoFocus />
+
+        <Field label="Adres realizacji" hint="Zaciągany z klienta – można zmienić">
+          <Input value={f.adres} onChange={(e) => set({ adres: e.target.value })} placeholder="ul., kod, miasto" />
+        </Field>
+
+        <Field label="Opis / nazwa (opcjonalnie)">
           <Input
             value={f.tytul}
             onChange={(e) => set({ tytul: e.target.value })}
-            placeholder="np. Blaty kuchenne - granit Steel Grey"
+            placeholder="np. Blaty kuchenne – granit Steel Grey"
           />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Klient">
-            <Select value={f.klientId} onChange={(e) => set({ klientId: e.target.value })}>
-              <option value="">- bez klienta -</option>
-              {b.klienci.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {klientNazwa(k)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Adres realizacji" hint="Domyślnie z danych klienta">
-            <Input value={f.adres} onChange={(e) => set({ adres: e.target.value })} placeholder="ul., kod, miasto" />
-          </Field>
-        </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Projektant">
@@ -417,8 +495,21 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   const { user } = useAuth()
   const ukryjKwoty = user?.rola === 'montazysta'
 
+  const location = useLocation()
+  const [skanerOpen, setSkanerOpen] = useState(false)
+  const [podglad, setPodglad] = useState<Skan | null>(null)
+  const skany = b.skany.filter((s) => s.zlecenieId === z.id).slice().sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+
   const klient = z.klientId ? b.klienci.find((k) => k.id === z.klientId) : undefined
   const ei = etapInfo(z.etap)
+
+  // Po "Utworz i skanuj" otwieramy skaner od razu (raz).
+  useEffect(() => {
+    if ((location.state as { skanuj?: boolean } | null)?.skanuj) {
+      setSkanerOpen(true)
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
 
   const update = (patch: Partial<Zlecenie>) => upsert('zlecenia', { ...z, ...patch, zaktualizowano: nowISO() })
 
@@ -430,7 +521,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   }
 
   const usun = async () => {
-    if (await confirm(`Usunąć zlecenie "${z.tytul}"? Tej operacji nie można cofnąć.`)) {
+    if (await confirm(`Usunąć zlecenie ${z.numer}? Tej operacji nie można cofnąć.`)) {
       remove('zlecenia', z.id)
       push('Zlecenie usunięte', 'ok')
       navigate('/zlecenia')
@@ -469,8 +560,10 @@ function Szczegoly({ z }: { z: Zlecenie }) {
     <div>
       {confirmNode}
       <PageHeader
-        title={z.tytul}
-        subtitle={`${z.numer} · ${klient ? klientNazwa(klient) : 'bez klienta'}`}
+        title={z.numer}
+        subtitle={[fmtDate(dataZlecenia(z)), klient ? klientNazwa(klient) : 'bez klienta', z.tytul]
+          .filter(Boolean)
+          .join(' · ')}
         icon={<ClipboardList size={22} />}
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -553,6 +646,63 @@ function Szczegoly({ z }: { z: Zlecenie }) {
             </div>
           </SectionCard>
 
+          <SectionCard
+            title={`Dokumenty i skany${skany.length ? ` (${skany.length})` : ''}`}
+            icon={<ScanLine size={17} />}
+            desc="Umowy, pomiary, projekty – wszystko podpięte pod to zlecenie"
+            actions={
+              skany.length > 0 ? (
+                <button className="btn-primary btn-sm" onClick={() => setSkanerOpen(true)}>
+                  <ScanLine size={15} /> Skanuj
+                </button>
+              ) : undefined
+            }
+          >
+            {skany.length === 0 ? (
+              <button
+                onClick={() => setSkanerOpen(true)}
+                className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-white/15 py-8 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"
+              >
+                <ScanLine size={28} />
+                <span className="text-[13.5px] font-medium">Zeskanuj dokumenty zlecenia</span>
+                <span className="text-[12px]">Aparatem lub z pliku – wiele stron i wiele dokumentów</span>
+              </button>
+            ) : (
+              <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+                {skany.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setPodglad(s)}
+                    className="group overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] text-left transition hover:border-brand-300"
+                  >
+                    <div className="aspect-[3/4] overflow-hidden bg-stone-100">
+                      {s.strony[0] ? (
+                        <img src={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="grid h-full place-items-center text-stone-400">
+                          <FileText size={22} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-1.5">
+                      <div className="truncate text-[11.5px] font-medium text-stone-700">{s.nazwa || 'Skan'}</div>
+                      <div className="text-[10.5px] text-stone-400">
+                        {s.strony.length} {s.strony.length === 1 ? 'strona' : 'str.'}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+                <button
+                  onClick={() => setSkanerOpen(true)}
+                  className="flex aspect-[3/4] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-white/15 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"
+                >
+                  <Plus size={20} />
+                  <span className="text-[11px] font-medium">Dodaj</span>
+                </button>
+              </div>
+            )}
+          </SectionCard>
+
           <SectionCard title="Notatki" icon={<StickyNote size={17} />}>
             <Textarea
               value={z.notatki || ''}
@@ -571,6 +721,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                 <span className="label">Etap</span>
                 <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
               </div>
+              <Field label="Data zlecenia">
+                <Input
+                  type="date"
+                  value={dataZlecenia(z)}
+                  onChange={(e) => update({ data: e.target.value || undefined })}
+                />
+              </Field>
               <Field label="Adres realizacji">
                 <Input
                   value={z.adres || ''}
@@ -670,6 +827,23 @@ function Szczegoly({ z }: { z: Zlecenie }) {
           </SectionCard>
         </div>
       </div>
+
+      <Skaner open={skanerOpen} onClose={() => setSkanerOpen(false)} zlecenieId={z.id} klientId={z.klientId} />
+
+      <Modal open={!!podglad} onClose={() => setPodglad(null)} title={podglad?.nazwa || 'Skan'} size="lg">
+        {podglad && (
+          <div className="space-y-3">
+            {podglad.strony.map((str, i) => (
+              <img key={i} src={str} alt={'Strona ' + (i + 1)} className="w-full rounded-lg border border-white/10" />
+            ))}
+            <div className="flex justify-end">
+              <Link to="/skany" className="btn-outline btn-sm">
+                Otwórz w archiwum skanów
+              </Link>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
@@ -755,9 +929,10 @@ export function ZlecenieDoc({
       </DocTitle>
 
       <DocSection n={1} title="Dane podstawowe">
-        <DocLine label="Tytuł:" value={z.tytul} />
+        <DocLine label="Data:" value={fmtDate(dataZlecenia(z))} />
         <DocLine label="Klient:" value={klient ? klientNazwa(klient) : '-'} />
         <DocLine label="Adres realizacji:" value={z.adres} />
+        {z.tytul ? <DocLine label="Opis:" value={z.tytul} /> : null}
         <DocLine label="Etap główny:" value={ei.nazwa} />
       </DocSection>
 
