@@ -21,9 +21,10 @@ import { PrintSendBar } from '../components/PrintSendBar'
 import { SignatureField, SignatureModal } from '../components/SignaturePad'
 import { UmowaDoc } from '../documents/Umowa'
 import { klientNazwa, klientAdres, UMOWA_TYPY, umowaStatusInfo } from '../lib/helpers'
+import { KlientPicker } from '../components/KlientPicker'
 import { fmtPLN, fmtDate, today, nowISO, parseNum, kwotaSlownie } from '../lib/format'
 import { uid } from '../lib/id'
-import type { Umowa, UmowaTyp, UmowaStatus } from '../lib/types'
+import type { Umowa, UmowaTyp, UmowaStatus, Klient } from '../lib/types'
 
 const STATUSY: UmowaStatus[] = ['szkic', 'do_podpisu', 'podpisana', 'anulowana']
 
@@ -262,12 +263,12 @@ function Edytor({ umowaId }: { umowaId: string }) {
     upsert('umowy', { ...u, ...patch, zaktualizowano: nowISO() })
   }
 
-  const wybierzKlienta = (kid: string) => {
+  const wybierzKlienta = (kid: string | undefined, klient?: Klient) => {
     if (!kid) {
       set({ klientId: undefined })
       return
     }
-    const k = klienci.find((x) => x.id === kid)
+    const k = klient || klienci.find((x) => x.id === kid)
     if (!k) return
     set({
       klientId: k.id,
@@ -375,17 +376,12 @@ function Edytor({ umowaId }: { umowaId: string }) {
             </Field>
           </SectionCard>
 
-          <SectionCard title="Zamawiający" icon={<User size={17} />} desc="Uzupełnij z bazy klientów lub wpisz ręcznie">
-            <Field label="Wybierz z bazy klientów">
-              <Select value={u.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                <option value="">- wpis ręczny -</option>
-                {klienci.map((k) => (
-                  <option key={k.id} value={k.id}>
-                    {klientNazwa(k)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+          <SectionCard title="Zamawiający" icon={<User size={17} />} desc="Wyszukaj klienta (dane zaciągną się) lub wpisz ręcznie">
+            <KlientPicker
+              value={u.klientId || undefined}
+              onChange={wybierzKlienta}
+              label="Wybierz klienta z bazy"
+            />
             <div className="mt-3 grid gap-3">
               <Field label="Nazwa / imię i nazwisko">
                 <Input

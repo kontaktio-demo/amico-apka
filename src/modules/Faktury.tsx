@@ -20,9 +20,10 @@ import {
 import { PrintSendBar } from '../components/PrintSendBar'
 import { FakturaDoc } from '../documents/Faktura'
 import { klientNazwa, klientAdres } from '../lib/helpers'
+import { KlientPicker } from '../components/KlientPicker'
 import { fmtPLN, fmtDate, today, nowISO, podsumuj, pozycjaNetto, kwotaSlownie, parseNum } from '../lib/format'
 import { uid } from '../lib/id'
-import type { Faktura, FakturaTyp, FakturaStatus, Pozycja, Unit, VatRate } from '../lib/types'
+import type { Faktura, FakturaTyp, FakturaStatus, Pozycja, Unit, VatRate, Klient } from '../lib/types'
 
 // ----------------------------------------------------------------------------
 // Slowniki
@@ -208,12 +209,12 @@ function Edytor({ id }: { id: string }) {
     setF((prev) => ({ ...prev, pozycje: [...prev.pozycje, nowaPozycja(firmaWystawca.domyslnyVat)] }))
   const usunPoz = (pid: string) => setF((prev) => ({ ...prev, pozycje: prev.pozycje.filter((p) => p.id !== pid) }))
 
-  const wybierzKlienta = (klientId: string) => {
+  const wybierzKlienta = (klientId: string | undefined, klient?: Klient) => {
     if (!klientId) {
       set('klientId', undefined)
       return
     }
-    const k = b.klienci.find((x) => x.id === klientId)
+    const k = klient || b.klienci.find((x) => x.id === klientId)
     if (!k) return
     setF((prev) => ({
       ...prev,
@@ -390,16 +391,11 @@ function Edytor({ id }: { id: string }) {
             actions={<Badge tone={b2b ? 'blue' : 'stone'}>{b2b ? 'B2B (firma / NIP)' : 'B2C (os. fizyczna)'}</Badge>}
           >
             <div className="grid gap-4">
-              <Field label="Wybierz z bazy klientów" hint="Uzupełni nazwę, NIP i adres - możesz je edytować poniżej.">
-                <Select value={f.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-                  <option value="">- wpisz ręcznie -</option>
-                  {b.klienci.map((k) => (
-                    <option key={k.id} value={k.id}>
-                      {klientNazwa(k)}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
+              <KlientPicker
+                value={f.klientId || undefined}
+                onChange={wybierzKlienta}
+                label="Wybierz klienta z bazy (uzupełni nazwę, NIP i adres)"
+              />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Nazwa nabywcy">
                   <Input value={f.nabywcaNazwa || ''} onChange={(e) => set('nabywcaNazwa', e.target.value)} />

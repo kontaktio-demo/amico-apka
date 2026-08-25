@@ -20,6 +20,7 @@ import { PrintSendBar } from '../components/PrintSendBar'
 import { SignatureField, SignatureModal } from '../components/SignaturePad'
 import { fmtPLN, fmtDate, today, nowISO, parseNum, kwotaSlownie } from '../lib/format'
 import { klientNazwa, klientAdres } from '../lib/helpers'
+import { KlientPicker } from '../components/KlientPicker'
 import { uid } from '../lib/id'
 import { ProtokolDoc } from '../documents/Protokol'
 import { KPDoc } from '../documents/KP'
@@ -403,12 +404,12 @@ function ProtokolEditor({
   const klauzula = useStore((s) => s.baza.ustawienia.klauzulaPodpis)
   const set = <K extends keyof Protokol>(k: K, v: Protokol[K]) => onChange({ ...draft, [k]: v })
 
-  const wybierzKlienta = (id: string) => {
+  const wybierzKlienta = (id: string | undefined, klient?: Klient) => {
     if (!id) {
       onChange({ ...draft, klientId: undefined })
       return
     }
-    const k = klienci.find((x) => x.id === id)
+    const k = klient || klienci.find((x) => x.id === id)
     onChange({
       ...draft,
       klientId: id,
@@ -448,16 +449,7 @@ function ProtokolEditor({
       }
     >
       <div className="space-y-4">
-        <Field label="Klient z bazy (opcjonalnie)">
-          <Select value={draft.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-            <option value="">- wpisz dane ręcznie -</option>
-            {klienci.map((k) => (
-              <option key={k.id} value={k.id}>
-                {klientNazwa(k)}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        <KlientPicker value={draft.klientId || undefined} onChange={wybierzKlienta} label="Klient z bazy (opcjonalnie)" />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Klient (nazwa)">
@@ -562,12 +554,12 @@ function KPEditor({
   const klauzula = useStore((s) => s.baza.ustawienia.klauzulaPodpis)
   const set = <K extends keyof KP>(k: K, v: KP[K]) => onChange({ ...draft, [k]: v })
 
-  const wybierzKlienta = (id: string) => {
+  const wybierzKlienta = (id: string | undefined, klient?: Klient) => {
     if (!id) {
       onChange({ ...draft, klientId: undefined })
       return
     }
-    const k = klienci.find((x) => x.id === id)
+    const k = klient || klienci.find((x) => x.id === id)
     onChange({ ...draft, klientId: id, odKogo: k ? klientNazwa(k) : draft.odKogo })
   }
 
@@ -601,16 +593,7 @@ function KPEditor({
       }
     >
       <div className="space-y-4">
-        <Field label="Klient z bazy (opcjonalnie)">
-          <Select value={draft.klientId || ''} onChange={(e) => wybierzKlienta(e.target.value)}>
-            <option value="">- wpisz dane ręcznie -</option>
-            {klienci.map((k) => (
-              <option key={k.id} value={k.id}>
-                {klientNazwa(k)}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        <KlientPicker value={draft.klientId || undefined} onChange={wybierzKlienta} label="Klient z bazy (opcjonalnie)" />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Od kogo (wpłacający)">
