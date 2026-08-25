@@ -9,8 +9,8 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
   // Tylko pierwsza litera wielka - "capitalize" w CSS robilo Wielkie Litery Kazdego Slowa.
   const slownie = slownieRaw ? slownieRaw.charAt(0).toUpperCase() + slownieRaw.slice(1) : slownieRaw
   const box: React.CSSProperties = { border: '1px solid #c9c4b6', borderRadius: 10, padding: '9px 12px' }
-  const lab: React.CSSProperties = { color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }
-  const val: React.CSSProperties = { fontSize: '9.5pt', fontWeight: 500, color: '#12130f' }
+  const lab: React.CSSProperties = { color: '#4b5563', fontSize: '8.5pt', whiteSpace: 'nowrap' }
+  const val: React.CSSProperties = { fontSize: '9.5pt', fontWeight: 500, color: '#111827' }
 
   return (
     <DocSheet firma={firma} compact logoDataUrl={logoDataUrl}>
@@ -34,7 +34,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
             KP
           </div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: '9pt', color: '#12130f', lineHeight: 1.6 }}>
+        <div style={{ textAlign: 'right', fontSize: '9pt', color: '#111827', lineHeight: 1.6 }}>
           <div style={{ fontSize: '8.5pt', color: '#0f5c3f', fontWeight: 700 }}>{kp.numer}</div>
           <div>
             <span style={lab}>Data: </span>
@@ -51,7 +51,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ ...box, marginBottom: 10 }}>
         <div style={{ ...lab, fontWeight: 700, marginBottom: 3 }}>WYSTAWCA / KASA</div>
         <div style={val}>{firma.nazwa}</div>
-        <div style={{ fontSize: '8.5pt', color: '#4a463f', marginTop: 1 }}>
+        <div style={{ fontSize: '8.5pt', color: '#4b5563', marginTop: 1 }}>
           {firma.ulica}, {firma.kod} {firma.miasto} · NIP: {fmtNIP(firma.nip)}
         </div>
       </div>
@@ -60,7 +60,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ ...box, marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span style={{ ...lab, fontWeight: 700 }}>Od kogo (wpłacający):</span>
-          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val }}>
+          <span style={{ flex: 1, borderBottom: '1px dotted #c3c8cf', minHeight: '1.15em', ...val }}>
             {kp.odKogo || ' '}
           </span>
         </div>
@@ -89,7 +89,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
           <span
             style={{
               flex: 1,
-              borderBottom: '1px dotted #a9a496',
+              borderBottom: '1px dotted #c3c8cf',
               minHeight: '1.15em',
               ...val,
               fontStyle: 'italic',
@@ -104,7 +104,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ ...box, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span style={{ ...lab, fontWeight: 700 }}>Tytułem:</span>
-          <span style={{ flex: 1, borderBottom: '1px dotted #a9a496', minHeight: '1.15em', ...val }}>
+          <span style={{ flex: 1, borderBottom: '1px dotted #c3c8cf', minHeight: '1.15em', ...val }}>
             {kp.tytul || ' '}
           </span>
         </div>
@@ -114,7 +114,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginTop: 26 }} className="avoid-break">
         <div style={{ textAlign: 'center' }}>
           <div style={{ height: 70, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} />
-          <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>
+          <div style={{ borderTop: '1px solid #111827', paddingTop: 4, fontSize: '8pt', color: '#4b5563' }}>
             Wpłacił
           </div>
         </div>
@@ -123,7 +123,7 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
             {kp.podpisPrzyjmujacy && <SignatureView sig={kp.podpisPrzyjmujacy} label="Przyjął" />}
           </div>
           {!kp.podpisPrzyjmujacy && (
-            <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>
+            <div style={{ borderTop: '1px solid #111827', paddingTop: 4, fontSize: '8pt', color: '#4b5563' }}>
               Przyjął
             </div>
           )}
@@ -131,8 +131,8 @@ export function KPDoc({ kp, firma, logoDataUrl }: { kp: KP; firma: Firma; logoDa
       </div>
 
       {/* Egzemplarz */}
-      <div style={{ marginTop: 16, fontSize: '7.6pt', color: '#8a8478', textAlign: 'center', letterSpacing: '0.04em' }}>
-        Egzemplarz: <b style={{ color: '#4a463f' }}>Oryginał</b> / Kopia
+      <div style={{ marginTop: 16, fontSize: '7.6pt', color: '#9ca3af', textAlign: 'center', letterSpacing: '0.04em' }}>
+        Egzemplarz: <b style={{ color: '#4b5563' }}>Oryginał</b> / Kopia
       </div>
     </DocSheet>
   )

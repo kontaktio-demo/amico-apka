@@ -207,10 +207,10 @@ export function SignatureView({ sig, label }: { sig?: Signature; label?: string 
           height: 76,
           alignItems: 'flex-end',
           justifyContent: 'center',
-          borderBottom: '1px solid #a9a496',
+          borderBottom: '1px solid #c3c8cf',
           paddingBottom: 3,
           fontSize: '11px',
-          color: '#a9a496',
+          color: '#c3c8cf',
         }}
       >
         {label || '(brak podpisu)'}
@@ -219,9 +219,9 @@ export function SignatureView({ sig, label }: { sig?: Signature; label?: string 
   return (
     <div style={{ textAlign: 'center' }}>
       <img src={sig.dataUrl} alt="podpis" style={{ margin: '0 auto', height: 66, objectFit: 'contain' }} />
-      <div style={{ borderTop: '1px solid #4a463f', paddingTop: 3, fontSize: '11px', color: '#4a463f' }}>
+      <div style={{ borderTop: '1px solid #4b5563', paddingTop: 3, fontSize: '11px', color: '#4b5563' }}>
         {sig.signer || label}
-        <div style={{ fontSize: '9.5px', color: '#8a8478' }}>podpisano {fmtDateTime(sig.signedAt)}</div>
+        <div style={{ fontSize: '9.5px', color: '#9ca3af' }}>podpisano {fmtDateTime(sig.signedAt)}</div>
       </div>
     </div>
   )

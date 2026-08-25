@@ -42,16 +42,16 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
       >
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <span>
-            <b style={{ color: '#4a463f' }}>OD:</b>{' '}
-            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.od) || '-'}</span>
+            <b style={{ color: '#4b5563' }}>OD:</b>{' '}
+            <span style={{ fontWeight: 600, color: '#111827' }}>{fmtDate(r.od) || '-'}</span>
           </span>
           <span>
-            <b style={{ color: '#4a463f' }}>DO:</b>{' '}
-            <span style={{ fontWeight: 600, color: '#12130f' }}>{fmtDate(r.do) || '-'}</span>
+            <b style={{ color: '#4b5563' }}>DO:</b>{' '}
+            <span style={{ fontWeight: 600, color: '#111827' }}>{fmtDate(r.do) || '-'}</span>
           </span>
         </div>
         <span>
-          <b style={{ color: '#4a463f' }}>SALDO:</b>{' '}
+          <b style={{ color: '#4b5563' }}>SALDO:</b>{' '}
           <span style={{ fontWeight: 700, color: '#12233a' }}>{fmtPLN(r.saldoPoczatkowe)}</span>
         </span>
       </div>
@@ -87,7 +87,7 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
           )}
         </tbody>
         <tfoot>
-          <tr style={{ background: '#f0ede6' }}>
+          <tr style={{ background: '#f3f4f6' }}>
             <td style={{ ...td(), fontWeight: 700, textAlign: 'right' }} colSpan={3}>
               OBROTY
             </td>
@@ -102,7 +102,7 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
           </tr>
         </tfoot>
       </table>
-      <div style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 4 }}>
+      <div style={{ fontSize: '7.6pt', color: '#9ca3af', marginTop: 4 }}>
         SALDO = saldo początkowe {fmtPLN(r.saldoPoczatkowe)} + przychody {fmtPLN(sumaPrzychod)} − rozchody{' '}
         {fmtPLN(sumaRozchod)}
       </div>
@@ -117,18 +117,18 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
               alignItems: 'flex-end',
               justifyContent: 'center',
               fontSize: '10pt',
-              color: '#12130f',
+              color: '#111827',
             }}
           >
             {fmtDate(r.data)}
           </div>
-          <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>DATA</div>
+          <div style={{ borderTop: '1px solid #111827', paddingTop: 4, fontSize: '8pt', color: '#4b5563' }}>DATA</div>
         </div>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <div style={{ height: 56, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
             <SignatureView sig={r.podpis} />
           </div>
-          <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>PODPIS</div>
+          <div style={{ borderTop: '1px solid #111827', paddingTop: 4, fontSize: '8pt', color: '#4b5563' }}>PODPIS</div>
         </div>
       </div>
     </DocSheet>
@@ -136,7 +136,7 @@ export function RaportKasowyDoc({ r, firma, logoDataUrl }: { r: RaportKasowy; fi
 }
 
 const th = (w?: number): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '5px 7px',
   fontSize: '7.8pt',
   fontWeight: 700,
@@ -144,4 +144,4 @@ const th = (w?: number): React.CSSProperties => ({
   letterSpacing: '0.04em',
   width: w,
 })
-const td = (): React.CSSProperties => ({ border: '1px solid #d3cfc2', padding: '4px 7px', verticalAlign: 'top' })
+const td = (): React.CSSProperties => ({ border: '1px solid #dbdee3', padding: '4px 7px', verticalAlign: 'top' })

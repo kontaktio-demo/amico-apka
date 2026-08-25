@@ -12,30 +12,12 @@ const firmaAndrzej: Firma = {
   miasto: 'Bedoń Wieś k/Łodzi',
   telefon: '795 040 609',
   email: 'biuro@amicco.pl',
-  www: 'amico.kontaktio.pl',
+  www: 'marmurowydom.pl',
   bank: 'ING Bank Śląski',
   konto: '19105014611000009250678415',
   domyslnyVat: 23,
   domyslna: true,
   kolor: '#0f5c3f',
-}
-const firmaMilena: Firma = {
-  id: 'firma_milena',
-  nazwa: 'Amico Milena Fiks',
-  wlasciciel: 'Milena Fiks',
-  marka: 'Pracownia Kamieniarska AMICO',
-  nip: '9710504453',
-  ulica: 'ul. Brzezińska 84',
-  kod: '95-020',
-  miasto: 'Bedoń Wieś k/Łodzi',
-  telefon: '795 040 609',
-  email: 'biuro@amicco.pl',
-  www: 'amico.kontaktio.pl',
-  bank: 'Bank',
-  konto: '55195000012006072044630002',
-  domyslnyVat: 8,
-  domyslna: false,
-  kolor: '#166b45',
 }
 
 // UWAGA: identyfikatory seeda MUSZA byc stabilne (nie losowe) - inaczej dwa urzadzenia
@@ -138,7 +120,7 @@ export function pustaBaza(): Baza {
   return {
     wersja: 1,
     usuniete: [],
-    firmy: [firmaAndrzej, firmaMilena],
+    firmy: [firmaAndrzej],
     uzytkownicy: [],
     pracownicy,
     klienci: [],
@@ -159,6 +141,8 @@ export function pustaBaza(): Baza {
     zadania: [],
     skany: [],
     dokumenty: [],
+    hurtownie: [],
+    zamowieniaTowaru: [],
     ustawienia,
   }
 }

@@ -166,6 +166,9 @@ export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
       '/zlecenia',
       '/kalendarz',
       '/zadania',
+      '/raport-kasowy',
+      '/hurtownie',
+      '/zamowienia',
       '/wyceny',
       '/umowy',
       '/faktury',
@@ -183,7 +186,7 @@ export function dozwoloneSciezki(rola: Rola): string[] | 'all' {
   // montazysta - wylacznie zakres terenowy: bez CRM, wycen, umow, faktur, finansow,
   // ekspozycji, ustawien i cennika (/produkty to lista cen). Wartosc wlasnego zlecenia
   // pozostaje widoczna, bo montazysta wystawia na miejscu KP i musi wiedziec, ile pobrac.
-  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/odprawa', '/skany', '/wizualizacja', '/dokumenty', '/pomoc']
+  return ['/', '/zlecenia', '/kalendarz', '/zadania', '/raport-kasowy', '/hurtownie', '/odprawa', '/skany', '/wizualizacja', '/dokumenty', '/pomoc']
 }
 
 export function maSciezke(rola: Rola, sciezka: string): boolean {

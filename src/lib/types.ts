@@ -555,6 +555,8 @@ export interface Baza {
   zadania: Zadanie[]
   skany: Skan[]
   dokumenty: DokumentPliku[]
+  hurtownie: Hurtownia[]
+  zamowieniaTowaru: ZamowienieTowaru[]
   ustawienia: Ustawienia
 }
 
@@ -568,5 +570,24 @@ export interface DokumentPliku {
   widoczneDlaWszystkich: boolean // true = caly zespol; false = tylko widoczneDla
   widoczneDla: ID[] // ktore konta (uzytkownicy) widza plik, gdy nie wszyscy
   wgralId?: ID // kto wgral
+  utworzono: ISODateTime
+}
+
+// ---------- Hurtownie (dostawcy materialow - szybki dostep do stron www) ----------
+export interface Hurtownia {
+  id: ID
+  nazwa: string
+  link?: string // adres strony hurtowni (do skopiowania / otwarcia)
+  utworzono: ISODateTime
+}
+
+// ---------- Zamowienia towaru (do hurtowni) ----------
+export interface ZamowienieTowaru {
+  id: ID
+  hurtowniaId?: ID // wybrana z listy hurtowni
+  hurtowniaNazwa?: string // zapamietana nazwa (gdyby hurtownia zostala usunieta)
+  email?: string // adres, na ktory wysylamy zamowienie
+  rodzajTowaru?: string
+  notatka?: string
   utworzono: ISODateTime
 }

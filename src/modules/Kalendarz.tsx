@@ -563,7 +563,7 @@ function PlanTygodniaDoc({
         >
           PLAN PRACY
         </div>
-        <div style={{ fontSize: '9pt', color: '#6b6459', marginTop: 2 }}>
+        <div style={{ fontSize: '9pt', color: '#6b7280', marginTop: 2 }}>
           Tydzień {fmtDate(od)} - {fmtDate(doD)}
         </div>
       </div>
@@ -571,15 +571,15 @@ function PlanTygodniaDoc({
       {dni.map((d) => (
         <div
           key={d.iso}
-          style={{ marginBottom: 8, border: '1px solid #d3cfc2', borderRadius: 8, overflow: 'hidden' }}
+          style={{ marginBottom: 8, border: '1px solid #dbdee3', borderRadius: 8, overflow: 'hidden' }}
           className="avoid-break"
         >
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              background: d.iso === wybranyDzien ? '#12233a' : '#f0ede6',
-              color: d.iso === wybranyDzien ? '#fff' : '#12130f',
+              background: d.iso === wybranyDzien ? '#12233a' : '#f3f4f6',
+              color: d.iso === wybranyDzien ? '#fff' : '#111827',
               padding: '3px 9px',
               fontSize: '8.5pt',
               fontWeight: 700,
@@ -590,7 +590,7 @@ function PlanTygodniaDoc({
             <span>{fmtDate(d.iso)}</span>
           </div>
           {d.wydarzenia.length === 0 ? (
-            <div style={{ padding: '4px 9px', fontSize: '8pt', color: '#a9a496' }}>-</div>
+            <div style={{ padding: '4px 9px', fontSize: '8pt', color: '#c3c8cf' }}>-</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt' }}>
               <tbody>
@@ -599,7 +599,7 @@ function PlanTygodniaDoc({
                   const k = b.klienci.find((x) => x.id === w.klientId)
                   const prac = b.pracownicy.find((x) => x.id === w.pracownikId)
                   return (
-                    <tr key={w.id} style={{ borderTop: '1px solid #e6e2d8' }}>
+                    <tr key={w.id} style={{ borderTop: '1px solid #e5e7eb' }}>
                       <td style={{ padding: '3px 6px', width: 42, fontWeight: 600, color: '#12233a' }}>
                         {w.godzina || '-'}
                       </td>

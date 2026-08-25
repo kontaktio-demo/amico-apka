@@ -999,22 +999,22 @@ export function ZlecenieDoc({
       <DocSection n={4} title="Etapy realizacji">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt' }}>
           <thead>
-            <tr style={{ background: '#f0ede6' }}>
-              <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', width: 34, fontSize: '7.6pt' }}>✓</th>
-              <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'left', fontSize: '7.6pt' }}>
+            <tr style={{ background: '#f3f4f6' }}>
+              <th style={{ border: '1px solid #dbdee3', padding: '4px 6px', width: 34, fontSize: '7.6pt' }}>✓</th>
+              <th style={{ border: '1px solid #dbdee3', padding: '4px 6px', textAlign: 'left', fontSize: '7.6pt' }}>
                 ETAP
               </th>
-              <th style={{ border: '1px solid #d3cfc2', padding: '4px 6px', width: 90, fontSize: '7.6pt' }}>DATA</th>
+              <th style={{ border: '1px solid #dbdee3', padding: '4px 6px', width: 90, fontSize: '7.6pt' }}>DATA</th>
             </tr>
           </thead>
           <tbody>
             {z.etapy.map((e, i) => (
               <tr key={e.klucz + i}>
-                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'center' }}>
+                <td style={{ border: '1px solid #dbdee3', padding: '4px 6px', textAlign: 'center' }}>
                   {e.zrobione ? '✓' : ''}
                 </td>
-                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px' }}>{e.nazwa}</td>
-                <td style={{ border: '1px solid #d3cfc2', padding: '4px 6px', textAlign: 'center' }}>
+                <td style={{ border: '1px solid #dbdee3', padding: '4px 6px' }}>{e.nazwa}</td>
+                <td style={{ border: '1px solid #dbdee3', padding: '4px 6px', textAlign: 'center' }}>
                   {fmtDate(e.data)}
                 </td>
               </tr>

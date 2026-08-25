@@ -21,7 +21,7 @@ export function OdprawaDoc({ o, firma, logoDataUrl }: { o: Odprawa; firma: Firma
         >
           ODPRAWA
         </div>
-        <div style={{ fontSize: '10pt', color: '#12130f', letterSpacing: '0.08em', fontWeight: 600, marginTop: 2 }}>
+        <div style={{ fontSize: '10pt', color: '#111827', letterSpacing: '0.08em', fontWeight: 600, marginTop: 2 }}>
           Z DNIA {fmtDate(o.data)}
         </div>
       </div>
@@ -35,11 +35,11 @@ export function OdprawaDoc({ o, firma, logoDataUrl }: { o: Odprawa; firma: Firma
       <div
         style={{
           marginTop: 24,
-          borderTop: '1px solid #d8d4c8',
+          borderTop: '1px solid #e2e5ea',
           paddingTop: 8,
           textAlign: 'center',
           fontSize: '7.8pt',
-          color: '#8a8478',
+          color: '#9ca3af',
         }}
       >
         © {rok} Pracownia Kamieniarska Amico
@@ -88,8 +88,8 @@ function Sekcja({ tytul, pozycje }: { tytul: string; pozycje: string[] }) {
               borderBottom: i < linie.length - 1 ? '1px dotted #cfcabb' : 'none',
             }}
           >
-            <span style={{ color: '#a9a496', fontSize: '9pt', lineHeight: 1 }}>|</span>
-            <span style={{ flex: 1, fontSize: '9.5pt', color: '#12130f', fontWeight: 500 }}>{tekst || ' '}</span>
+            <span style={{ color: '#c3c8cf', fontSize: '9pt', lineHeight: 1 }}>|</span>
+            <span style={{ flex: 1, fontSize: '9.5pt', color: '#111827', fontWeight: 500 }}>{tekst || ' '}</span>
           </div>
         ))}
       </div>

@@ -180,7 +180,7 @@ export function PrintProvider({ children }: { children: React.ReactNode }) {
       if (root.childElementCount > 0) return
       root.dataset.podpowiedz = 'tak'
       root.innerHTML =
-        '<div class="doc-sheet"><div class="doc-inner" style="padding:40mm 0;text-align:center;font-size:12pt;color:#12130f">' +
+        '<div class="doc-sheet"><div class="doc-inner" style="padding:40mm 0;text-align:center;font-size:12pt;color:#111827">' +
         'Aby wydrukować dokument, otwórz go w aplikacji i użyj przycisku <b>Drukuj / PDF</b>.' +
         '</div></div>'
     }

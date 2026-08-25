@@ -413,7 +413,7 @@ function SceneKuchnia({
             width={i === 5 ? 90 : 120}
             height="134"
             rx="4"
-            fill="#f0ede6"
+            fill="#f3f4f6"
             stroke="#ddd8cf"
             strokeWidth="2"
           />
@@ -433,7 +433,7 @@ function SceneKuchnia({
       {plyta && <rect x="470" y="300" width="150" height="12" rx="4" fill="#1c1c22" opacity="0.85" />}
       {/* podpis materialu */}
       <g>
-        <rect x="40" y="430" width="210" height="34" rx="8" fill="#12130f" opacity="0.85" />
+        <rect x="40" y="430" width="210" height="34" rx="8" fill="#111827" opacity="0.85" />
         <text x="56" y="452" fill="#fff" fontFamily="Inter, sans-serif" fontSize="15" fontWeight="600">
           {nazwa}
         </text>
@@ -621,10 +621,10 @@ function WizualizacjaDoc({
       >
         Wizualizacja projektu
       </h1>
-      <div style={{ textAlign: 'center', color: '#6b6459', fontSize: '9pt', marginBottom: 14 }}>
+      <div style={{ textAlign: 'center', color: '#6b7280', fontSize: '9pt', marginBottom: 14 }}>
         Materiał: {nazwaKamienia}
       </div>
-      <div style={{ border: '1px solid #d3cfc2', borderRadius: 10, overflow: 'hidden', marginBottom: 14 }}>
+      <div style={{ border: '1px solid #dbdee3', borderRadius: 10, overflow: 'hidden', marginBottom: 14 }}>
         <svg viewBox="0 0 800 300" style={{ width: '100%', display: 'block' }}>
           <StoneDefs id={id} p={preset} />
           <rect x="0" y="0" width="800" height="300" fill="#eeece7" />
@@ -639,7 +639,7 @@ function WizualizacjaDoc({
               width="150"
               height="60"
               rx="4"
-              fill="#f0ede6"
+              fill="#f3f4f6"
               stroke="#ddd8cf"
               strokeWidth="2"
             />
@@ -660,7 +660,7 @@ function WizualizacjaDoc({
             <tr key={k as string}>
               <td
                 style={{
-                  border: '1px solid #d3cfc2',
+                  border: '1px solid #dbdee3',
                   padding: '5px 8px',
                   fontWeight: 600,
                   width: 180,
@@ -669,12 +669,12 @@ function WizualizacjaDoc({
               >
                 {k}
               </td>
-              <td style={{ border: '1px solid #d3cfc2', padding: '5px 8px' }}>{v}</td>
+              <td style={{ border: '1px solid #dbdee3', padding: '5px 8px' }}>{v}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 10 }}>
+      <p style={{ fontSize: '7.6pt', color: '#9ca3af', marginTop: 10 }}>
         Wizualizacja poglądowa. Kamień naturalny cechuje niepowtarzalny rysunek i odcień - rzeczywisty wygląd może
         różnić się od podglądu.
       </p>

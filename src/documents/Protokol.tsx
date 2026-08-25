@@ -24,17 +24,17 @@ export function ProtokolDoc({ p, firma, logoDataUrl }: { p: Protokol; firma: Fir
       </DocSection>
 
       <DocSection title="Potwierdzenie odbioru">
-        <div style={{ fontSize: '9pt', color: '#12130f', marginBottom: 6 }}>
+        <div style={{ fontSize: '9pt', color: '#111827', marginBottom: 6 }}>
           Potwierdzam odbiór elementów kamiennych:
         </div>
         <div
           style={{
             minHeight: 54,
-            border: '1px solid #d3cfc2',
+            border: '1px solid #dbdee3',
             borderRadius: 8,
             padding: '8px 10px',
             fontSize: '9.5pt',
-            color: '#12130f',
+            color: '#111827',
             whiteSpace: 'pre-wrap',
             lineHeight: 1.5,
           }}
@@ -52,11 +52,11 @@ export function ProtokolDoc({ p, firma, logoDataUrl }: { p: Protokol; firma: Fir
         <div
           style={{
             minHeight: 70,
-            border: '1px solid #d3cfc2',
+            border: '1px solid #dbdee3',
             borderRadius: 8,
             padding: '8px 10px',
             fontSize: '9.5pt',
-            color: '#12130f',
+            color: '#111827',
             whiteSpace: 'pre-wrap',
             lineHeight: 1.5,
           }}
@@ -65,7 +65,7 @@ export function ProtokolDoc({ p, firma, logoDataUrl }: { p: Protokol; firma: Fir
         </div>
       </DocSection>
 
-      <div style={{ marginTop: 18, fontSize: '8pt', color: '#4a463f', lineHeight: 1.5 }}>
+      <div style={{ marginTop: 18, fontSize: '8pt', color: '#4b5563', lineHeight: 1.5 }}>
         {klauzule.map((k, i) => (
           <p key={i} style={{ margin: '0 0 6px', textAlign: 'justify' }}>
             {k}

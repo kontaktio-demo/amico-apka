@@ -17,6 +17,9 @@ import {
   ListTodo,
   ScanLine,
   Sparkles,
+  Warehouse,
+  PackagePlus,
+  ScrollText,
   HeartHandshake,
   Settings,
   Menu,
@@ -55,6 +58,14 @@ const GROUPS: { grupa: string; items: NavItem[] }[] = [
       { to: '/zlecenia', label: 'Zlecenia', icon: <ClipboardList size={19} /> },
       { to: '/kalendarz', label: 'Kalendarz', icon: <CalendarDays size={19} /> },
       { to: '/zadania', label: 'Zadania', icon: <ListTodo size={19} /> },
+      { to: '/raport-kasowy', label: 'Raport kasowy', icon: <ScrollText size={19} /> },
+    ],
+  },
+  {
+    grupa: 'Zaopatrzenie',
+    items: [
+      { to: '/hurtownie', label: 'Hurtownie', icon: <Warehouse size={19} /> },
+      { to: '/zamowienia', label: 'Zamówienia towarów', icon: <PackagePlus size={19} /> },
     ],
   },
   {

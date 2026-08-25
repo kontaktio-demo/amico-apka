@@ -994,7 +994,7 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
         >
           KARTA KLIENTA
         </div>
-        <div style={{ fontSize: '9pt', color: '#4a463f', marginTop: 2 }}>
+        <div style={{ fontSize: '9pt', color: '#4b5563', marginTop: 2 }}>
           Etap: <b>{ei.nazwa}</b>
           {k.zrodlo ? ` · Źródło: ${k.zrodlo}` : ''}
         </div>
@@ -1037,10 +1037,10 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
                   <td
                     style={{
                       padding: '3px 6px',
-                      color: '#6b6459',
+                      color: '#6b7280',
                       whiteSpace: 'nowrap',
                       verticalAlign: 'top',
-                      borderBottom: '1px solid #e6e2d8',
+                      borderBottom: '1px solid #e5e7eb',
                     }}
                   >
                     {fmtDate(h.data)}
@@ -1048,15 +1048,15 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
                   <td
                     style={{
                       padding: '3px 6px',
-                      color: '#6b6459',
+                      color: '#6b7280',
                       whiteSpace: 'nowrap',
                       verticalAlign: 'top',
-                      borderBottom: '1px solid #e6e2d8',
+                      borderBottom: '1px solid #e5e7eb',
                     }}
                   >
                     {h.typ}
                   </td>
-                  <td style={{ padding: '3px 6px', color: '#12130f', borderBottom: '1px solid #e6e2d8' }}>{h.tresc}</td>
+                  <td style={{ padding: '3px 6px', color: '#111827', borderBottom: '1px solid #e5e7eb' }}>{h.tresc}</td>
                 </tr>
               ))}
             </tbody>
@@ -1064,7 +1064,7 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
         </div>
       )}
 
-      <div style={{ marginTop: 10, fontSize: '8pt', color: '#8a8478' }}>
+      <div style={{ marginTop: 10, fontSize: '8pt', color: '#9ca3af' }}>
         Zgoda RODO: <b>{k.zgodaRodo ? 'TAK' : 'NIE'}</b>
         {k.zgodaRodo && k.zgodaRodoData ? ` (${fmtDate(k.zgodaRodoData)})` : ''} · Karta utworzona{' '}
         {fmtDate(k.utworzono)}
@@ -1076,7 +1076,7 @@ function KartaKlientaDoc({ k, firma, logoDataUrl }: { k: Klient; firma: Firma; l
 function DRow({ l, v }: { l: string; v?: string }) {
   return (
     <div style={{ display: 'flex', gap: 5, marginBottom: 3, alignItems: 'baseline' }}>
-      <span style={{ color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
+      <span style={{ color: '#4b5563', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
       <span
         style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}
       >

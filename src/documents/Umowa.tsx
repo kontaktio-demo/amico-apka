@@ -28,7 +28,7 @@ const LI: React.CSSProperties = {
   marginBottom: 4,
   paddingLeft: 3,
 }
-const partyTitle: React.CSSProperties = { fontWeight: 700, color: '#12130f' }
+const partyTitle: React.CSSProperties = { fontWeight: 700, color: '#111827' }
 
 // ---------- Pole do wpisania: wartosc z 'u' albo kropkowana linia ----------
 function Fill({ v, w }: { v?: React.ReactNode; w?: number }) {
@@ -36,13 +36,13 @@ function Fill({ v, w }: { v?: React.ReactNode; w?: number }) {
   return (
     <span
       style={{
-        borderBottom: '1px dotted #6b6459',
+        borderBottom: '1px dotted #6b7280',
         display: 'inline-block',
         minWidth: w ?? 130,
         padding: '0 5px',
         textAlign: ok ? 'left' : 'center',
         fontWeight: ok ? 600 : 400,
-        color: '#12130f',
+        color: '#111827',
       }}
     >
       {ok ? v : ' '}
@@ -63,7 +63,7 @@ function StopkaPodpisow({
   return (
     <div className="avoid-break" style={{ marginTop: 18 }}>
       {klauzulaPodpis && (
-        <div style={{ fontSize: '8.2pt', lineHeight: 1.45, color: '#4a463f', textAlign: 'justify', marginBottom: 8 }}>
+        <div style={{ fontSize: '8.2pt', lineHeight: 1.45, color: '#4b5563', textAlign: 'justify', marginBottom: 8 }}>
           {klauzulaPodpis}
         </div>
       )}
@@ -74,7 +74,7 @@ function StopkaPodpisow({
         labelRight="WYKONAWCA"
       />
       {klauzulaRodo && (
-        <div style={{ marginTop: 16, fontSize: '7pt', lineHeight: 1.4, color: '#8a8478', textAlign: 'justify' }}>
+        <div style={{ marginTop: 16, fontSize: '7pt', lineHeight: 1.4, color: '#9ca3af', textAlign: 'justify' }}>
           {klauzulaRodo}
         </div>
       )}
@@ -993,7 +993,7 @@ export function UmowaDoc({
             fontWeight: 600,
             fontSize: '15pt',
             letterSpacing: '0.03em',
-            color: '#12130f',
+            color: '#111827',
           }}
         >
           {TYTUL[u.typ]}

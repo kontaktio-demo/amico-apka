@@ -176,7 +176,7 @@ h3,
 /* ---------- Dokumenty (podglad + druk) - zawsze BIALE (papier) ---------- */
 .doc-sheet {
   background: #fff;
-  color: #12130f;
+  color: #111827;
   width: 210mm;
   min-height: 297mm;
   margin: 0 auto;
@@ -233,6 +233,15 @@ h3,
   }
   #print-root {
     display: block !important;
+    background: #fff !important;
+    color: #111827 !important;
+  }
+  /* iPhone / tryb standalone (PWA): bez tego ciemne tlo aplikacji (gradient +
+     color-scheme: dark) potrafi zostac na wydruku jako czarne pasy dokola tresci
+     ("ogromne czarne marginesy"). Wymuszamy jasny motyw i biel na czas druku. */
+  html {
+    color-scheme: light !important;
+    background: #fff !important;
   }
   .doc-sheet {
     width: auto;
@@ -240,6 +249,8 @@ h3,
     margin: 0;
     padding: 0;
     box-shadow: none;
+    background: #fff !important;
+    color: #111827 !important;
     /* Wysokosc wyliczona przez silnik druku po dopasowaniu skali.
        Bez niej pudelko arkusza dalej zajmowaloby pelna wysokosc i mimo
        zmniejszenia tresci powstawalaby druga, prawie pusta kartka. */

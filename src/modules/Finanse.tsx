@@ -127,7 +127,7 @@ function obrotyRaportu(r: RaportKasowy) {
   return { przychod, rozchod, saldo }
 }
 
-function RaportyTab({ firma }: { firma: Firma }) {
+export function RaportyTab({ firma, nowySygnal }: { firma: Firma; nowySygnal?: number }) {
   const b = useStore((s) => s.baza)
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
@@ -162,6 +162,13 @@ function RaportyTab({ firma }: { firma: Firma }) {
     }
     setEdytowany(r)
   }
+
+  // Sygnal z zewnatrz (np. przycisk "Wypełnij raport na dziś" w module Raport kasowy)
+  // otwiera od razu nowy raport z dzisiejsza data.
+  useEffect(() => {
+    if (nowySygnal) nowy()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nowySygnal])
 
   const usun = async (r: RaportKasowy) => {
     if (await confirm(`Usunąć raport kasowy ${r.numer}?`)) {
@@ -672,7 +679,7 @@ function PrzelewyDoc({ firma, przelewy, logoDataUrl }: { firma: Firma; przelewy:
         >
           ZESTAWIENIE PRZELEWÓW
         </div>
-        <div style={{ fontSize: '8.5pt', color: '#6b6459', marginTop: 3 }}>Data zestawienia: {fmtDate(today())}</div>
+        <div style={{ fontSize: '8.5pt', color: '#6b7280', marginTop: 3 }}>Data zestawienia: {fmtDate(today())}</div>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt' }}>
         <thead>
@@ -708,7 +715,7 @@ function PrzelewyDoc({ firma, przelewy, logoDataUrl }: { firma: Firma; przelewy:
           ))}
         </tbody>
         <tfoot>
-          <tr style={{ background: '#f0ede6' }}>
+          <tr style={{ background: '#f3f4f6' }}>
             <td style={{ ...ztd(), fontWeight: 700, textAlign: 'right' }} colSpan={3}>
               DO ZAPŁATY
             </td>
@@ -903,7 +910,7 @@ function ObrotDoc({ firma, pozycje, logoDataUrl }: { firma: Firma; pozycje: Obro
         >
           OBRÓT PIENIĘŻNY
         </div>
-        <div style={{ fontSize: '8.5pt', color: '#6b6459', marginTop: 3 }}>Data zestawienia: {fmtDate(today())}</div>
+        <div style={{ fontSize: '8.5pt', color: '#6b7280', marginTop: 3 }}>Data zestawienia: {fmtDate(today())}</div>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt' }}>
         <thead>
@@ -934,7 +941,7 @@ function ObrotDoc({ firma, pozycje, logoDataUrl }: { firma: Firma; pozycje: Obro
           ))}
         </tbody>
         <tfoot>
-          <tr style={{ background: '#f0ede6' }}>
+          <tr style={{ background: '#f3f4f6' }}>
             <td style={{ ...ztd(), textAlign: 'right', fontWeight: 700 }}>{fmtPLN(sumaPrzychod)}</td>
             <td style={{ ...ztd(), textAlign: 'right', fontWeight: 700 }}>{fmtPLN(sumaRozchod)}</td>
             <td style={{ ...ztd(), fontWeight: 700 }} colSpan={3}>
@@ -955,7 +962,7 @@ function ObrotDoc({ firma, pozycje, logoDataUrl }: { firma: Firma; pozycje: Obro
 
 // wspolne style tabel dokumentow
 const zth = (w?: number): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '5px 7px',
   fontSize: '7.8pt',
   fontWeight: 700,
@@ -963,4 +970,4 @@ const zth = (w?: number): React.CSSProperties => ({
   letterSpacing: '0.04em',
   width: w,
 })
-const ztd = (): React.CSSProperties => ({ border: '1px solid #d3cfc2', padding: '4px 7px', verticalAlign: 'top' })
+const ztd = (): React.CSSProperties => ({ border: '1px solid #dbdee3', padding: '4px 7px', verticalAlign: 'top' })

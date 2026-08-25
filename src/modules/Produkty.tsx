@@ -454,13 +454,13 @@ export function CennikDoc({
   logoDataUrl?: string
 }) {
   const cellH: React.CSSProperties = {
-    border: '1px solid #d3cfc2',
+    border: '1px solid #dbdee3',
     padding: '4px 6px',
     fontSize: '7.6pt',
     fontWeight: 700,
-    background: '#f0ede6',
+    background: '#f3f4f6',
   }
-  const cell: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '4px 6px', fontSize: '8.5pt' }
+  const cell: React.CSSProperties = { border: '1px solid #dbdee3', padding: '4px 6px', fontSize: '8.5pt' }
 
   // grupowanie wg kategorii dla czytelnosci
   const grupy = KATEGORIE.map((kat) => ({
@@ -482,13 +482,13 @@ export function CennikDoc({
         >
           CENNIK
         </div>
-        <div style={{ fontSize: '9pt', color: '#6b6459', letterSpacing: '0.1em', fontWeight: 600 }}>
+        <div style={{ fontSize: '9pt', color: '#6b7280', letterSpacing: '0.1em', fontWeight: 600 }}>
           MATERIAŁY · USŁUGI · AKCESORIA
         </div>
       </div>
 
       {grupy.length === 0 ? (
-        <div style={{ fontSize: '9pt', color: '#6b6459', textAlign: 'center', padding: '12px 0' }}>
+        <div style={{ fontSize: '9pt', color: '#6b7280', textAlign: 'center', padding: '12px 0' }}>
           Brak pozycji do wyświetlenia.
         </div>
       ) : (
@@ -540,7 +540,7 @@ export function CennikDoc({
         ))
       )}
 
-      <div style={{ fontSize: '7.6pt', color: '#8a8478', marginTop: 6 }}>
+      <div style={{ fontSize: '7.6pt', color: '#9ca3af', marginTop: 6 }}>
         Ceny netto, orientacyjne. Ostateczna wycena po obmiarze z natury. Ceny oznaczone "wg wyceny" ustalane
         indywidualnie.
       </div>

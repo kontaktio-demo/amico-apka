@@ -378,7 +378,7 @@ function ZadaniaDruk({
       <h1 style={{ textAlign: 'center', fontSize: '15pt', fontWeight: 600, marginBottom: 12 }}>Lista zadań</h1>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt' }}>
         <thead>
-          <tr style={{ background: '#f0ede6' }}>
+          <tr style={{ background: '#f3f4f6' }}>
             <th style={cellH}>Zadanie</th>
             <th style={cellH}>Osoba</th>
             <th style={cellH}>Termin</th>
@@ -405,10 +405,10 @@ function ZadaniaDruk({
   )
 }
 const cellH: React.CSSProperties = {
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '4px 6px',
   textAlign: 'left',
   fontWeight: 700,
   fontSize: '8pt',
 }
-const cell: React.CSSProperties = { border: '1px solid #d3cfc2', padding: '4px 6px' }
+const cell: React.CSSProperties = { border: '1px solid #dbdee3', padding: '4px 6px' }

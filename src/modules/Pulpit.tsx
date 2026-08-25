@@ -25,6 +25,7 @@ import { podsumuj } from '../lib/format'
 import { uid } from '../lib/id'
 import { useAuth } from '../components/Auth'
 import { DokumentyDoPobrania } from '../components/DokumentyDoPobrania'
+import { PrzypomnienieRaportKasowy } from '../components/PrzypomnienieRaportKasowy'
 import type { Zadanie } from '../lib/types'
 import { ListTodo, ScanLine, MapPin, CalendarClock } from 'lucide-react'
 
@@ -72,6 +73,9 @@ export default function Pulpit() {
           </Link>
         }
       />
+
+      {/* Codzienne przypomnienie o raporcie kasowym (dni pracy) - dla wszystkich */}
+      <PrzypomnienieRaportKasowy />
 
       {/* GLOWNA rzecz na pulpicie: zadania "kto co robi" w stylu Microsoft To Do */}
       <ZadaniaToDo />
@@ -624,6 +628,8 @@ function PulpitTeren({
   return (
     <div>
       <PageHeader title={`${powitanie}, ${imie.split(' ')[0]}`} subtitle={`Twój plan · ${fmtDate(t)}`} />
+
+      <PrzypomnienieRaportKasowy />
 
       <Card className="mb-5">
         <CardBody>

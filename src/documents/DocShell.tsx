@@ -43,7 +43,7 @@ export function DocLetterhead({ firma, logoDataUrl }: { firma: Firma; logoDataUr
           {logoDataUrl ? (
             <img src={logoDataUrl} alt="AMICO" style={{ height: 40, objectFit: 'contain' }} />
           ) : (
-            <div style={{ color: '#12130f' }}>
+            <div style={{ color: '#111827' }}>
               <AmicoWordmark height={30} />
             </div>
           )}
@@ -52,15 +52,15 @@ export function DocLetterhead({ firma, logoDataUrl }: { firma: Firma; logoDataUr
               fontSize: '6.6pt',
               letterSpacing: '0.24em',
               textTransform: 'uppercase',
-              color: '#6b6459',
+              color: '#6b7280',
               marginTop: 5,
             }}
           >
             Pracownia Kamieniarska
           </div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: '8pt', color: '#4a463f', lineHeight: 1.5 }}>
-          <div style={{ fontWeight: 600, color: '#12130f' }}>{firma.nazwa}</div>
+        <div style={{ textAlign: 'right', fontSize: '8pt', color: '#4b5563', lineHeight: 1.5 }}>
+          <div style={{ fontWeight: 600, color: '#111827' }}>{firma.nazwa}</div>
           <div>
             {firma.ulica}, {firma.kod} {firma.miasto}
           </div>
@@ -68,7 +68,7 @@ export function DocLetterhead({ firma, logoDataUrl }: { firma: Firma; logoDataUr
           {firma.konto && <div>Konto: {fmtKonto(firma.konto)}</div>}
         </div>
       </div>
-      <div style={{ height: 2, background: '#12130f', marginTop: 10 }} />
+      <div style={{ height: 2, background: '#111827', marginTop: 10 }} />
     </div>
   )
 }
@@ -78,11 +78,11 @@ export function DocFooter({ firma }: { firma: Firma }) {
     <div
       style={{
         marginTop: 24,
-        borderTop: '1px solid #d8d4c8',
+        borderTop: '1px solid #e2e5ea',
         paddingTop: 8,
         textAlign: 'center',
         fontSize: '7.6pt',
-        color: '#8a8478',
+        color: '#9ca3af',
       }}
     >
       {firma.marka} · {firma.ulica}, {firma.kod} {firma.miasto} · tel. {firma.telefon} · {firma.email}
@@ -101,13 +101,13 @@ export function DocTitle({ children, sub, numer }: { children: React.ReactNode; 
           fontWeight: 600,
           fontSize: '16pt',
           letterSpacing: '0.02em',
-          color: '#12130f',
+          color: '#111827',
           margin: 0,
         }}
       >
         {children}
       </h1>
-      {sub && <div style={{ fontSize: '9pt', color: '#6b6459', marginTop: 2 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: '9pt', color: '#6b7280', marginTop: 2 }}>{sub}</div>}
       {numer && <div style={{ fontSize: '8.5pt', color: '#0f5c3f', fontWeight: 600, marginTop: 4 }}>{numer}</div>}
     </div>
   )
@@ -148,7 +148,7 @@ export function DocSection({
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-            color: '#12130f',
+            color: '#111827',
           }}
         >
           {title}
@@ -163,14 +163,14 @@ export function DocSection({
 export function DocLine({ label, value, width }: { label: string; value?: React.ReactNode; width?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, width }}>
-      <span style={{ color: '#4a463f', whiteSpace: 'nowrap', fontSize: '9pt' }}>{label}</span>
+      <span style={{ color: '#4b5563', whiteSpace: 'nowrap', fontSize: '9pt' }}>{label}</span>
       <span
         style={{
           flex: 1,
-          borderBottom: '1px dotted #a9a496',
+          borderBottom: '1px dotted #c3c8cf',
           minHeight: '1em',
           fontWeight: 500,
-          color: '#12130f',
+          color: '#111827',
           fontSize: '9.5pt',
         }}
       >
@@ -203,7 +203,7 @@ function SigBlock({ node, label }: { node?: React.ReactNode; label: string }) {
   return (
     <div style={{ flex: 1, textAlign: 'center' }}>
       <div style={{ height: 56, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>{node}</div>
-      <div style={{ borderTop: '1px solid #12130f', paddingTop: 4, fontSize: '8pt', color: '#4a463f' }}>{label}</div>
+      <div style={{ borderTop: '1px solid #111827', paddingTop: 4, fontSize: '8pt', color: '#4b5563' }}>{label}</div>
     </div>
   )
 }

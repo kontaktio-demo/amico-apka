@@ -28,6 +28,9 @@ import Ustawienia from './modules/Ustawienia'
 import Zadania from './modules/Zadania'
 import Skany from './modules/Skany'
 import Wizualizacja from './modules/Wizualizacja'
+import Hurtownie from './modules/Hurtownie'
+import Zamowienia from './modules/Zamowienia'
+import RaportKasowy from './modules/RaportKasowy'
 import Pomoc from './modules/Pomoc'
 import { RoleGuard } from './components/RoleGuard'
 
@@ -234,6 +237,30 @@ export default function App() {
                   element={
                     <RoleGuard path="/odprawa">
                       <Odprawa />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/hurtownie"
+                  element={
+                    <RoleGuard path="/hurtownie">
+                      <Hurtownie />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/zamowienia"
+                  element={
+                    <RoleGuard path="/zamowienia">
+                      <Zamowienia />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/raport-kasowy"
+                  element={
+                    <RoleGuard path="/raport-kasowy">
+                      <RaportKasowy />
                     </RoleGuard>
                   }
                 />

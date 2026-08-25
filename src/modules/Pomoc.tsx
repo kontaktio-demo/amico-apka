@@ -258,17 +258,13 @@ export default function Pomoc() {
             <Link to="/ustawienia" className="text-brand-700 underline">
               Ustawienia → Podmioty (firmy)
             </Link>{' '}
-            - są tam wpisane <b>obie firmy</b> (Amico Andrzej Fiks i Amico Milena Fiks) z NIP-ami, adresem i numerami
-            kont. Sprawdź, czy wszystko się zgadza.
+            - jest tam wpisana firma <b>Amico Andrzej Fiks</b> (Pracownia Kamieniarska AMICO) z NIP-em, adresem i
+            numerem konta. Sprawdź, czy wszystko się zgadza - te dane trafiają na każdy dokument.
           </Krok>
-          <Krok n={4} tytul="Wybieraj, KTÓRA firma wystawia dokument">
-            To ważne! <b>U góry po lewej</b>, pod logo, jest przycisk z nazwą firmy (np. "Amico Andrzej Fiks"). Kliknij
-            i wybierz właściwą.
-            <br />
-            <span className="mt-1 block text-stone-500">
-              Od tego zależy, <b>jaki NIP i jakie konto bankowe</b> pojawią się na umowie i fakturze. Zawsze sprawdź to
-              przed wystawieniem dokumentu.
-            </span>
+          <Krok n={4} tytul="Rób raport kasowy codziennie">
+            W dni pracy (wtorek–sobota) na <b>Pulpicie</b> pojawia się przypomnienie o raporcie kasowym. Wejdź w
+            zakładkę <b>Raport kasowy</b>, uzupełnij kolumny (nazwisko, nr zlecenia, treść, przychód, rozchód), kliknij
+            <b> „Zapisz raport"</b> - a potem możesz go wydrukować.
           </Krok>
         </div>
       </Sekcja>
@@ -954,14 +950,14 @@ function PoradnikDruk({ firma }: { firma: any }) {
     fontWeight: 700,
     marginTop: 11,
     marginBottom: 3,
-    color: '#12130f',
+    color: '#111827',
   }
   const p: React.CSSProperties = { fontSize: '9.3pt', lineHeight: 1.45, margin: '0 0 4px' }
   const li: React.CSSProperties = { fontSize: '9.3pt', lineHeight: 1.4, marginBottom: 2 }
   return (
     <DocSheet firma={firma} compact>
       <h1 style={{ textAlign: 'center', fontSize: '17pt', fontWeight: 600, margin: '2px 0 3px' }}>Poradnik AMICO</h1>
-      <p style={{ textAlign: 'center', fontSize: '8.5pt', color: '#6b6459', marginBottom: 10 }}>
+      <p style={{ textAlign: 'center', fontSize: '8.5pt', color: '#6b7280', marginBottom: 10 }}>
         Jak korzystać z aplikacji - krok po kroku
       </p>
 

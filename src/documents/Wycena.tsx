@@ -67,7 +67,7 @@ export function WycenaDoc({
 
       <div style={{ ...box, marginTop: 10 }}>
         <div style={secHead}>3 · ZAKRES PRAC I NAZWA MATERIAŁU</div>
-        <div style={{ minHeight: 26, fontSize: '9.5pt', color: '#12130f' }}>
+        <div style={{ minHeight: 26, fontSize: '9.5pt', color: '#111827' }}>
           {[w.zakresPrac, w.nazwaMaterialu].filter(Boolean).join(' - ') || ' '}
         </div>
       </div>
@@ -76,7 +76,7 @@ export function WycenaDoc({
         <div style={secHead}>4 · ZESTAWIENIE ELEMENTÓW I PRAC</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt' }}>
           <thead>
-            <tr style={{ background: '#f0ede6' }}>
+            <tr style={{ background: '#f3f4f6' }}>
               <th style={cellH(28)}>LP.</th>
               <th style={{ ...cellH(), textAlign: 'left' }}>ELEMENT / OPIS</th>
               <th style={cellH(70)}>JEDN.</th>
@@ -112,7 +112,7 @@ export function WycenaDoc({
             </tbody>
           </table>
         </div>
-        <div style={{ fontSize: '8pt', color: '#6b6459', marginTop: 4 }}>
+        <div style={{ fontSize: '8pt', color: '#6b7280', marginTop: 4 }}>
           Ceny zawierają podatek VAT. Umowa na osobę fizyczną: <b>{w.osobaFizyczna ? 'TAK' : 'NIE'}</b>
         </div>
       </div>
@@ -125,7 +125,7 @@ export function WycenaDoc({
           <Row l="Dopłata:" v={w.doplata} />
           <Row l="Ważność wyceny:" v={fmtDate(w.waznosc)} />
           <Row l="Uwagi:" v={w.uwagi} />
-          <div style={{ fontSize: '8pt', color: '#6b6459', marginTop: 4 }}>
+          <div style={{ fontSize: '8pt', color: '#6b7280', marginTop: 4 }}>
             Wycena będzie skorygowana po obmiarze z natury.
           </div>
         </div>
@@ -168,7 +168,7 @@ export function WycenaDoc({
 function Row({ l, v }: { l: string; v?: string }) {
   return (
     <div style={{ display: 'flex', gap: 5, marginBottom: 3, alignItems: 'baseline' }}>
-      <span style={{ color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
+      <span style={{ color: '#4b5563', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
       <span
         style={{ flex: 1, borderBottom: '1px dotted #b3ae9f', fontSize: '9pt', fontWeight: 500, minHeight: '1.1em' }}
       >
@@ -199,7 +199,7 @@ function Check({ v, children }: { v?: boolean; children: React.ReactNode }) {
   )
 }
 const cellH = (w?: number): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '4px 6px',
   fontSize: '7.6pt',
   fontWeight: 700,
@@ -207,7 +207,7 @@ const cellH = (w?: number): React.CSSProperties => ({
   width: w,
 })
 const cell = (center?: boolean): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '4px 6px',
   textAlign: center ? 'center' : undefined,
 })
@@ -218,10 +218,10 @@ function SumRow({ l, v, bold }: { l: string; v: string; bold?: boolean }) {
         style={{
           padding: '3px 8px',
           textAlign: 'right',
-          color: '#4a463f',
+          color: '#4b5563',
           fontWeight: bold ? 700 : 400,
-          background: bold ? '#12233a' : '#f0ede6',
-          border: '1px solid #d3cfc2',
+          background: bold ? '#12233a' : '#f3f4f6',
+          border: '1px solid #dbdee3',
           ...(bold ? { color: '#fff' } : {}),
         }}
       >
@@ -232,7 +232,7 @@ function SumRow({ l, v, bold }: { l: string; v: string; bold?: boolean }) {
           padding: '3px 8px',
           textAlign: 'right',
           fontWeight: 700,
-          border: '1px solid #d3cfc2',
+          border: '1px solid #dbdee3',
           minWidth: 90,
           ...(bold ? { background: '#12233a', color: '#fff' } : {}),
         }}

@@ -529,15 +529,15 @@ export function KontrahenciDoc({
   logoDataUrl?: string
 }) {
   const th: React.CSSProperties = {
-    border: '1px solid #d3cfc2',
+    border: '1px solid #dbdee3',
     padding: '5px 7px',
     fontSize: '8pt',
     fontWeight: 700,
     textAlign: 'left',
-    background: '#f0ede6',
+    background: '#f3f4f6',
   }
   const td: React.CSSProperties = {
-    border: '1px solid #d3cfc2',
+    border: '1px solid #dbdee3',
     padding: '5px 7px',
     fontSize: '9pt',
     verticalAlign: 'top',
@@ -564,7 +564,7 @@ export function KontrahenciDoc({
               <td style={{ ...td, textAlign: 'center' }}>{i + 1}.</td>
               <td style={td}>
                 {k.nazwa}
-                {k.nip ? <div style={{ fontSize: '7.5pt', color: '#6b6459' }}>NIP: {fmtNIP(k.nip)}</div> : null}
+                {k.nip ? <div style={{ fontSize: '7.5pt', color: '#6b7280' }}>NIP: {fmtNIP(k.nip)}</div> : null}
               </td>
               <td style={td}>{k.firma || '-'}</td>
               <td style={td}>{k.telefon || '-'}</td>
@@ -574,14 +574,14 @@ export function KontrahenciDoc({
           ))}
           {lista.length === 0 && (
             <tr>
-              <td style={{ ...td, textAlign: 'center', color: '#8a8478' }} colSpan={6}>
+              <td style={{ ...td, textAlign: 'center', color: '#9ca3af' }} colSpan={6}>
                 Brak kontaktów w tej kategorii.
               </td>
             </tr>
           )}
         </tbody>
       </table>
-      <div style={{ marginTop: 10, fontSize: '8pt', color: '#6b6459' }}>
+      <div style={{ marginTop: 10, fontSize: '8pt', color: '#6b7280' }}>
         Kategoria kontrahentów: <b>{typNazwa}</b>. Dokument informacyjny - {firma.nazwa}.
       </div>
     </DocSheet>

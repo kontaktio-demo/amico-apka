@@ -68,7 +68,7 @@ export function RozliczenieEkspozycjiDoc({
         <div style={secHead}>3 · ROZLICZENIA</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt' }}>
           <thead>
-            <tr style={{ background: '#f0ede6' }}>
+            <tr style={{ background: '#f3f4f6' }}>
               <th style={cellH(90)}>DATA</th>
               <th style={{ ...cellH(), textAlign: 'left' }}>NUMER ZLECENIA</th>
               <th style={{ ...cellH(), textAlign: 'left' }}>NAZWISKO KLIENTA</th>
@@ -92,10 +92,10 @@ export function RozliczenieEkspozycjiDoc({
               </tr>
             )}
             <tr>
-              <td style={{ ...cell(), textAlign: 'right', fontWeight: 700, background: '#f0ede6' }} colSpan={3}>
+              <td style={{ ...cell(), textAlign: 'right', fontWeight: 700, background: '#f3f4f6' }} colSpan={3}>
                 SUMA ROZLICZEŃ NETTO:
               </td>
-              <td style={{ ...cell(), textAlign: 'right', fontWeight: 700, background: '#f0ede6' }}>{fmtPLN(suma)}</td>
+              <td style={{ ...cell(), textAlign: 'right', fontWeight: 700, background: '#f3f4f6' }}>{fmtPLN(suma)}</td>
             </tr>
           </tbody>
         </table>
@@ -108,12 +108,12 @@ export function RozliczenieEkspozycjiDoc({
             display: 'flex',
             justifyContent: 'space-between',
             fontSize: '8.5pt',
-            color: '#4a463f',
+            color: '#4b5563',
             marginBottom: 4,
           }}
         >
           <span>
-            Zrealizowano: <b style={{ color: '#12130f' }}>{fmtPLN(suma)}</b> z {fmtPLN(zobowiazanie)}
+            Zrealizowano: <b style={{ color: '#111827' }}>{fmtPLN(suma)}</b> z {fmtPLN(zobowiazanie)}
           </span>
           <span style={{ fontWeight: 700, color: '#0f5c3f' }}>{procent.toFixed(1)}%</span>
         </div>
@@ -123,7 +123,7 @@ export function RozliczenieEkspozycjiDoc({
             background: '#eceae3',
             borderRadius: 8,
             overflow: 'hidden',
-            border: '1px solid #d3cfc2',
+            border: '1px solid #dbdee3',
           }}
         >
           <div
@@ -136,7 +136,7 @@ export function RozliczenieEkspozycjiDoc({
             }}
           />
         </div>
-        <div style={{ fontSize: '8pt', color: '#6b6459', marginTop: 4 }}>
+        <div style={{ fontSize: '8pt', color: '#6b7280', marginTop: 4 }}>
           Pasek przedstawia stopień realizacji zobowiązania liczony jako suma rozliczeń do {e.krotnosc || 0}-krotnej
           wartości ekspozycji netto.
         </div>
@@ -148,7 +148,7 @@ export function RozliczenieEkspozycjiDoc({
 function Row({ l, v, strong }: { l: string; v?: string; strong?: boolean }) {
   return (
     <div style={{ display: 'flex', gap: 5, marginBottom: 3, alignItems: 'baseline' }}>
-      <span style={{ color: '#4a463f', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
+      <span style={{ color: '#4b5563', fontSize: '8.5pt', whiteSpace: 'nowrap' }}>{l}</span>
       <span
         style={{
           flex: 1,
@@ -156,7 +156,7 @@ function Row({ l, v, strong }: { l: string; v?: string; strong?: boolean }) {
           fontSize: '9pt',
           fontWeight: strong ? 700 : 500,
           textAlign: 'right',
-          color: strong ? '#0f5c3f' : '#12130f',
+          color: strong ? '#0f5c3f' : '#111827',
           minHeight: '1.1em',
         }}
       >
@@ -167,7 +167,7 @@ function Row({ l, v, strong }: { l: string; v?: string; strong?: boolean }) {
 }
 
 const cellH = (w?: number): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '4px 6px',
   fontSize: '7.6pt',
   fontWeight: 700,
@@ -175,7 +175,7 @@ const cellH = (w?: number): React.CSSProperties => ({
   width: w,
 })
 const cell = (center?: boolean): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '4px 6px',
   textAlign: center ? 'center' : undefined,
 })

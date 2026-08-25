@@ -64,7 +64,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div style={box}>
           <div style={boxHead}>Sprzedawca</div>
-          <div style={{ fontSize: '9.5pt', fontWeight: 600, color: '#12130f' }}>{firma.nazwa}</div>
+          <div style={{ fontSize: '9.5pt', fontWeight: 600, color: '#111827' }}>{firma.nazwa}</div>
           <div style={{ fontSize: '9pt', color: '#3a372f', lineHeight: 1.45 }}>
             <div>
               {firma.ulica}, {firma.kod} {firma.miasto}
@@ -76,7 +76,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
         </div>
         <div style={box}>
           <div style={boxHead}>Nabywca</div>
-          <div style={{ fontSize: '9.5pt', fontWeight: 600, color: '#12130f' }}>{f.nabywcaNazwa || ' '}</div>
+          <div style={{ fontSize: '9.5pt', fontWeight: 600, color: '#111827' }}>{f.nabywcaNazwa || ' '}</div>
           <div style={{ fontSize: '9pt', color: '#3a372f', lineHeight: 1.45 }}>
             {f.nabywcaAdres && <div style={{ whiteSpace: 'pre-line' }}>{f.nabywcaAdres}</div>}
             {f.nabywcaNip && <div>NIP: {fmtNIP(f.nabywcaNip)}</div>}
@@ -147,7 +147,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
           style={{ borderCollapse: 'collapse', fontSize: '8.5pt', fontVariantNumeric: 'tabular-nums', minWidth: 360 }}
         >
           <thead>
-            <tr style={{ background: '#f0ede6' }}>
+            <tr style={{ background: '#f3f4f6' }}>
               <th style={{ ...thS(), textAlign: 'left' }}>Wg stawki</th>
               <th style={thS()}>Netto</th>
               <th style={thS()}>VAT</th>
@@ -191,7 +191,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
             {fmtPLN(sum.brutto)}
           </span>
         </div>
-        <div style={{ fontSize: '8.5pt', color: '#4a463f', marginTop: 3 }}>
+        <div style={{ fontSize: '8.5pt', color: '#4b5563', marginTop: 3 }}>
           Słownie: <b>{kwotaSlownie(sum.brutto)}</b>
         </div>
         {f.splitPayment && (
@@ -202,7 +202,7 @@ export function FakturaDoc({ f, firma, logoDataUrl }: { f: Faktura; firma: Firma
       </div>
 
       {f.uwagi && (
-        <div style={{ fontSize: '8.5pt', color: '#4a463f', marginTop: 8 }}>
+        <div style={{ fontSize: '8.5pt', color: '#4b5563', marginTop: 8 }}>
           <b>Uwagi:</b> {f.uwagi}
         </div>
       )}
@@ -220,8 +220,8 @@ function Meta({ l, v, colSpan }: { l: string; v?: string; colSpan?: number }) {
     <div
       style={{ display: 'flex', gap: 5, alignItems: 'baseline', gridColumn: colSpan ? `span ${colSpan}` : undefined }}
     >
-      <span style={{ color: '#6b6459', fontSize: '8pt', whiteSpace: 'nowrap' }}>{l}:</span>
-      <span style={{ fontSize: '9pt', fontWeight: 600, color: '#12130f', fontVariantNumeric: 'tabular-nums' }}>
+      <span style={{ color: '#6b7280', fontSize: '8pt', whiteSpace: 'nowrap' }}>{l}:</span>
+      <span style={{ fontSize: '9pt', fontWeight: 600, color: '#111827', fontVariantNumeric: 'tabular-nums' }}>
         {v || '-'}
       </span>
     </div>
@@ -237,19 +237,19 @@ const th = (w?: number): React.CSSProperties => ({
   width: w,
 })
 const td = (align: 'left' | 'right' | 'center'): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '4px 6px',
   textAlign: align,
 })
 const thS = (): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '3px 8px',
   fontSize: '7.6pt',
   fontWeight: 700,
   textAlign: 'right',
 })
 const tdS = (align: 'left' | 'right'): React.CSSProperties => ({
-  border: '1px solid #d3cfc2',
+  border: '1px solid #dbdee3',
   padding: '3px 8px',
   textAlign: align,
   minWidth: 70,

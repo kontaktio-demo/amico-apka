@@ -276,5 +276,37 @@ function migruj(b: Baza): Baza {
   scalona.ustawienia = { ...wzor.ustawienia, ...b.ustawienia }
   // firmy zawsze musza istniec
   if (!scalona.firmy?.length) scalona.firmy = wzor.firmy
+
+  // --- Wycofanie drugiego podmiotu ---
+  // Dzialalnosc prowadzi WYLACZNIE Amico Andrzej Fiks. Historyczny drugi podmiot
+  // (firma_milena) usuwamy z listy firm RAZ (przez tombstone), ale rekordy przypiete
+  // do niego przepinamy na Andrzeja ZAWSZE - takze te, ktore przyjda pozniej z chmury
+  // od urzadzenia z niezaktualizowana wersja aplikacji. Bez tego taki rekord (KP,
+  // raport kasowy, przelew, obrot, protokol) po scaleniu wpada do bazy, ale znika ze
+  // wszystkich widokow filtrowanych po firmaId - czyli "gubi sie" niezauwazenie.
+  const DO_USUNIECIA = 'firma_milena'
+  const DOMYSLNA = 'firma_andrzej'
+  if (scalona.firmy?.some((f) => f.id === DO_USUNIECIA)) {
+    scalona.firmy = scalona.firmy.filter((f) => f.id !== DO_USUNIECIA)
+    const maTomb = (scalona.usuniete || []).some((t) => t.k === 'firmy' && t.id === DO_USUNIECIA)
+    if (!maTomb) scalona.usuniete = [...(scalona.usuniete || []), { k: 'firmy', id: DO_USUNIECIA, t: nowISO() }]
+  }
+  if (!scalona.firmy?.length) scalona.firmy = wzor.firmy
+  // cel przepiecia = docelowy podmiot (nigdy ten usuwany)
+  const cel = scalona.firmy.find((f) => f.id === DOMYSLNA) || scalona.firmy[0]
+  for (const k of Object.keys(scalona) as (keyof Baza)[]) {
+    const arr: any = (scalona as any)[k]
+    if (!Array.isArray(arr)) continue
+    for (const r of arr) if (r && r.firmaId === DO_USUNIECIA) r.firmaId = cel.id
+  }
+  if (scalona.ustawienia.aktywnaFirmaId === DO_USUNIECIA) {
+    scalona.ustawienia = { ...scalona.ustawienia, aktywnaFirmaId: cel.id, _zm: nowISO() } as any
+  }
+  // Jedyna poprawna strona firmy to marmurowydom.pl - podmieniamy TYLKO stary domyslny
+  // adres. Pustego pola NIE ruszamy (uzytkownik moze je celowo wyczyscic), zeby migracja
+  // nie nadpisywala recznej edycji i nie robila rozjazdu miedzy widokiem a chmura.
+  scalona.firmy = scalona.firmy.map((f) =>
+    f.id === DOMYSLNA && f.www === 'amico.kontaktio.pl' ? { ...f, www: 'marmurowydom.pl' } : f,
+  )
   return scalona
 }
