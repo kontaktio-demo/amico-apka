@@ -34,13 +34,26 @@ export function KlientPicker({
 
   const wyniki = useMemo(() => {
     const s = q.trim().toLowerCase()
-    const lista = b.klienci.slice().sort((a, c) => klientNazwa(a).localeCompare(klientNazwa(c), 'pl'))
-    if (!s) return lista.slice(0, 8)
-    return lista
-      .filter((k) =>
-        [klientNazwa(k), k.telefon, k.email, k.miasto, k.nip, k.ulica].filter(Boolean).join(' ').toLowerCase().includes(s),
-      )
-      .slice(0, 12)
+    // Sortuj po nazwie i UKRYJ przypadkowe duplikaty (ta sama nazwa + telefon) -
+    // pokazuj wtedy jeden wpis, zeby lista nie dublowala tych samych osob.
+    const posortowane = b.klienci.slice().sort((a, c) => klientNazwa(a).localeCompare(klientNazwa(c), 'pl'))
+    const widziane = new Set<string>()
+    const unikalne = posortowane.filter((k) => {
+      const klucz = `${klientNazwa(k).trim().toLowerCase()}|${(k.telefon || '').replace(/\s/g, '')}`
+      if (widziane.has(klucz)) return false
+      widziane.add(klucz)
+      return true
+    })
+    // Pokazujemy WSZYSTKICH (lista jest przewijana). Bez szukania - cala baza klientow;
+    // przy szukaniu - wszyscy pasujacy.
+    if (!s) return unikalne
+    return unikalne.filter((k) =>
+      [klientNazwa(k), k.telefon, k.email, k.miasto, k.nip, k.ulica]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(s),
+    )
   }, [b.klienci, q])
 
   // ---- Widok: klient wybrany -> karta z danymi ----
@@ -119,7 +132,7 @@ export function KlientPicker({
           autoFocus={autoFocus}
         />
       </div>
-      <div className="mt-2 max-h-56 space-y-1 overflow-y-auto">
+      <div className="mt-2 max-h-80 space-y-1 overflow-y-auto">
         {wyniki.map((k) => (
           <button
             key={k.id}

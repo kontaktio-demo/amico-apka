@@ -17,7 +17,6 @@ import {
   StickyNote,
   ScanLine,
   FileText,
-  Hash,
   ArrowDownUp,
 } from 'lucide-react'
 import { useStore } from '../lib/store'
@@ -58,6 +57,20 @@ const numerSortKey = (n: string) => {
   const m = /(\d+)\s*\/\s*(\d{4})/.exec(n || '')
   return m ? Number(m[2]) * 100000 + Number(m[1]) : 0
 }
+const MIESIACE: [string, string][] = [
+  ['01', 'Styczeń'],
+  ['02', 'Luty'],
+  ['03', 'Marzec'],
+  ['04', 'Kwiecień'],
+  ['05', 'Maj'],
+  ['06', 'Czerwiec'],
+  ['07', 'Lipiec'],
+  ['08', 'Sierpień'],
+  ['09', 'Wrzesień'],
+  ['10', 'Październik'],
+  ['11', 'Listopad'],
+  ['12', 'Grudzień'],
+]
 
 export default function Zlecenia() {
   const { id } = useParams<{ id: string }>()
@@ -79,6 +92,7 @@ function Lista() {
   const [szukaj, setSzukaj] = useState('')
   const [filtr, setFiltr] = useState<PipelineEtap | 'all'>('all')
   const [rok, setRok] = useState<string>('all')
+  const [miesiac, setMiesiac] = useState<string>('all')
   const [sortuj, setSortuj] = useState<'data-desc' | 'data-asc' | 'numer'>('data-desc')
   const [openNowe, setOpenNowe] = useState(false)
 
@@ -102,6 +116,7 @@ function Lista() {
     const lista = b.zlecenia
       .filter((z) => (filtr === 'all' ? true : z.etap === filtr))
       .filter((z) => (rok === 'all' ? true : dataZlecenia(z).slice(0, 4) === rok))
+      .filter((z) => (miesiac === 'all' ? true : dataZlecenia(z).slice(5, 7) === miesiac))
       .filter((z) => {
         if (!q) return true
         const kl = z.klientId ? klientNazwa(klientMap.get(z.klientId)) : ''
@@ -115,7 +130,7 @@ function Lista() {
       return sortuj === 'data-asc' ? da.localeCompare(dc) : dc.localeCompare(da)
     })
     return lista
-  }, [b.zlecenia, filtr, rok, sortuj, szukaj, klientMap])
+  }, [b.zlecenia, filtr, rok, miesiac, sortuj, szukaj, klientMap])
 
   const licznik = (e: PipelineEtap | 'all') =>
     e === 'all' ? b.zlecenia.length : b.zlecenia.filter((z) => z.etap === e).length
@@ -158,6 +173,14 @@ function Lista() {
             </Select>
           </div>
         )}
+        <Select className="w-auto" value={miesiac} onChange={(e) => setMiesiac(e.target.value)}>
+          <option value="all">Wszystkie miesiące</option>
+          {MIESIACE.map(([nr, nazwa]) => (
+            <option key={nr} value={nr}>
+              {nazwa}
+            </option>
+          ))}
+        </Select>
       </div>
 
       <div className="no-print mb-4 flex flex-wrap gap-2">
@@ -259,8 +282,22 @@ function FiltrChip({ active, onClick, label, n }: { active: boolean; onClick: ()
   )
 }
 
+// Sugerowany kolejny numer w formacie "N/RRRR" wg NAJWYZSZEGO numeru zlecenia firmy
+// w danym roku (parsuje dowolny format zawierajacy N/RRRR). Numer i tak jest edytowalny -
+// wpisuje sie numer z papierowego dokumentu firmy.
+function sugerowanyNumerZlecenia(zlecenia: Zlecenie[], firmaId: string, rok: string): string {
+  let max = 0
+  for (const z of zlecenia) {
+    if (z.firmaId !== firmaId) continue
+    const m = /(\d+)\s*\/\s*(\d{4})/.exec(z.numer || '')
+    if (m && m[2] === rok) max = Math.max(max, Number(m[1]))
+  }
+  return `${max + 1}/${rok}`
+}
+
 // ---------- NOWE ZLECENIE ----------
 interface FormState {
+  numer: string
   data: string
   klientId: string
   adres: string
@@ -276,6 +313,7 @@ interface FormState {
   notatki: string
 }
 const pustyForm: FormState = {
+  numer: '',
   data: '',
   klientId: '',
   adres: '',
@@ -295,15 +333,14 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
   const b = useStore((s) => s.baza)
   const firma = useStore((s) => s.aktywnaFirma)()
   const upsert = useStore((s) => s.upsert)
-  const kolejnyNumer = useStore((s) => s.kolejnyNumer)
-  const podgladNumeru = useStore((s) => s.podgladNumeru)
   const { push } = useToast()
   const navigate = useNavigate()
   const [f, setF] = useState<FormState>(() => ({ ...pustyForm, data: today() }))
 
   const set = (patch: Partial<FormState>) => setF((prev) => ({ ...prev, ...patch }))
 
-  // Swiezy formularz przy kazdym otwarciu (data = dzis).
+  // Swiezy formularz przy kazdym otwarciu. Numeru NIE narzucamy - wpisuje sie numer
+  // z papierowego dokumentu firmy (jedyny wazny). Data ustawiona na dzis, do zmiany.
   useEffect(() => {
     if (open) setF({ ...pustyForm, data: today() })
   }, [open])
@@ -326,7 +363,8 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
     const adres = f.adres.trim() || (kl ? klientAdres(kl) : '')
     const nowe: Zlecenie = {
       id: uid('zl'),
-      numer: kolejnyNumer('ZL'),
+      // Numer wpisany z dokumentu; gdy pusty - podpowiedz kolejny wg najwyzszego (nie od 1).
+      numer: f.numer.trim() || sugerowanyNumerZlecenia(b.zlecenia, firma.id, (f.data || today()).slice(0, 4)),
       firmaId: firma.id,
       klientId: f.klientId || undefined,
       data: f.data || today(),
@@ -378,10 +416,8 @@ function NoweZlecenieModal({ open, onClose }: { open: boolean; onClose: () => vo
       <div className="space-y-4">
         {/* Numer nadawany automatycznie + data zlecenia */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Numer zlecenia" hint="Nadawany automatycznie przy zapisie">
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[14px] font-semibold text-ink">
-              <Hash size={15} className="text-brand-700" /> {podgladNumeru('ZL')}
-            </div>
+          <Field label="Numer zlecenia" hint="Numer z Waszego dokumentu – wpisz własny (np. 111/2026)">
+            <Input value={f.numer} onChange={(e) => set({ numer: e.target.value })} placeholder="np. 111/2026" />
           </Field>
           <Field label="Data zlecenia">
             <Input type="date" value={f.data} onChange={(e) => set({ data: e.target.value })} />
@@ -725,6 +761,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                 <span className="label">Etap</span>
                 <Badge tone={ei.tone as any}>{ei.nazwa}</Badge>
               </div>
+              <Field label="Numer zlecenia" hint="Numer z Waszego dokumentu">
+                <Input
+                  value={z.numer}
+                  onChange={(e) => update({ numer: e.target.value })}
+                  placeholder="np. 111/2026"
+                />
+              </Field>
               <Field label="Data zlecenia">
                 <Input
                   type="date"
