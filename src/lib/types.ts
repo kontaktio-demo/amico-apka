@@ -553,5 +553,19 @@ export interface Baza {
   odprawy: Odprawa[]
   zadania: Zadanie[]
   skany: Skan[]
+  dokumenty: DokumentPliku[]
   ustawienia: Ustawienia
+}
+
+// ---------- Dokumenty do pobrania (pliki w Supabase Storage, metadane tutaj) ----------
+export interface DokumentPliku {
+  id: ID
+  nazwa: string
+  sciezka: string // sciezka pliku w buckecie Storage
+  typ?: string // MIME
+  rozmiar?: number // bajty
+  widoczneDlaWszystkich: boolean // true = caly zespol; false = tylko widoczneDla
+  widoczneDla: ID[] // ktore konta (uzytkownicy) widza plik, gdy nie wszyscy
+  wgralId?: ID // kto wgral
+  utworzono: ISODateTime
 }

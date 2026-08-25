@@ -24,6 +24,7 @@ import { klientNazwa, etapInfo, PIPELINE } from '../lib/helpers'
 import { podsumuj } from '../lib/format'
 import { uid } from '../lib/id'
 import { useAuth } from '../components/Auth'
+import { DokumentyDoPobrania } from '../components/DokumentyDoPobrania'
 import type { Zadanie } from '../lib/types'
 import { ListTodo, ScanLine, MapPin, CalendarClock } from 'lucide-react'
 
@@ -74,6 +75,9 @@ export default function Pulpit() {
 
       {/* GLOWNA rzecz na pulpicie: zadania "kto co robi" w stylu Microsoft To Do */}
       <ZadaniaToDo />
+
+      {/* Dokumenty do pobrania - wlascicielka wgrywa, wybiera kto widzi */}
+      <DokumentyDoPobrania />
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
@@ -246,16 +250,20 @@ function ZadaniaToDo() {
   const upsert = useStore((s) => s.upsert)
   const { user } = useAuth()
 
-  // Osoby do przydzialu: uzytkownicy (konta) + pracownicy (zespol), bez duplikatow po imieniu.
+  // Osoby do przydzialu: uzytkownicy (konta) + pracownicy (zespol). Dedup po IMIENIU
+  // w calej liscie - eliminuje "Ciastki" + "Ciastki (zespol)" oraz zdublowanych pracownikow.
   const osoby = useMemo(() => {
-    const u = b.uzytkownicy
-      .filter((x) => x.aktywny !== false)
-      .map((x) => ({ id: x.id, nazwa: x.imie, kolor: x.kolor as string | undefined }))
-    const imiona = new Set(u.map((x) => x.nazwa.trim().toLowerCase()))
-    const p = b.pracownicy
-      .filter((x) => !imiona.has((x.imie || '').trim().toLowerCase()))
-      .map((x) => ({ id: x.id, nazwa: x.imie, kolor: undefined as string | undefined }))
-    return [...u, ...p]
+    const wynik: { id: string; nazwa: string; kolor?: string }[] = []
+    const widziane = new Set<string>()
+    const dodaj = (id: string, nazwa: string, kolor?: string) => {
+      const klucz = (nazwa || '').trim().toLowerCase()
+      if (!klucz || widziane.has(klucz)) return
+      widziane.add(klucz)
+      wynik.push({ id, nazwa: nazwa.trim(), kolor })
+    }
+    b.uzytkownicy.filter((x) => x.aktywny !== false).forEach((x) => dodaj(x.id, x.imie, x.kolor))
+    b.pracownicy.forEach((x) => dodaj(x.id, x.imie))
+    return wynik
   }, [b.uzytkownicy, b.pracownicy])
   const osobaById = (id?: string) => osoby.find((o) => o.id === id)
   // Zamienia wpisane imie na przydzial: pasuje do osoby z konta/zespolu -> jej id;
@@ -651,6 +659,8 @@ function PulpitTeren({
         <TerenTile to="/kalendarz" icon={<CalendarDays size={26} />} label="Kalendarz" />
         <TerenTile to="/skany" icon={<ScanLine size={26} />} label="Skanuj / Archiwum" />
       </div>
+
+      <DokumentyDoPobrania />
     </div>
   )
 }

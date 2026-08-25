@@ -50,12 +50,23 @@ export default function Zadania() {
   // uzytkownika. Inaczej zadanie przypisane do wpisu "(zespol)" nie trafialoby do
   // filtra "Moje" (ten porownuje po id konta), wiec montazysta by go nie widzial.
   const osoby = useMemo(() => {
-    const u = b.uzytkownicy.filter((x) => x.aktywny !== false).map((x) => ({ id: x.id, nazwa: x.imie }))
-    const imionaUzytk = new Set(u.map((x) => x.nazwa.trim().toLowerCase()))
-    const p = b.pracownicy
-      .filter((x) => !imionaUzytk.has((x.imie || '').trim().toLowerCase()))
-      .map((x) => ({ id: x.id, nazwa: `${x.imie} (zespół)` }))
-    return [...u, ...p]
+    const wynik: { id: string; nazwa: string }[] = []
+    const widziane = new Set<string>()
+    b.uzytkownicy
+      .filter((x) => x.aktywny !== false)
+      .forEach((x) => {
+        const k = (x.imie || '').trim().toLowerCase()
+        if (!k || widziane.has(k)) return
+        widziane.add(k)
+        wynik.push({ id: x.id, nazwa: x.imie })
+      })
+    b.pracownicy.forEach((x) => {
+      const k = (x.imie || '').trim().toLowerCase()
+      if (!k || widziane.has(k)) return
+      widziane.add(k)
+      wynik.push({ id: x.id, nazwa: `${x.imie} (zespół)` })
+    })
+    return wynik
   }, [b.uzytkownicy, b.pracownicy])
   const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '-'
 

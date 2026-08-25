@@ -158,6 +158,7 @@ export function pustaBaza(): Baza {
     odprawy: [],
     zadania: [],
     skany: [],
+    dokumenty: [],
     ustawienia,
   }
 }

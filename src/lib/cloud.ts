@@ -258,6 +258,41 @@ export async function wejscieDoAmico(imie: string) {
   return { workspaceId: r.workspace_id as string, rola: r.rola as Rola, joinCode: r.join_code as string }
 }
 
+// ---------- Dokumenty do pobrania (pliki w Supabase Storage) ----------
+// Pliki NIE ida do bazy JSON (limit ~20MB) - trzymamy je w osobnym magazynie
+// (bucket "dokumenty"), a w bazie tylko metadane (nazwa, sciezka, kto widzi).
+const BUCKET_DOK = 'dokumenty'
+
+export async function wgrajDokument(plik: File, id: string): Promise<{ sciezka: string; typ?: string; rozmiar: number }> {
+  const ws = C().workspaceId
+  if (!ws) throw new Error('Brak połączenia z firmą w chmurze – zaloguj się.')
+  const bezpieczna = (plik.name || 'plik').replace(/[^\w.\-]+/g, '_').slice(-80)
+  const sciezka = `${ws}/${id}-${bezpieczna}`
+  const { error } = await supabase.storage
+    .from(BUCKET_DOK)
+    .upload(sciezka, plik, { upsert: true, contentType: plik.type || undefined })
+  if (error) {
+    if (/bucket|not found|does not exist/i.test(error.message || ''))
+      throw new Error('Magazyn plików nie jest gotowy – uruchom skrypt supabase/amico-dokumenty.sql.')
+    throw error
+  }
+  return { sciezka, typ: plik.type || undefined, rozmiar: plik.size }
+}
+
+export async function dokumentPodpisanyUrl(sciezka: string): Promise<string | null> {
+  const { data, error } = await supabase.storage.from(BUCKET_DOK).createSignedUrl(sciezka, 60 * 60)
+  if (error) return null
+  return data?.signedUrl || null
+}
+
+export async function usunDokumentZChmury(sciezka: string): Promise<void> {
+  try {
+    await supabase.storage.from(BUCKET_DOK).remove([sciezka])
+  } catch {
+    /* plik i tak znika z listy - metadane usuwamy lokalnie */
+  }
+}
+
 export async function zmienRoleWChmurze(userId: string, rola: Rola) {
   const ws = C().workspaceId
   if (!ws) return
