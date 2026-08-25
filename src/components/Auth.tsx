@@ -52,7 +52,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Nieaktywne konto (wylaczone przez wlasciciela) nie moze wejsc nawet PIN-em.
     if (last && uzytkownicy.some((u) => u.id === last && u.aktywny !== false)) {
       setUserId(last)
-      setWidok('lock')
+      // Na zyczenie wlasciciela: po pierwszym zalogowaniu urzadzenie wchodzi PROSTO do
+      // aplikacji (bez ekranu PIN), takze po restarcie. Aplikacja nie wylogowuje sie
+      // sama w zaden sposob. Reczne "Zablokuj"/"Zmien uzytkownika" dalej dostepne w menu.
+      setWidok('in')
     } else {
       setWidok('login')
     }
@@ -84,22 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(t)
   }, [widok, userId, user, uzytkownicy])
 
-  // Auto-blokada po bezczynnosci (5 min) - ochrona przy zgubieniu urzadzenia
-  useEffect(() => {
-    if (widok !== 'in') return
-    let t: ReturnType<typeof setTimeout>
-    const reset = () => {
-      clearTimeout(t)
-      t = setTimeout(() => setWidok('lock'), 5 * 60 * 1000)
-    }
-    const evs: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'pointermove', 'touchstart', 'wheel']
-    evs.forEach((e) => window.addEventListener(e, reset, { passive: true }))
-    reset()
-    return () => {
-      clearTimeout(t)
-      evs.forEach((e) => window.removeEventListener(e, reset))
-    }
-  }, [widok])
+  // Auto-blokada po bezczynnosci WYLACZONA na zyczenie wlasciciela (wewnetrzna
+  // aplikacja firmowa, zaufane urzadzenia). Po zalogowaniu aplikacja NIE wylogowuje
+  // ani nie blokuje sie sama. Reczne zablokowanie/zmiana uzytkownika dalej dziala
+  // przyciskami w menu.
 
   const zaloguj = (id: string) => {
     setUserId(id)
