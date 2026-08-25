@@ -258,6 +258,16 @@ function ZadaniaToDo() {
     return [...u, ...p]
   }, [b.uzytkownicy, b.pracownicy])
   const osobaById = (id?: string) => osoby.find((o) => o.id === id)
+  // Zamienia wpisane imie na przydzial: pasuje do osoby z konta/zespolu -> jej id;
+  // inaczej zapisuje jako dowolna nazwa (osoba BEZ konta). Puste = nieprzypisane.
+  const rozpoznaj = (nazwa: string): { przypisanyDo?: string; przypisanyDoNazwa?: string } => {
+    const n = nazwa.trim()
+    if (!n) return { przypisanyDo: undefined, przypisanyDoNazwa: undefined }
+    const o = osoby.find((x) => x.nazwa.trim().toLowerCase() === n.toLowerCase())
+    return o ? { przypisanyDo: o.id, przypisanyDoNazwa: undefined } : { przypisanyDo: undefined, przypisanyDoNazwa: n }
+  }
+  const nazwaPrzypisanego = (z: Zadanie) => z.przypisanyDoNazwa || osobaById(z.przypisanyDo)?.nazwa || ''
+  const kolorPrzypisanego = (z: Zadanie) => osobaById(z.przypisanyDo)?.kolor || '#6b7280'
   const inicjaly = (n: string) =>
     n
       .split(' ')
@@ -269,13 +279,21 @@ function ZadaniaToDo() {
 
   const [filtr, setFiltr] = useState<string>('all')
   const [tekst, setTekst] = useState('')
-  const [przypDo, setPrzypDo] = useState<string>(user?.id || '')
+  const [przyp, setPrzyp] = useState<string>(user?.imie || '')
   const [termin, setTermin] = useState('')
   const [pokazZrob, setPokazZrob] = useState(false)
 
   const t = today()
-  const pasuje = (z: Zadanie) =>
-    filtr === 'all' ? true : filtr === 'moje' ? z.przypisanyDo === user?.id : z.przypisanyDo === filtr
+  // Widocznosc: wlasciciel i kierownik widza WSZYSTKIE zadania (i moga filtrowac po osobie).
+  // Pozostali (biuro/montazysta) widza TYLKO swoje przypisane - zadania sa prywatne.
+  const widziWszystkie = user?.rola === 'wlasciciel' || user?.rola === 'kierownik'
+  const moje = (z: Zadanie) => z.przypisanyDo === user?.id
+  const pasuje = (z: Zadanie) => {
+    if (!widziWszystkie) return moje(z)
+    if (filtr === 'all') return true
+    if (filtr === 'moje') return moje(z)
+    return z.przypisanyDo === filtr
+  }
 
   const aktywne = b.zadania
     .filter((z) => z.status !== 'zrobione' && pasuje(z))
@@ -295,7 +313,7 @@ function ZadaniaToDo() {
     upsert('zadania', {
       id: uid('zad'),
       tytul: ttl,
-      przypisanyDo: przypDo || undefined,
+      ...rozpoznaj(przyp),
       termin: termin || undefined,
       priorytet: 'sredni',
       status: 'do_zrobienia',
@@ -313,8 +331,8 @@ function ZadaniaToDo() {
     })
   const gwiazdka = (z: Zadanie) =>
     upsert('zadania', { ...z, priorytet: z.priorytet === 'wysoki' ? 'sredni' : 'wysoki', zaktualizowano: nowISO() })
-  const przypisz = (z: Zadanie, id: string) =>
-    upsert('zadania', { ...z, przypisanyDo: id || undefined, zaktualizowano: nowISO() })
+  const przypiszNazwa = (z: Zadanie, nazwa: string) =>
+    upsert('zadania', { ...z, ...rozpoznaj(nazwa), zaktualizowano: nowISO() })
 
   return (
     <Card className="mt-6">
@@ -323,20 +341,29 @@ function ZadaniaToDo() {
           <h3 className="flex items-center gap-2 text-[15px] font-semibold text-ink">
             <ListTodo size={18} className="text-brand-700" /> Zadania — kto co robi
           </h3>
-          <div className="flex flex-wrap gap-1.5">
-            <FiltrPill active={filtr === 'all'} onClick={() => setFiltr('all')}>
-              Wszystkie
-            </FiltrPill>
-            <FiltrPill active={filtr === 'moje'} onClick={() => setFiltr('moje')}>
-              Moje
-            </FiltrPill>
-            {osoby.map((o) => (
-              <FiltrPill key={o.id} active={filtr === o.id} onClick={() => setFiltr(o.id)}>
-                {o.nazwa.split(' ')[0]}
+          {widziWszystkie && (
+            <div className="flex flex-wrap gap-1.5">
+              <FiltrPill active={filtr === 'all'} onClick={() => setFiltr('all')}>
+                Wszystkie
               </FiltrPill>
-            ))}
-          </div>
+              <FiltrPill active={filtr === 'moje'} onClick={() => setFiltr('moje')}>
+                Moje
+              </FiltrPill>
+              {osoby.map((o) => (
+                <FiltrPill key={o.id} active={filtr === o.id} onClick={() => setFiltr(o.id)}>
+                  {o.nazwa.split(' ')[0]}
+                </FiltrPill>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Podpowiedzi osob (konta + zespol) - mozna tez wpisac dowolne imie */}
+        <datalist id="pulpit-osoby">
+          {osoby.map((o) => (
+            <option key={o.id} value={o.nazwa} />
+          ))}
+        </datalist>
 
         {/* Szybkie dodawanie (jak "Dodaj zadanie" w To Do) */}
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-2">
@@ -350,19 +377,17 @@ function ZadaniaToDo() {
             placeholder="Dodaj zadanie…"
             className="min-w-[140px] flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-stone-500"
           />
-          <select
-            value={przypDo}
-            onChange={(e) => setPrzypDo(e.target.value)}
-            className="rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
-            title="Przydziel osobie"
-          >
-            <option value="">Nieprzypisane</option>
-            {osoby.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.nazwa}
-              </option>
-            ))}
-          </select>
+          <input
+            list="pulpit-osoby"
+            value={przyp}
+            onChange={(e) => setPrzyp(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') dodaj()
+            }}
+            placeholder="Dla kogo"
+            className="w-32 rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
+            title="Przydziel osobie (można wpisać dowolne imię)"
+          />
           <input
             type="date"
             value={termin}
@@ -403,32 +428,27 @@ function ZadaniaToDo() {
                     </div>
                   )}
                 </div>
-                <span
-                  className="hidden shrink-0 items-center gap-1.5 sm:inline-flex"
-                  title={osobaById(z.przypisanyDo)?.nazwa || 'nieprzypisane'}
-                >
-                  {osobaById(z.przypisanyDo) ? (
+                {nazwaPrzypisanego(z) && (
+                  <span className="hidden shrink-0 sm:block" title={nazwaPrzypisanego(z)}>
                     <span
                       className="grid h-6 w-6 place-items-center rounded-full text-[9.5px] font-bold text-white"
-                      style={{ background: osobaById(z.przypisanyDo)?.kolor || '#3a4a7a' }}
+                      style={{ background: kolorPrzypisanego(z) }}
                     >
-                      {inicjaly(osobaById(z.przypisanyDo)!.nazwa)}
+                      {inicjaly(nazwaPrzypisanego(z))}
                     </span>
-                  ) : null}
-                </span>
-                <select
-                  value={z.przypisanyDo || ''}
-                  onChange={(e) => przypisz(z, e.target.value)}
-                  className="max-w-[120px] shrink-0 rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-[12px] text-stone-500 transition hover:border-white/10"
-                  title="Przydziel osobie"
-                >
-                  <option value="">— przydziel —</option>
-                  {osoby.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.nazwa}
-                    </option>
-                  ))}
-                </select>
+                  </span>
+                )}
+                <input
+                  list="pulpit-osoby"
+                  key={nazwaPrzypisanego(z) || z.id}
+                  defaultValue={nazwaPrzypisanego(z)}
+                  onBlur={(e) => {
+                    if (e.target.value.trim() !== nazwaPrzypisanego(z)) przypiszNazwa(z, e.target.value)
+                  }}
+                  placeholder="przydziel"
+                  className="max-w-[110px] shrink-0 rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-[12px] text-stone-500 transition hover:border-white/10"
+                  title="Przydziel osobie (dowolne imię)"
+                />
                 <button
                   onClick={() => gwiazdka(z)}
                   className={cx(
@@ -466,7 +486,7 @@ function ZadaniaToDo() {
                     </button>
                     <span className="min-w-0 flex-1 truncate text-[13.5px] text-stone-400 line-through">{z.tytul}</span>
                     <span className="shrink-0 text-[11px] text-stone-500">
-                      {osobaById(z.przypisanyDo)?.nazwa.split(' ')[0] || ''}
+                      {nazwaPrzypisanego(z).split(' ')[0] || ''}
                     </span>
                   </div>
                 ))}

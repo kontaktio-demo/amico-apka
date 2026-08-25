@@ -1,7 +1,20 @@
 import { useMemo, useState } from 'react'
-import { CalendarDays, Plus, ChevronLeft, ChevronRight, MapPin, User, Clock, Trash2, Pencil } from 'lucide-react'
+import {
+  CalendarDays,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  User,
+  Clock,
+  Trash2,
+  Pencil,
+  Copy,
+  MessageSquare,
+} from 'lucide-react'
 import { useStore } from '../lib/store'
-import type { Wydarzenie, WydarzenieTyp } from '../lib/types'
+import type { Wydarzenie, WydarzenieTyp, Baza } from '../lib/types'
+import { copyToClipboard, smsLink } from '../lib/print'
 import {
   PageHeader,
   Card,
@@ -36,6 +49,23 @@ const TYPY: { typ: WydarzenieTyp; nazwa: string; kolor: string; tone: 'green' | 
   ]
 function typInfo(t: WydarzenieTyp) {
   return TYPY.find((x) => x.typ === t) || TYPY[TYPY.length - 1]
+}
+
+// Pelna, gotowa do wyslania tresc wydarzenia (SMS / wiadomosc do montazysty).
+// Zawiera WSZYSTKO: typ, tytul, termin, klienta z telefonem, adres, osobe, uwagi.
+function wydarzenieTresc(w: Wydarzenie, b: Baza): string {
+  const k = b.klienci.find((x) => x.id === w.klientId)
+  const prac = b.pracownicy.find((x) => x.id === w.pracownikId)
+  return [
+    `${typInfo(w.typ).nazwa}: ${w.tytul}`,
+    `Termin: ${fmtDate(w.data)}${w.godzina ? ', godz. ' + w.godzina : ''}`,
+    k ? `Klient: ${klientNazwa(k)}${k.telefon ? ', tel. ' + k.telefon : ''}` : '',
+    w.adres ? `Adres: ${w.adres}` : '',
+    prac ? `Osoba: ${prac.imie}` : '',
+    w.notatki ? `Uwagi: ${w.notatki}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
 }
 
 const DNI_SKROT = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie']
@@ -179,12 +209,15 @@ export default function Kalendarz() {
   }, [wybranyDzien, wgDnia])
 
   const shareText = useMemo(() => {
-    const linie = dzienWydarzenia.map(
-      (w) =>
-        `${w.godzina ? w.godzina + ' ' : ''}${typInfo(w.typ).nazwa}: ${w.tytul}${w.adres ? ' (' + w.adres + ')' : ''}`,
-    )
-    return `Plan dnia ${fmtDate(wybranyDzien)}\n${linie.length ? linie.join('\n') : 'Brak zaplanowanych wydarzeń.'}`
-  }, [dzienWydarzenia, wybranyDzien])
+    const naglowek = `Plan dnia ${fmtDate(wybranyDzien)}`
+    if (!dzienWydarzenia.length) return `${naglowek}\nBrak zaplanowanych wydarzeń.`
+    return `${naglowek}\n\n${dzienWydarzenia.map((w) => wydarzenieTresc(w, b)).join('\n\n')}`
+  }, [dzienWydarzenia, wybranyDzien, b])
+
+  const kopiujSms = async (w: Wydarzenie) => {
+    const ok = await copyToClipboard(wydarzenieTresc(w, b))
+    push(ok ? 'Skopiowano — wklej w SMS lub wiadomości' : 'Nie udało się skopiować', ok ? 'ok' : 'err')
+  }
 
   const planNode = () => (
     <PlanTygodniaDoc
@@ -392,8 +425,18 @@ export default function Kalendarz() {
                         )}
                         {w.notatki && <div className="text-stone-400">{w.notatki}</div>}
                       </div>
-                      <div className="mt-2 border-t border-stone-100 pt-2">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-stone-100 pt-2">
                         <Toggle checked={w.zrobione} onChange={(v) => przelaczZrobione(w, v)} label="Zrobione" />
+                        <div className="ml-auto flex items-center gap-1">
+                          <button className="btn-ghost btn-sm" onClick={() => kopiujSms(w)} title="Kopiuj pełną treść">
+                            <Copy size={14} /> Kopiuj SMS
+                          </button>
+                          {prac?.telefon && (
+                            <a className="btn-ghost btn-sm" href={smsLink(prac.telefon, wydarzenieTresc(w, b))}>
+                              <MessageSquare size={14} /> SMS do {prac.imie.split(' ')[0]}
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )

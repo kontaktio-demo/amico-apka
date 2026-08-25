@@ -103,7 +103,7 @@ export default function Zadania() {
               share={{
                 title: 'Lista zadań AMICO',
                 text: widoczne
-                  .map((z) => `• ${z.tytul} - ${nazwaOsoby(z.przypisanyDo)} (${fmtDate(z.termin)})`)
+                  .map((z) => `• ${z.tytul} - ${(z.przypisanyDoNazwa || nazwaOsoby(z.przypisanyDo))} (${fmtDate(z.termin)})`)
                   .join('\n'),
               }}
               size="sm"
@@ -163,7 +163,7 @@ export default function Zadania() {
                         {z.opis && <p className="mt-1 line-clamp-2 text-[12.5px] text-stone-500">{z.opis}</p>}
                         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11.5px] text-stone-400">
                           <span className="inline-flex items-center gap-1">
-                            <User size={12} /> {nazwaOsoby(z.przypisanyDo)}
+                            <User size={12} /> {(z.przypisanyDoNazwa || nazwaOsoby(z.przypisanyDo))}
                           </span>
                           {z.termin && (
                             <span className={cx('inline-flex items-center gap-1', spozniony && 'text-red-400')}>
@@ -363,7 +363,7 @@ function ZadaniaDruk({
           {zadania.map((z) => (
             <tr key={z.id}>
               <td style={cell}>{z.tytul}</td>
-              <td style={cell}>{nazwaOsoby(z.przypisanyDo)}</td>
+              <td style={cell}>{(z.przypisanyDoNazwa || nazwaOsoby(z.przypisanyDo))}</td>
               <td style={cell}>
                 {fmtDate(z.termin)}
                 {z.godzina ? `, ${z.godzina}` : ''}
