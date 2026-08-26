@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from './supabase'
-import { useStore } from './store'
+import { useStore, migruj } from './store'
 import { scalBaze, pustyStan, bezSekretow } from './merge'
 import { pustaBaza } from './seed'
 import type { Baza, Rola, Uzytkownik } from './types'
@@ -469,7 +469,12 @@ async function pobierzIScal(ws: string) {
   // (po migracji), a nie `scalona` sprzed migracji - inaczej sprzatanie migracji nie
   // zostaloby wypchniete do chmury i stan lokalny rozjezdzalby sie z serwerem.
   const zapisana = useStore.getState().baza
-  const rozne = stabilnyJson(bezSekretow(zapisana)) !== stabilnyJson(zdalny.data)
+  // Porownujemy z ZNORMALIZOWANA migawka zdalna (po migruj), a nie z surowa. Inaczej sama
+  // mechaniczna migracja (usuniecie firma_milena, przepiecie firmaId, normalizacja tablic)
+  // roznilaby sie od surowej chmury i w kolko wypychala CALA baze (petla zapisow przy
+  // mieszanej flocie). Rzeczywiste zmiany danych dalej sie roznia i normalnie sie wysylaja.
+  const zdalnaZnorm = migruj(zdalny.data as Baza)
+  const rozne = stabilnyJson(bezSekretow(zapisana)) !== stabilnyJson(bezSekretow(zdalnaZnorm))
   if (rozne) zaplanujZapis(300)
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }

@@ -264,8 +264,10 @@ export const useStore = create<AppState>((setState, getState) => ({
   },
 }))
 
-// Uzupelnia brakujace kolekcje w starszych/niepelnych bazach
-function migruj(b: Baza): Baza {
+// Uzupelnia brakujace kolekcje w starszych/niepelnych bazach + wycofuje drugi podmiot i
+// normalizuje tablice. Eksportowane, bo cloud.ts normalizuje nim migawke zdalna PRZED
+// porownaniem (zeby mechaniczna migracja nie wywolywala petli zapisow).
+export function migruj(b: Baza): Baza {
   const wzor = pustaBaza()
   const scalona: Baza = { ...wzor, ...b }
   for (const k of Object.keys(wzor) as (keyof Baza)[]) {
@@ -286,10 +288,12 @@ function migruj(b: Baza): Baza {
   // wszystkich widokow filtrowanych po firmaId - czyli "gubi sie" niezauwazenie.
   const DO_USUNIECIA = 'firma_milena'
   const DOMYSLNA = 'firma_andrzej'
+  // Usuwamy drugi podmiot z listy firm. BEZ tombstona - migruj i tak zdejmuje firma_milena
+  // przy KAZDYM wczytaniu na KAZDYM urzadzeniu (migracja-przy-odczycie), wiec tombstone
+  // byl zbedny, a jego znacznik czasu (nowISO) czynil migruj niedeterministycznym i
+  // wywolywal petle porownania w cloud.ts. Teraz migruj jest w pelni deterministyczne.
   if (scalona.firmy?.some((f) => f.id === DO_USUNIECIA)) {
     scalona.firmy = scalona.firmy.filter((f) => f.id !== DO_USUNIECIA)
-    const maTomb = (scalona.usuniete || []).some((t) => t.k === 'firmy' && t.id === DO_USUNIECIA)
-    if (!maTomb) scalona.usuniete = [...(scalona.usuniete || []), { k: 'firmy', id: DO_USUNIECIA, t: nowISO() }]
   }
   if (!scalona.firmy?.length) scalona.firmy = wzor.firmy
   // cel przepiecia = docelowy podmiot (nigdy ten usuwany)
@@ -297,16 +301,17 @@ function migruj(b: Baza): Baza {
   for (const k of Object.keys(scalona) as (keyof Baza)[]) {
     const arr: any = (scalona as any)[k]
     if (!Array.isArray(arr) || !arr.some((r: any) => r && r.firmaId === DO_USUNIECIA)) continue
-    // NOWE obiekty (nie mutujemy referencji wspoldzielonych z danymi z chmury) + bumpujemy
-    // _zm, zeby scalanie bylo determinstyczne i ZBIEZNE - inaczej przy mieszanej flocie
-    // (stara wersja apki dalej wysyla firma_milena) rekord "pingpongowal" bez konca,
-    // za kazdym razem wypychajac CALA baze.
-    ;(scalona as any)[k] = arr.map((r: any) =>
-      r && r.firmaId === DO_USUNIECIA ? { ...r, firmaId: cel.id, _zm: nowISO() } : r,
-    )
+    // NOWE obiekty (nie mutujemy referencji wspoldzielonych z danymi z chmury). KLUCZOWE:
+    // ZACHOWUJEMY _zm - to mechaniczne przepiecie, NIE edycja uzytkownika. Podbicie _zm=now
+    // sprawialoby, ze stara (nieaktualna) kopia wygrywa scalanie nad nowsza edycja z innego
+    // urzadzenia (cichy powrot np. kwoty) albo wskrzesza skasowany rekord (tombstone < _zm).
+    // Petle scalania rozwiazuje normalizacja migawki zdalnej przed porownaniem (cloud.ts).
+    ;(scalona as any)[k] = arr.map((r: any) => (r && r.firmaId === DO_USUNIECIA ? { ...r, firmaId: cel.id } : r))
   }
   if (scalona.ustawienia.aktywnaFirmaId === DO_USUNIECIA) {
-    scalona.ustawienia = { ...scalona.ustawienia, aktywnaFirmaId: cel.id, _zm: nowISO() } as any
+    // ZACHOWUJEMY _zm ustawien (jak wyzej) - inaczej nieaktualne ustawienia z jednego
+    // urzadzenia nadpisywalyby nowsze z chmury. migruj i tak reapiluje te poprawke.
+    scalona.ustawienia = { ...scalona.ustawienia, aktywnaFirmaId: cel.id } as any
   }
   // Jedyna poprawna strona firmy to marmurowydom.pl - podmieniamy TYLKO stary domyslny
   // adres. Pustego pola NIE ruszamy (uzytkownik moze je celowo wyczyscic), zeby migracja
