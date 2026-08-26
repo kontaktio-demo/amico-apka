@@ -236,7 +236,7 @@ function Lista() {
                           <MapPin size={14} className="text-stone-400" /> <span className="truncate">{z.adres}</span>
                         </div>
                       )}
-                      {!ukryjKwoty && (z.wartoscBrutto || z.wartoscNetto) && (
+                      {!ukryjKwoty && !!(z.wartoscBrutto || z.wartoscNetto) && (
                         <div className="flex items-center gap-1.5">
                           <Wallet size={14} className="text-stone-400" /> {fmtPLN(z.wartoscBrutto || z.wartoscNetto)}
                           {z.wartoscBrutto ? ' brutto' : ' netto'}
@@ -567,11 +567,12 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   const kontrahentNazwa = (id?: string) => (id ? b.kontrahenci.find((k) => k.id === id)?.nazwa : undefined)
   const pracownikNazwa = (id?: string) => (id ? b.pracownicy.find((p) => p.id === id)?.imie : undefined)
 
+  const os = z.osoby || {}
   const osoby = [
-    { label: 'Projektant', v: kontrahentNazwa(z.osoby.projektantId) },
-    { label: 'Stolarz / studio', v: kontrahentNazwa(z.osoby.stolarzId) },
-    { label: 'Wykonawca', v: kontrahentNazwa(z.osoby.wykonawcaId) },
-    { label: 'Koordynator', v: pracownikNazwa(z.osoby.koordynatorId) },
+    { label: 'Projektant', v: kontrahentNazwa(os.projektantId) },
+    { label: 'Stolarz / studio', v: kontrahentNazwa(os.stolarzId) },
+    { label: 'Wykonawca', v: kontrahentNazwa(os.wykonawcaId) },
+    { label: 'Koordynator', v: pracownikNazwa(os.koordynatorId) },
   ].filter((o) => o.v)
 
   const shareText = [

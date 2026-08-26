@@ -689,7 +689,7 @@ function KartaKlienta({ id }: { id: string }) {
               <div className="label flex items-center gap-1.5">
                 <Tag size={13} /> Tagi
               </div>
-              <TagiEdytor tagi={k.tagi} onChange={(tagi) => zapisz({ tagi })} />
+              <TagiEdytor tagi={k.tagi || []} onChange={(tagi) => zapisz({ tagi })} />
             </div>
           </SectionCard>
 

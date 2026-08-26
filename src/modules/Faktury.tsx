@@ -121,7 +121,7 @@ function Lista() {
             <tbody className="divide-y divide-stone-100">
               {faktury.map((f) => {
                 const sum = podsumuj(f.pozycje)
-                const si = STATUS_INFO[f.status]
+                const si = STATUS_INFO[f.status] || STATUS_INFO.szkic
                 return (
                   <tr key={f.id} className="row-hover cursor-pointer" onClick={() => navigate(`/faktury/${f.id}`)}>
                     <td className="td font-semibold text-ink">{f.numer || '-'}</td>

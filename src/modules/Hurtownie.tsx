@@ -202,7 +202,7 @@ function HurtowniaModal({
             onChange={(e) => setNazwa(e.target.value)}
             placeholder="np. Granity Sp. z o.o."
             autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && link.trim() && zapisz()}
+            onKeyDown={(e) => e.key === 'Enter' && ok && zapisz()}
           />
         </Field>
         <Field label="Link do strony hurtowni" hint="Możesz wpisać sam adres, np. granity.pl">

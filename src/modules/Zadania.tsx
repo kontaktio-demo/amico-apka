@@ -71,11 +71,13 @@ export default function Zadania() {
   const nazwaOsoby = (id?: string) => osoby.find((o) => o.id === id)?.nazwa || '-'
 
   // Prywatnosc zadan: wlasciciel i kierownik widza wszystkie; pozostali (biuro/montazysta)
-  // widza TYLKO swoje przypisane - spojnie z pulpitem.
+  // widza TYLKO swoje. "Swoje" = przypisane bezposrednio LUB jako wspolnie przypisany -
+  // spojnie z pulpitem (inaczej wspolprzypisany nie widzial zadania na tablicy Zadania).
   const widziWszystkie = user?.rola === 'wlasciciel' || user?.rola === 'kierownik'
-  const widoczne = b.zadania.filter((z) =>
-    widziWszystkie ? !tylkoMoje || z.przypisanyDo === user?.id : z.przypisanyDo === user?.id,
-  )
+  const widoczne = b.zadania.filter((z) => {
+    const moje = z.przypisanyDo === user?.id || (z.wspolniPrzypisani || []).includes(user?.id || '')
+    return widziWszystkie ? !tylkoMoje || moje : moje
+  })
 
   function nowe() {
     setEdycja({

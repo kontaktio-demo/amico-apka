@@ -10,8 +10,12 @@ import type { ZamowienieTowaru, Firma } from '../lib/types'
 
 function fmtData(iso?: string): string {
   if (!iso) return ''
-  const d = iso.slice(0, 10).split('-')
-  return d.length === 3 ? `${d[2]}.${d[1]}.${d[0]}` : iso
+  // utworzono to znacznik UTC (toISOString) - formatujemy wg czasu LOKALNEGO, inaczej
+  // tuz po polnocy data "cofa sie" o jeden dzien (np. 26.08 pokazywalo 25.08).
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`
 }
 
 // Temat i tresc wiadomosci e-mail z zamowieniem - gotowe do wyslania z telefonu.

@@ -53,7 +53,7 @@ function zobowiazanieOf(e: Ekspozycja): number {
   return round2((e.wartoscNetto || 0) * (e.krotnosc || 0))
 }
 function zrealizowanoOf(e: Ekspozycja): number {
-  return round2(e.rozliczenia.reduce((a, r) => a + (r.kwotaNetto || 0), 0))
+  return round2((e.rozliczenia || []).reduce((a, r) => a + (r.kwotaNetto || 0), 0))
 }
 function procentOf(e: Ekspozycja): number {
   const zob = zobowiazanieOf(e)

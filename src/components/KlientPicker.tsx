@@ -52,7 +52,11 @@ export function KlientPicker({
     const posortowane = b.klienci.slice().sort((a, c) => klientNazwa(a).localeCompare(klientNazwa(c), 'pl'))
     const widziane = new Set<string>()
     const unikalne = posortowane.filter((k) => {
-      const klucz = `${klientNazwa(k).trim().toLowerCase()}|${(k.telefon || '').replace(/\s/g, '')}`
+      // Dedup TYLKO prawdziwych duplikatow: ta sama nazwa + ten sam telefon. Klient BEZ
+      // telefonu jest zawsze unikalny (klucz = id) - inaczej dwoch roznych klientow o tym
+      // samym nazwisku i bez telefonu znikalo z listy i nie dalo sie drugiego wybrac.
+      const tel = (k.telefon || '').replace(/\s/g, '')
+      const klucz = tel ? `${klientNazwa(k).trim().toLowerCase()}|${tel}` : `id:${k.id}`
       if (widziane.has(klucz)) return false
       widziane.add(klucz)
       return true

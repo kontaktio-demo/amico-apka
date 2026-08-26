@@ -308,11 +308,41 @@ function migruj(b: Baza): Baza {
   scalona.firmy = scalona.firmy.map((f) =>
     f.id === DOMYSLNA && f.www === 'amico.kontaktio.pl' ? { ...f, www: 'marmurowydom.pl' } : f,
   )
-  // Kontrahent bez tablicy `prowizje` kladl CALY widok Kontrahenci (odczyt .prowizje).
-  // Normalizujemy defensywnie, zeby zaden niepelny rekord (stary/z importu/z synchro)
-  // nie wywalal strony.
-  scalona.kontrahenci = (scalona.kontrahenci || []).map((k) =>
-    Array.isArray((k as any).prowizje) ? k : { ...k, prowizje: [] },
-  )
+  // --- Defensywna normalizacja tablic w rekordach ---
+  // Brakujaca tablica (stare dane, import starej kopii, czesciowa synchronizacja) kladla
+  // CALY widok przy odczycie (.map/.reduce/.length/[0]). Gwarantujemy, ze kazdy rekord ma
+  // swoje tablice - zaden niepelny rekord nie wywali strony (ErrorBoundary).
+  const normArr = (rec: any, pola: string[]) => {
+    if (!rec || pola.every((p) => Array.isArray(rec[p]))) return rec
+    const kopia = { ...rec }
+    for (const p of pola) if (!Array.isArray(kopia[p])) kopia[p] = []
+    return kopia
+  }
+  const mapNorm = (klucz: keyof Baza, pola: string[]) => {
+    const arr = (scalona as any)[klucz]
+    if (Array.isArray(arr)) (scalona as any)[klucz] = arr.map((r: any) => normArr(r, pola))
+  }
+  mapNorm('kontrahenci', ['prowizje'])
+  mapNorm('klienci', ['tagi', 'historia'])
+  mapNorm('wyceny', ['pozycje'])
+  mapNorm('faktury', ['pozycje'])
+  mapNorm('raportyKasowe', ['wiersze'])
+  mapNorm('ekspozycje', ['rozliczenia'])
+  mapNorm('skany', ['strony'])
+  // Zlecenie: tablica `etapy` + OBIEKT `osoby` (przypisania) - oba musza istniec, bo
+  // widok szczegolow czyta z.osoby.projektantId itd.
+  if (Array.isArray((scalona as any).zlecenia)) {
+    ;(scalona as any).zlecenia = (scalona as any).zlecenia.map((z: any) => {
+      const zz = normArr(z, ['etapy'])
+      return zz.osoby && typeof zz.osoby === 'object' ? zz : { ...zz, osoby: {} }
+    })
+  }
+  // Odprawa ma tablice zagniezdzona: sekcje[].pozycje - normalizujemy oba poziomy.
+  if (Array.isArray((scalona as any).odprawy)) {
+    ;(scalona as any).odprawy = (scalona as any).odprawy.map((o: any) => {
+      const oo = normArr(o, ['sekcje'])
+      return { ...oo, sekcje: oo.sekcje.map((s: any) => normArr(s, ['pozycje'])) }
+    })
+  }
   return scalona
 }

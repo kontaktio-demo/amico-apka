@@ -85,7 +85,9 @@ export default function Odprawa() {
     zapisz(odprawa.sekcje.map((s, i) => (i === idx ? { ...s, pozycje: s.pozycje.filter((_, j) => j !== li) } : s)))
   }
 
-  const liczbaPozycji = odprawa ? odprawa.sekcje.reduce((n, s) => n + s.pozycje.filter((p) => p.trim()).length, 0) : 0
+  const liczbaPozycji = odprawa
+    ? (odprawa.sekcje || []).reduce((n, s) => n + (s.pozycje || []).filter((p) => p.trim()).length, 0)
+    : 0
 
   // Tresc do wyslania (SMS / e-mail / udostepnij)
   const shareText = odprawa

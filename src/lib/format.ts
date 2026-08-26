@@ -117,7 +117,8 @@ export function podsumuj(pozycje: Pozycja[]): Podsumowanie {
   const wgStawek: Podsumowanie['wgStawek'] = {}
   let netto = 0
   let vat = 0
-  for (const p of pozycje) {
+  // `|| []` - dokument bez tablicy pozycji (stare dane/import) nie moze wywalac widoku.
+  for (const p of pozycje || []) {
     const n = pozycjaNetto(p)
     const v = round2(n * (p.vat / 100))
     netto += n

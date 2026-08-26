@@ -620,7 +620,10 @@ function PulpitTeren({
 }) {
   const wydarzeniaDzis = b.wydarzenia.filter((w) => w.data === t && !w.zrobione)
   const moje = b.zadania
-    .filter((z) => z.przypisanyDo === userId && z.status !== 'zrobione')
+    .filter(
+      (z) =>
+        (z.przypisanyDo === userId || (z.wspolniPrzypisani || []).includes(userId)) && z.status !== 'zrobione',
+    )
     .sort((a, c) => (a.termin || '').localeCompare(c.termin || ''))
   const naDzis = moje.filter((z) => z.termin && z.termin <= t)
   const powitanie = new Date().getHours() < 18 ? 'Dzień dobry' : 'Dobry wieczór'

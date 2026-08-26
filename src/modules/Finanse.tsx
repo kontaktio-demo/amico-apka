@@ -121,8 +121,9 @@ export default function Finanse() {
 // 1) RAPORT KASOWY
 // ===========================================================================
 function obrotyRaportu(r: RaportKasowy) {
-  const przychod = r.wiersze.reduce((a, w) => a + (w.przychod || 0), 0)
-  const rozchod = r.wiersze.reduce((a, w) => a + (w.rozchod || 0), 0)
+  const wiersze = r.wiersze || []
+  const przychod = wiersze.reduce((a, w) => a + (w.przychod || 0), 0)
+  const rozchod = wiersze.reduce((a, w) => a + (w.rozchod || 0), 0)
   const saldo = (r.saldoPoczatkowe || 0) + przychod - rozchod
   return { przychod, rozchod, saldo }
 }
