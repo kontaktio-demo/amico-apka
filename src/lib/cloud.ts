@@ -468,13 +468,15 @@ async function pobierzIScal(ws: string) {
   // normalizacja tablic) i zapisuje WYNIK. Porownujemy zatem to, co REALNIE zapisano
   // (po migracji), a nie `scalona` sprzed migracji - inaczej sprzatanie migracji nie
   // zostaloby wypchniete do chmury i stan lokalny rozjezdzalby sie z serwerem.
-  const zapisana = useStore.getState().baza
-  // Porownujemy z ZNORMALIZOWANA migawka zdalna (po migruj), a nie z surowa. Inaczej sama
-  // mechaniczna migracja (usuniecie firma_milena, przepiecie firmaId, normalizacja tablic)
-  // roznilaby sie od surowej chmury i w kolko wypychala CALA baze (petla zapisow przy
-  // mieszanej flocie). Rzeczywiste zmiany danych dalej sie roznia i normalnie sie wysylaja.
-  const zdalnaZnorm = migruj(zdalny.data as Baza)
-  const rozne = stabilnyJson(bezSekretow(zapisana)) !== stabilnyJson(bezSekretow(zdalnaZnorm))
+  const zapisanaJson = stabilnyJson(bezSekretow(useStore.getState().baza))
+  // Szybka sciezka: gdy stan lokalny = surowa migawka zdalna, nie ma co wysylac (typowy
+  // stan ustabilizowany - unikamy drugiego migruj na duzej bazie ze skanami base64).
+  let rozne = zapisanaJson !== stabilnyJson(zdalny.data)
+  // Dopiero gdy sie roznia, sprawdzamy czy to NIE jest wylacznie efekt mechanicznej
+  // migracji (usuniecie firma_milena, przepiecie firmaId, normalizacja tablic) - porownujac
+  // ze ZNORMALIZOWANA (po migruj) migawka zdalna. Inaczej sama migracja wypychalaby CALA
+  // baze w kolko (petla zapisow przy mieszanej flocie). Realne zmiany dalej sie wysylaja.
+  if (rozne) rozne = zapisanaJson !== stabilnyJson(bezSekretow(migruj(zdalny.data as Baza)))
   if (rozne) zaplanujZapis(300)
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }
