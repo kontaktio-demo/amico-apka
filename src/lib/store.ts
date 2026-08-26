@@ -329,6 +329,7 @@ function migruj(b: Baza): Baza {
   mapNorm('raportyKasowe', ['wiersze'])
   mapNorm('ekspozycje', ['rozliczenia'])
   mapNorm('skany', ['strony'])
+  mapNorm('dokumenty', ['widoczneDla'])
   // Zlecenie: tablica `etapy` + OBIEKT `osoby` (przypisania) - oba musza istniec, bo
   // widok szczegolow czyta z.osoby.projektantId itd.
   if (Array.isArray((scalona as any).zlecenia)) {
