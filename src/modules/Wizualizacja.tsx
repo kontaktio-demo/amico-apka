@@ -111,9 +111,11 @@ export default function Wizualizacja() {
   const preset = useMemo(() => stonePreset(kat, nazwaKamienia), [kat, nazwaKamienia])
   const idBase = 'stone'
 
-  const pow = ksztalt === 'prosty' ? (a * b2) / 10000 : (a * b2 + a2 * b3) / 10000
-  const obwod =
-    ksztalt === 'prosty' ? (2 * (a + b2)) / 100 : (a + b2 + a2 + b3 + Math.abs(a - a2) + Math.abs(b2 - b3)) / 100
+  // Blat L to prostokat a×b2 + ramie a2×b3 z NAKLADAJACYM sie naroznikiem b2×b3 (patrz
+  // rysowany wielokat: (0,0)-(a,0)-(a,b2)-(b3,b2)-(b3,a2)-(0,a2)). Pole = suma ramion
+  // MINUS wspolny naroznik; obwod litery L = obwod prostokata otaczajacego = 2*(a+a2).
+  const pow = ksztalt === 'prosty' ? (a * b2) / 10000 : (a * b2 + a2 * b3 - b2 * b3) / 10000
+  const obwod = ksztalt === 'prosty' ? (2 * (a + b2)) / 100 : (2 * (a + a2)) / 100
 
   async function zapiszDoArchiwum() {
     const svg = svgRef.current

@@ -177,6 +177,10 @@ h3,
 .doc-sheet {
   background: #fff;
   color: #111827;
+  /* Dlugi ciag bez spacji (np. wklejony URL/e-mail/numer) nie moze wyjsc poza kartke i
+     zostac przyciety przy druku - lamiemy go w razie potrzeby. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
   width: 210mm;
   min-height: 297mm;
   margin: 0 auto;

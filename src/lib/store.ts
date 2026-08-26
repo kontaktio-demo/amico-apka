@@ -296,8 +296,14 @@ function migruj(b: Baza): Baza {
   const cel = scalona.firmy.find((f) => f.id === DOMYSLNA) || scalona.firmy[0]
   for (const k of Object.keys(scalona) as (keyof Baza)[]) {
     const arr: any = (scalona as any)[k]
-    if (!Array.isArray(arr)) continue
-    for (const r of arr) if (r && r.firmaId === DO_USUNIECIA) r.firmaId = cel.id
+    if (!Array.isArray(arr) || !arr.some((r: any) => r && r.firmaId === DO_USUNIECIA)) continue
+    // NOWE obiekty (nie mutujemy referencji wspoldzielonych z danymi z chmury) + bumpujemy
+    // _zm, zeby scalanie bylo determinstyczne i ZBIEZNE - inaczej przy mieszanej flocie
+    // (stara wersja apki dalej wysyla firma_milena) rekord "pingpongowal" bez konca,
+    // za kazdym razem wypychajac CALA baze.
+    ;(scalona as any)[k] = arr.map((r: any) =>
+      r && r.firmaId === DO_USUNIECIA ? { ...r, firmaId: cel.id, _zm: nowISO() } : r,
+    )
   }
   if (scalona.ustawienia.aktywnaFirmaId === DO_USUNIECIA) {
     scalona.ustawienia = { ...scalona.ustawienia, aktywnaFirmaId: cel.id, _zm: nowISO() } as any
@@ -342,6 +348,7 @@ function migruj(b: Baza): Baza {
   if (Array.isArray((scalona as any).odprawy)) {
     ;(scalona as any).odprawy = (scalona as any).odprawy.map((o: any) => {
       const oo = normArr(o, ['sekcje'])
+      if (!oo) return oo
       return { ...oo, sekcje: oo.sekcje.map((s: any) => normArr(s, ['pozycje'])) }
     })
   }

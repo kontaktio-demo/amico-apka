@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Camera, Upload, X, Check, RotateCcw, Trash2, Plus, ScanLine, FileText, ChevronLeft } from 'lucide-react'
 import { useStore } from '../lib/store'
-import { useToast, useConfirm, Field, Input, Select, Textarea } from './ui'
+import { useToast, Field, Input, Select, Textarea } from './ui'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { uid } from '../lib/id'
 import { nowISO } from '../lib/format'
@@ -59,11 +59,17 @@ export function Skaner({
   const b = useStore((s) => s.baza)
   const upsert = useStore((s) => s.upsert)
   const { push } = useToast()
-  const { confirm, confirmNode } = useConfirm()
+  // UWAGA: NIE uzywamy useConfirm() (jego okno jest portalowane na z-50 i chowa sie POD
+  // pelnoekranowym skanerem z-80 - uzytkownik nie mogl potwierdzic i byl uwieziony,
+  // tracac zeskanowane strony). Potwierdzenie renderujemy LOKALNIE, wewnatrz skanera.
+  const [potwierdzZamkniecie, setPotwierdzZamkniecie] = useState(false)
 
   // Zamkniecie skanera po zeskanowaniu, ale przed zapisaniem, kasuje strony bezpowrotnie.
-  const zamknij = async () => {
-    if (strony.length > 0 && !(await confirm(`Odrzucić ${strony.length} zeskanowanych stron bez zapisania?`))) return
+  const zamknij = () => {
+    if (strony.length > 0) {
+      setPotwierdzZamkniecie(true)
+      return
+    }
     onClose()
   }
 
@@ -414,7 +420,33 @@ export function Skaner({
           </div>
         </div>
       )}
-      {confirmNode}
+      {potwierdzZamkniecie && (
+        <div
+          className="absolute inset-0 z-[95] grid place-items-center bg-black/75 p-6"
+          onClick={() => setPotwierdzZamkniecie(false)}
+        >
+          <div className="card card-pad w-full max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
+            <p className="text-[15px] font-medium text-ink">
+              Odrzucić {strony.length} zeskanowanych {strony.length === 1 ? 'stronę' : 'stron'} bez zapisania?
+            </p>
+            <p className="mt-1 text-[13px] text-stone-500">Tej operacji nie można cofnąć.</p>
+            <div className="mt-4 flex justify-center gap-2">
+              <button className="btn-outline" onClick={() => setPotwierdzZamkniecie(false)}>
+                Anuluj
+              </button>
+              <button
+                className="btn-danger"
+                onClick={() => {
+                  setPotwierdzZamkniecie(false)
+                  onClose()
+                }}
+              >
+                Odrzuć
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

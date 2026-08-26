@@ -19,8 +19,13 @@ export function fmtNum(n: number | undefined | null, dec = 2): string {
 export function parseNum(s: string | number | undefined): number {
   if (typeof s === 'number') return s
   if (!s) return 0
-  const cleaned = String(s).replace(/\s/g, '').replace(/zł/gi, '').replace(',', '.')
-  const n = parseFloat(cleaned)
+  let c = String(s).replace(/\s/g, '').replace(/zł/gi, '')
+  // Format polski: przecinek = separator dziesietny. Gdy jest przecinek, kropki traktujemy
+  // jako separatory tysiecy (usuwamy), a przecinek zamieniamy na kropke. Dzieki temu
+  // "1.234,56" -> 1234.56 (wczesniej ucinane do 1.234). Bez przecinka kropka zostaje
+  // separatorem dziesietnym ("1234.56").
+  if (c.includes(',')) c = c.replace(/\./g, '').replace(',', '.')
+  const n = parseFloat(c)
   return Number.isFinite(n) ? n : 0
 }
 
@@ -245,8 +250,11 @@ function odmiana(n: number, formy: [string, string, string]): string {
   return formy[2]
 }
 export function kwotaSlownie(kwota: number): string {
-  const zl = Math.floor(round2(kwota))
-  const gr = Math.round((round2(kwota) - zl) * 100)
+  if (!Number.isFinite(kwota)) return 'zero złotych 00/100'
+  const minus = kwota < 0 ? 'minus ' : ''
+  const abs = round2(Math.abs(kwota))
+  const zl = Math.floor(abs)
+  const gr = Math.round((abs - zl) * 100)
   const grupy: [string, [string, string, string]][] = [
     ['', ['', '', '']],
     ['tysiąc', ['tysiąc', 'tysiące', 'tysięcy']],
@@ -254,7 +262,7 @@ export function kwotaSlownie(kwota: number): string {
     ['miliard', ['miliard', 'miliardy', 'miliardów']],
   ]
   if (zl === 0) {
-    return `zero złotych ${String(gr).padStart(2, '0')}/100`
+    return `${minus}zero złotych ${String(gr).padStart(2, '0')}/100`
   }
   let reszta = zl
   const seg: number[] = []
@@ -270,7 +278,7 @@ export function kwotaSlownie(kwota: number): string {
     if (i > 0) slowa.push(odmiana(g, grupy[i][1]))
   }
   const zlForma = odmiana(zl, ['złoty', 'złote', 'złotych'])
-  return `${slowa.join(' ')} ${zlForma} ${String(gr).padStart(2, '0')}/100`.replace(/\s+/g, ' ').trim()
+  return `${minus}${slowa.join(' ')} ${zlForma} ${String(gr).padStart(2, '0')}/100`.replace(/\s+/g, ' ').trim()
 }
 
 // ---------- Inne ----------

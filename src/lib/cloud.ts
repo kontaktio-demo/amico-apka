@@ -464,8 +464,12 @@ async function pobierzIScal(ws: string) {
   useStore.getState().zastapBaze(scalona)
   stosujeZdalne = false
 
-  // Czy scalony stan rozni sie od serwera? Jesli tak - mamy lokalne rekordy do wyslania.
-  const rozne = stabilnyJson(bezSekretow(scalona)) !== stabilnyJson(zdalny.data)
+  // WAZNE: zastapBaze URUCHAMIA migruj (usuniecie firma_milena, przepiecie rekordow,
+  // normalizacja tablic) i zapisuje WYNIK. Porownujemy zatem to, co REALNIE zapisano
+  // (po migracji), a nie `scalona` sprzed migracji - inaczej sprzatanie migracji nie
+  // zostaloby wypchniete do chmury i stan lokalny rozjezdzalby sie z serwerem.
+  const zapisana = useStore.getState().baza
+  const rozne = stabilnyJson(bezSekretow(zapisana)) !== stabilnyJson(zdalny.data)
   if (rozne) zaplanujZapis(300)
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }

@@ -325,14 +325,14 @@ function DzieloBody({
       <DocSection n={nr()} title="Wynagrodzenie">
         <ol style={OL}>
           <li style={LI}>
-            Za wykonanie przedmiotu umowy Wykonawcy przysługuje wynagrodzenie w wysokości <Fill v={brutto} w={150} /> zł
+            Za wykonanie przedmiotu umowy Wykonawcy przysługuje wynagrodzenie w wysokości <Fill v={brutto} w={150} />
             brutto, tj. (słownie: <Fill v={bruttoSlownie} w={300} /> brutto), płatne najpóźniej w terminie 3 dni od dnia
             zakończenia prac potwierdzonych protokołem odbioru, gotówką, kartą lub na rachunek bankowy nr{' '}
             <Fill v={konto} w={230} />, zgodnie z kosztorysem stanowiącym załącznik do niniejszej umowy.
           </li>
           <li style={LI}>
             Zamawiający wpłaci Wykonawcy w terminie {zadatekDni} dni od podpisania niniejszej umowy zadatek w wysokości{' '}
-            <Fill v={has(u.zadatek) ? fmtPLN(u.zadatek) : ''} w={150} /> zł, o który zostanie pomniejszone wynagrodzenie
+            <Fill v={has(u.zadatek) ? fmtPLN(u.zadatek) : ''} w={150} />, o który zostanie pomniejszone wynagrodzenie
             końcowe.
           </li>
           {is23 && (
@@ -372,7 +372,7 @@ function DzieloBody({
           </li>
           <li style={LI}>
             Zgody Zamawiającego nie wymaga wykonanie prac dodatkowych o wartości nieprzekraczającej{' '}
-            <Fill v={prog} w={140} /> zł (słownie: <Fill v={progSlownie} w={260} /> złotych).
+            <Fill v={prog} w={140} /> (słownie: <Fill v={progSlownie} w={260} /> złotych).
           </li>
           <li style={LI}>
             Jeżeli w trakcie wykonywania prac remontowych koszty wykonania przekroczą kwotę ustaloną powyżej, Wykonawca
