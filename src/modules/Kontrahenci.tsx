@@ -102,7 +102,7 @@ export default function Kontrahenci() {
   }
 
   // Statystyki prowizji dla aktywnej kategorii
-  const wszystkieProwizje = wszyscyTypu.flatMap((k) => k.prowizje)
+  const wszystkieProwizje = wszyscyTypu.flatMap((k) => k.prowizje || [])
   const sumaNaleznych = wszystkieProwizje.filter((p) => !p.wyplacona).reduce((s, p) => s + (p.kwota || 0), 0)
   const sumaWyplaconych = wszystkieProwizje.filter((p) => p.wyplacona).reduce((s, p) => s + (p.kwota || 0), 0)
 
@@ -221,7 +221,8 @@ export default function Kontrahenci() {
 
 // ---------- Karta kontrahenta ----------
 function KartaKontrahenta({ k, onEdit, onDelete }: { k: Kontrahent; onEdit: () => void; onDelete: () => void }) {
-  const naleznosc = k.prowizje.filter((p) => !p.wyplacona).reduce((s, p) => s + (p.kwota || 0), 0)
+  const prowizje = k.prowizje || []
+  const naleznosc = prowizje.filter((p) => !p.wyplacona).reduce((s, p) => s + (p.kwota || 0), 0)
   const spec = k.typ === 'wykonawca' ? k.branza : k.specjalizacja
   return (
     <Card>
@@ -271,12 +272,12 @@ function KartaKontrahenta({ k, onEdit, onDelete }: { k: Kontrahent; onEdit: () =
                 </span>
               </Badge>
             ) : null}
-            {k.prowizje.length > 0 && (
+            {prowizje.length > 0 && (
               <Badge tone={naleznosc > 0 ? 'amber' : 'green'}>
                 {naleznosc > 0 ? `należne: ${fmtPLN(naleznosc)}` : 'rozliczone'}
               </Badge>
             )}
-            {k.prowizje.length > 0 && <span className="text-[12px] text-stone-400">{k.prowizje.length} prowizji</span>}
+            {prowizje.length > 0 && <span className="text-[12px] text-stone-400">{prowizje.length} prowizji</span>}
           </div>
         )}
       </CardBody>

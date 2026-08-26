@@ -7,6 +7,19 @@ import { uid } from '../lib/id'
 import { nowISO } from '../lib/format'
 import type { Klient, KlientTyp } from '../lib/types'
 
+// UWAGA (iOS): NIE owijamy listy klientow w <Field>, bo Field renderuje <label>.
+// Przyciski wewnatrz <label> na iPhonie NIE odpalaja swojego onClick - tapniecie jest
+// przekierowywane do pola input powiazanego z etykieta, przez co "wybor klienta nic
+// nie robil" na PWA. Tutaj etykieta to zwykly <div>, bez owijania przyciskow w <label>.
+function Pole({ label, children }: { label?: string; children: React.ReactNode }) {
+  return (
+    <div className="block">
+      {label && <span className="label">{label}</span>}
+      {children}
+    </div>
+  )
+}
+
 // ============================================================================
 // KlientPicker - jedno miejsce do WYBORU KLIENTA z ZACIAGNIECIEM danych.
 // - wyszukiwarka (nazwa / telefon / e-mail / miasto / NIP),
@@ -60,7 +73,7 @@ export function KlientPicker({
   if (wybrany && !tworzenie) {
     const adres = klientAdres(wybrany)
     return (
-      <Field label={label}>
+      <Pole label={label}>
         <div className="rounded-xl border border-brand-300/40 bg-brand-50/40 p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
@@ -99,7 +112,7 @@ export function KlientPicker({
             </button>
           </div>
         </div>
-      </Field>
+      </Pole>
     )
   }
 
@@ -121,7 +134,7 @@ export function KlientPicker({
 
   // ---- Widok: wyszukiwarka ----
   return (
-    <Field label={label}>
+    <Pole label={label}>
       <div className="relative">
         <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
         <Input
@@ -164,7 +177,7 @@ export function KlientPicker({
       >
         <UserPlus size={15} /> Nowy klient{q.trim() ? `: „${q.trim()}"` : ''}
       </button>
-    </Field>
+    </Pole>
   )
 }
 

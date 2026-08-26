@@ -308,5 +308,11 @@ function migruj(b: Baza): Baza {
   scalona.firmy = scalona.firmy.map((f) =>
     f.id === DOMYSLNA && f.www === 'amico.kontaktio.pl' ? { ...f, www: 'marmurowydom.pl' } : f,
   )
+  // Kontrahent bez tablicy `prowizje` kladl CALY widok Kontrahenci (odczyt .prowizje).
+  // Normalizujemy defensywnie, zeby zaden niepelny rekord (stary/z importu/z synchro)
+  // nie wywalal strony.
+  scalona.kontrahenci = (scalona.kontrahenci || []).map((k) =>
+    Array.isArray((k as any).prowizje) ? k : { ...k, prowizje: [] },
+  )
   return scalona
 }

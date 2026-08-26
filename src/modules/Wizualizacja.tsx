@@ -205,7 +205,9 @@ export default function Wizualizacja() {
                 />
               </Field>
             </div>
-            <Field label="Kształt blatu">
+            {/* NIE <Field> (=<label>): przyciski w <label> na iOS nie odpalaja onClick */}
+            <div className="block">
+              <span className="label">Kształt blatu</span>
               <div className="flex gap-2">
                 {(['prosty', 'L'] as const).map((k) => (
                   <button
@@ -222,7 +224,7 @@ export default function Wizualizacja() {
                   </button>
                 ))}
               </div>
-            </Field>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Długość A (cm)">
                 <Input type="number" value={a} onChange={(e) => setA(+e.target.value)} />
