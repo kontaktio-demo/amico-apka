@@ -360,11 +360,25 @@ async function pobierzStan(ws: string): Promise<{ data: any; rev: number } | nul
   return { data: data.data, rev: Number(data.rev) }
 }
 
+// Tanie pobranie SAMEGO numeru wersji (bez calej bazy) - do heartbeatu wykrywajacego
+// zmiany z innych urzadzen, gdyby kanal realtime cicho padl (czeste na iPhone).
+async function pobierzRev(ws: string): Promise<number | null> {
+  try {
+    const { data, error } = await supabase.from('amico_state').select('rev').eq('workspace_id', ws).maybeSingle()
+    if (error || !data) return null
+    return Number(data.rev)
+  } catch {
+    return null
+  }
+}
+
 let stosujeZdalne = false
 let timer: ReturnType<typeof setTimeout> | null = null
 let wTrakcie = false
 let brudne = false
 let proby = 0
+let ostatniSukces = 0 // znacznik ostatniego UDANEGO zapisu (okno laski dla banera bledu)
+let heartbeat: ReturnType<typeof setInterval> | null = null
 let unsubStore: (() => void) | null = null
 let kanal: ReturnType<typeof supabase.channel> | null = null
 
@@ -381,11 +395,10 @@ async function zapisz(): Promise<void> {
     brudne = true
     return
   }
-  if (!navigator.onLine) {
-    brudne = true // zapiszemy po powrocie sieci
-    C().ustaw({ status: 'offline' })
-    return
-  }
+  // UWAGA: NIE blokujemy zapisu na podstawie navigator.onLine. Na iPhone w trybie PWA
+  // ta flaga czesto KLAMIE (pokazuje offline mimo dzialajacego internetu - po uspieniu
+  // aplikacji, przelaczeniu WiFi/LTE). Zamiast blokowac, PROBUJEMY zapisac; jesli fetch
+  // naprawde padnie, obsluzy to blok catch (z oknem laski, bez straszenia banerem).
 
   wTrakcie = true
   brudne = false
@@ -409,6 +422,7 @@ async function zapisz(): Promise<void> {
       if (r?.ok) {
         setRev(ws, Number(r.rev))
         proby = 0
+        ostatniSukces = Date.now()
         C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
         return
       }
@@ -429,16 +443,26 @@ async function zapisz(): Promise<void> {
       await obsluzWygaslaSesje() // bez sensu ponawiac - trzeba sie zalogowac
       return
     }
-    C().ustaw({
-      status: navigator.onLine ? 'blad' : 'offline',
-      blad: bladPoPolsku(e),
-    })
+    // OKNO LASKI: przelotne bledy (przelaczenie sieci, uspienie iPhone, chwilowy konflikt
+    // przy wielu urzadzeniach) ponawiamy CICHO - status zostaje 'zapisywanie', bez
+    // straszacego banera. Baner ("Nie udalo sie / brak internetu") pokazujemy DOPIERO gdy
+    // problem sie UTRZYMUJE: kilka prob pod rzad LUB dluzej niz ~25 s bez udanego zapisu.
+    proby = Math.min(proby + 1, 6)
+    const dawnoBezSukcesu = ostatniSukces > 0 && Date.now() - ostatniSukces > 25000
+    if (proby >= 4 || dawnoBezSukcesu) {
+      const off =
+        !navigator.onLine ||
+        /failed to fetch|networkerror|network request failed|load failed|timeout/i.test(String(e?.message || e))
+      C().ustaw({ status: off ? 'offline' : 'blad', blad: bladPoPolsku(e) })
+    } else {
+      // ciche ponawianie - nie zmieniamy statusu na bledny (zostaje 'zapisywanie')
+      C().ustaw({ status: 'zapisywanie' })
+    }
   } finally {
     wTrakcie = false
     if (blad && useCloud.getState().status !== 'sesja') {
       // ponawiaj z narastajacym opoznieniem (5xx/timeout NIE emituje zdarzenia 'online')
-      proby = Math.min(proby + 1, 5)
-      zaplanujZapis(Math.min(30000, 1500 * 2 ** proby))
+      zaplanujZapis(Math.min(30000, 1200 * 2 ** Math.min(proby, 5)))
     } else if (!blad && brudne) {
       zaplanujZapis()
     }
@@ -499,16 +523,38 @@ function podlaczNasluch() {
   })
   window.removeEventListener('online', onOnline)
   window.removeEventListener('offline', onOffline)
+  document.removeEventListener('visibilitychange', onWznowienie)
+  window.removeEventListener('focus', onWznowienie)
   window.addEventListener('online', onOnline)
   window.addEventListener('offline', onOffline)
+  document.addEventListener('visibilitychange', onWznowienie)
+  window.addEventListener('focus', onWznowienie)
 }
 
 function onOnline() {
   if (C().workspaceId) zaplanujZapis(200)
   else void startSync() // start byl offline - bootstrap sie nie udal, ponow
 }
+// Zdarzenie 'offline' na iPhone bywa FALSZYWE (usypianie PWA, przelaczanie sieci), wiec
+// NIE strasymy od razu banerem. Prawdziwy brak sieci pokaze OKNO LASKI, gdy zapis
+// naprawde padnie kilka razy pod rzad (patrz blok catch w zapisz()).
 function onOffline() {
-  C().ustaw({ status: 'offline' })
+  /* celowo nic */
+}
+
+// Powrot aplikacji na pierwszy plan. iPhone usypia PWA - gasnie kanal realtime i wiszace
+// zapytania. Po wznowieniu odswiezamy realtime, dogniamy zmiany z chmury i wypychamy
+// ewentualne lokalne zmiany, ktore nie zdazyly sie zapisac.
+function onWznowienie() {
+  if (document.visibilityState === 'hidden') return
+  const ws = C().workspaceId
+  if (!ws) {
+    void startSync()
+    return
+  }
+  podlaczRealtime(ws)
+  pobierzIScal(ws).catch(() => {})
+  zaplanujZapis(300)
 }
 
 function podlaczRealtime(ws: string) {
@@ -528,7 +574,25 @@ function podlaczRealtime(ws: string) {
         }
       },
     )
-    .subscribe()
+    .subscribe((status) => {
+      // Po (ponownym) podlaczeniu kanalu dogniamy zmiany, ktore mogly uciec, gdy kanal
+      // byl zerwany (uspienie iPhone). Ewentualne bledy kanalu lata heartbeat i wznowienie.
+      if (status === 'SUBSCRIBED') pobierzIScal(ws).catch(() => {})
+    })
+}
+
+// Heartbeat: co ~45 s (tylko gdy apka widoczna) sprawdzamy TANIO numer wersji na serwerze.
+// Jesli inne urzadzenie coś zmienilo (rev wyzszy) - dogniamy zmiany, choćby realtime padl.
+// Przy okazji dopychamy lokalne zmiany, ktore z jakiegos powodu jeszcze nie poszly.
+function startHeartbeat(ws: string) {
+  if (heartbeat) clearInterval(heartbeat)
+  heartbeat = setInterval(() => {
+    if (document.visibilityState === 'hidden' || !C().workspaceId) return
+    pobierzRev(ws).then((r) => {
+      if (r != null && r > getRev(ws)) pobierzIScal(ws).catch(() => {})
+    })
+    if (brudne) zaplanujZapis(200)
+  }, 45000)
 }
 
 // ---------- Start / stop ----------
@@ -557,6 +621,7 @@ export async function startSync(imie = '') {
     setBazaWs(workspaceId)
 
     podlaczRealtime(workspaceId)
+    startHeartbeat(workspaceId)
     await zapisz()
   } catch (e: any) {
     if (czyBladSesji(e)) {
@@ -573,12 +638,16 @@ export async function startSync(imie = '') {
 export function stopSync() {
   if (timer) clearTimeout(timer)
   timer = null
+  if (heartbeat) clearInterval(heartbeat)
+  heartbeat = null
   unsubStore?.()
   unsubStore = null
   kanal?.unsubscribe()
   kanal = null
   window.removeEventListener('online', onOnline)
   window.removeEventListener('offline', onOffline)
+  document.removeEventListener('visibilitychange', onWznowienie)
+  window.removeEventListener('focus', onWznowienie)
 }
 
 export async function wymusZapis() {
