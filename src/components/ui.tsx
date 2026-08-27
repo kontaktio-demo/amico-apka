@@ -304,18 +304,23 @@ export function Modal({
       onClick={onClose}
     >
       <div className="flex min-h-full items-center justify-center p-4 sm:p-8">
-        <div className={cx('card w-full animate-scale-in', w)} onClick={(e) => e.stopPropagation()}>
+        {/* flex-col + max-h + scrollowane TYLKO cialo -> naglowek i stopka (Zapisz/Anuluj)
+            zawsze widoczne, bez przewijania calego dlugiego formularza na telefonie. */}
+        <div
+          className={cx('card flex max-h-[calc(100dvh-2rem)] w-full animate-scale-in flex-col', w)}
+          onClick={(e) => e.stopPropagation()}
+        >
           {title && (
-            <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
+            <div className="flex shrink-0 items-center justify-between border-b border-stone-200 px-6 py-4">
               <h2 className="text-[18px] font-display font-semibold text-ink">{title}</h2>
               <button className="btn-ghost -mr-2 !px-2" onClick={onClose}>
                 <X size={20} />
               </button>
             </div>
           )}
-          <div className="px-6 py-5">{children}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
           {footer && (
-            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-200 px-6 py-4">
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-stone-200 px-6 py-4">
               {footer}
             </div>
           )}
