@@ -61,10 +61,15 @@ export function bladPoPolsku(e: any): string {
     return 'Brak uprawnień do zapisu w chmurze - zaloguj się ponownie (Ustawienia → Chmura).'
   if (/jwt|401|token|not authenticated|session/i.test(m))
     return 'Sesja w chmurze wygasła - zaloguj się ponownie (Ustawienia → Chmura).'
+  // Serwer (amico_save_state) odrzuca baze > 20 MB komunikatem "Dane firmy przekraczają
+  // dozwolony rozmiar". Bez tego wpisu wpadal do ogolnego bledu i user nie wiedzial, ze
+  // problem to ROZMIAR (za duzo skanow), a nie internet.
+  if (/payload|too large|entity too large|\b413\b|przekracz|dozwolony rozmiar|rozmiar|20\s?mb|\bsize\b/i.test(m))
+    return 'Baza jest za duża, żeby zapisać w chmurze - to przez zbyt wiele/duże skany. Usuń lub zmniejsz stare skany (moduł Skany albo Ustawienia → Chmura), a zapis znów zadziała.'
+  if (/statement timeout|canceling statement/i.test(m))
+    return 'Zapis do chmury trwał za długo (duża baza). Zmniejsz liczbę/rozmiar skanów - spróbuję ponownie.'
   if (/does not exist|schema cache|PGRST202|amico_/i.test(m))
     return 'Baza w chmurze nie jest przygotowana - uruchom skrypt SQL (supabase/amico-schema.sql).'
-  if (/payload|too large|20\s?mb|size/i.test(m))
-    return 'Baza jest za duża do wysłania - zarchiwizuj stare skany (Ustawienia → Chmura).'
   return 'Nie udało się zapisać w chmurze. Zmiany są bezpieczne na urządzeniu i wyślą się ponownie.'
 }
 
@@ -293,6 +298,119 @@ export async function usunDokumentZChmury(sciezka: string): Promise<void> {
   }
 }
 
+// ---------- Skany (obrazy stron w Supabase Storage; w bazie tylko SCIEZKI) ----------
+// Obrazow skanow NIE trzymamy w bazie JSON (limit 20 MB). Trafiaja do osobnego magazynu
+// (bucket "skany"), a strona skanu to albo base64 (jeszcze nie przeniesiony / offline),
+// albo sciezka w magazynie. Dzieki temu mozna skanowac BEZ limitu, a baza pozostaje mala.
+const BUCKET_SKAN = 'skany'
+export function czyBase64Strona(s: string): boolean {
+  return typeof s === 'string' && s.startsWith('data:')
+}
+// base64 dataURL -> Blob (BEZ fetch(data:...) - to lamie CSP connect-src).
+function dataUrlNaBlob(dataUrl: string): Blob {
+  const przecinek = dataUrl.indexOf(',')
+  const meta = dataUrl.slice(0, przecinek)
+  const b64 = dataUrl.slice(przecinek + 1)
+  const mime = /:(.*?);/.exec(meta)?.[1] || 'image/jpeg'
+  const bin = atob(b64)
+  const arr = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+  return new Blob([arr], { type: mime })
+}
+async function wgrajSkanStrone(dataUrl: string, sciezka: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.storage
+      .from(BUCKET_SKAN)
+      .upload(sciezka, dataUrlNaBlob(dataUrl), { upsert: true, contentType: 'image/jpeg' })
+    return !error
+  } catch {
+    return false
+  }
+}
+const skanUrlCache = new Map<string, { url: string; do: number }>()
+export async function skanUrl(sciezka: string): Promise<string | null> {
+  if (czyBase64Strona(sciezka)) return sciezka
+  const c = skanUrlCache.get(sciezka)
+  if (c && c.do > Date.now()) return c.url
+  try {
+    const { data, error } = await supabase.storage.from(BUCKET_SKAN).createSignedUrl(sciezka, 60 * 60)
+    if (error || !data?.signedUrl) return null
+    skanUrlCache.set(sciezka, { url: data.signedUrl, do: Date.now() + 50 * 60 * 1000 })
+    return data.signedUrl
+  } catch {
+    return null
+  }
+}
+export async function usunSkanyZChmury(sciezki: string[]): Promise<void> {
+  const realne = (sciezki || []).filter((s) => !czyBase64Strona(s))
+  if (!realne.length) return
+  try {
+    await supabase.storage.from(BUCKET_SKAN).remove(realne)
+  } catch {
+    /* obraz i tak znika z listy - metadane usuwamy lokalnie */
+  }
+}
+// Do PDF/druku potrzebne base64 - sciezki zamieniamy z powrotem na dataURL.
+export async function rozwinStrony(strony: string[]): Promise<string[]> {
+  const out: string[] = []
+  for (const s of strony || []) {
+    if (czyBase64Strona(s)) {
+      out.push(s)
+      continue
+    }
+    const url = await skanUrl(s)
+    if (!url) continue
+    try {
+      const blob = await (await fetch(url)).blob()
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const r = new FileReader()
+        r.onload = () => res(r.result as string)
+        r.onerror = rej
+        r.readAsDataURL(blob)
+      })
+      out.push(dataUrl)
+    } catch {
+      /* pomijamy strone, ktorej nie da sie pobrac */
+    }
+  }
+  return out
+}
+// Przenosi obrazy skanow z bazy (base64) do magazynu plikow - baza JSON przestaje puchnac,
+// a zapis do chmury dziala bez limitu. base64 zamieniamy na sciezke DOPIERO po udanym
+// wgraniu (nic nie ginie). Uruchamiane po polaczeniu z chmura i cyklicznie.
+let offloadWTrakcie = false
+export async function offloadSkany(): Promise<void> {
+  const ws = C().workspaceId
+  if (!ws || offloadWTrakcie) return
+  offloadWTrakcie = true
+  try {
+    const skany = useStore.getState().baza.skany || []
+    for (const s of skany) {
+      const strony = s.strony || []
+      if (!strony.some(czyBase64Strona)) continue // juz przeniesiony
+      const nowe: string[] = []
+      let zmiana = false
+      for (let i = 0; i < strony.length; i++) {
+        const str = strony[i]
+        if (!czyBase64Strona(str)) {
+          nowe.push(str)
+          continue
+        }
+        const sciezka = `${ws}/${s.id}-${i}.jpg`
+        if (await wgrajSkanStrone(str, sciezka)) {
+          nowe.push(sciezka)
+          zmiana = true
+        } else {
+          nowe.push(str) // upload sie nie udal (offline / brak bucketa) - zostaje base64
+        }
+      }
+      if (zmiana) useStore.getState().upsert('skany', { ...s, strony: nowe })
+    }
+  } finally {
+    offloadWTrakcie = false
+  }
+}
+
 export async function zmienRoleWChmurze(userId: string, rola: Rola) {
   const ws = C().workspaceId
   if (!ws) return
@@ -437,6 +555,16 @@ async function zapisz(): Promise<void> {
     throw new Error('Nie udało się rozwiązać konfliktu zapisu')
   } catch (e: any) {
     blad = e
+    // Diagnostyka: pelny bled do konsoli (kod/detale/hint + rozmiar bazy) - zeby przyczyne
+    // dalo sie ustalic, a nie zgadywac. Widoczne w konsoli przegladarki / na desktopie.
+    console.error(
+      'AMICO chmura - blad zapisu:',
+      e?.message || e,
+      '| code:', e?.code,
+      '| details:', e?.details,
+      '| hint:', e?.hint,
+      '| rozmiarKB:', useCloud.getState().rozmiarKB,
+    )
     brudne = true // NIGDY nie gubimy zmian
     if (czyBladSesji(e)) {
       wTrakcie = false
@@ -592,6 +720,7 @@ function startHeartbeat(ws: string) {
       if (r != null && r > getRev(ws)) pobierzIScal(ws).catch(() => {})
     })
     if (brudne) zaplanujZapis(200)
+    offloadSkany().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
   }, 45000)
 }
 
@@ -623,6 +752,9 @@ export async function startSync(imie = '') {
     podlaczRealtime(workspaceId)
     startHeartbeat(workspaceId)
     await zapisz()
+    // Przenies obrazy skanow do magazynu plikow (odchudza baze, zeby zapis nie wpadal na
+    // limit 20 MB). Po przeniesieniu baza sie kurczy i zapis znow dziala.
+    offloadSkany().catch(() => {})
   } catch (e: any) {
     if (czyBladSesji(e)) {
       await obsluzWygaslaSesje()

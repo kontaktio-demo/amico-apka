@@ -16,6 +16,8 @@ import {
   cx,
 } from '../components/ui'
 import { Skaner } from '../components/Skaner'
+import { SkanImg } from '../components/SkanImg'
+import { rozwinStrony, usunSkanyZChmury } from '../lib/cloud'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { fmtDate } from '../lib/format'
 import { klientNazwa } from '../lib/helpers'
@@ -116,7 +118,7 @@ export default function Skany() {
                 className="card overflow-hidden text-left transition hover:border-white/20"
               >
                 <div className="relative aspect-[3/4] bg-white">
-                  <img src={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" />
+                  <SkanImg strona={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" />
                   {s.strony.length > 1 && (
                     <span className="absolute right-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
                       {s.strony.length} str.
@@ -156,6 +158,7 @@ export default function Skany() {
           }}
           onUsun={async () => {
             if (await confirm(`Usunąć skan "${podglad.nazwa}"?`)) {
+              usunSkanyZChmury(podglad.strony) // usun tez obrazy z magazynu plikow
               remove('skany', podglad.id)
               setPodglad(null)
               push('Usunięto skan', 'info')
@@ -190,7 +193,8 @@ function PodgladSkanu({
   const set = (p: Partial<Skan>) => setD({ ...d, ...p })
 
   async function wyslij() {
-    const r = await udostepnijPdf(d.strony, d.nazwa, d.notatka)
+    const strony = await rozwinStrony(d.strony)
+    const r = await udostepnijPdf(strony, d.nazwa, d.notatka)
     push(r === 'shared' ? 'Udostępniono PDF' : 'Pobrano PDF (dołącz do wiadomości)', 'ok')
   }
 
@@ -205,13 +209,13 @@ function PodgladSkanu({
           <button className="btn-ghost text-red-400 mr-auto" onClick={onUsun}>
             <Trash2 size={16} /> Usuń
           </button>
-          <button className="btn-outline" onClick={() => pobierzPdf(d.strony, d.nazwa)}>
+          <button className="btn-outline" onClick={async () => pobierzPdf(await rozwinStrony(d.strony), d.nazwa)}>
             <Download size={16} /> PDF
           </button>
           <button
             className="btn-outline"
-            onClick={() => {
-              const okno = drukujPdf(d.strony, d.nazwa)
+            onClick={async () => {
+              const okno = drukujPdf(await rozwinStrony(d.strony), d.nazwa)
               if (!okno) push('Zapisano PDF - otwórz go, aby wydrukować', 'ok')
             }}
           >
@@ -227,7 +231,7 @@ function PodgladSkanu({
         <div className="max-h-[60vh] space-y-3 overflow-y-auto rounded-xl bg-black/20 p-3">
           {d.strony.map((s, i) => (
             <div key={i} className="relative">
-              <img src={s} alt={`Strona ${i + 1}`} className="w-full rounded-lg bg-white" />
+              <SkanImg strona={s} alt={`Strona ${i + 1}`} className="w-full rounded-lg bg-white" />
               <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-[11px] text-white">
                 {i + 1} / {d.strony.length}
               </span>

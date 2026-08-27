@@ -38,6 +38,7 @@ import {
 } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
 import { KlientPicker } from '../components/KlientPicker'
+import { SkanImg } from '../components/SkanImg'
 import { Skaner } from '../components/Skaner'
 import { useAuth } from '../components/Auth'
 import { fmtPLN, fmtDate, parseNum, nowISO, today } from '../lib/format'
@@ -726,7 +727,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                   >
                     <div className="aspect-[3/4] overflow-hidden bg-stone-100">
                       {s.strony[0] ? (
-                        <img src={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" loading="lazy" />
+                        <SkanImg strona={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" loading="lazy" />
                       ) : (
                         <div className="grid h-full place-items-center text-stone-400">
                           <FileText size={22} />
@@ -895,7 +896,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
         {podglad && (
           <div className="space-y-3">
             {podglad.strony.map((str, i) => (
-              <img key={i} src={str} alt={'Strona ' + (i + 1)} className="w-full rounded-lg border border-white/10" />
+              <SkanImg key={i} strona={str} alt={'Strona ' + (i + 1)} className="w-full rounded-lg border border-white/10" />
             ))}
             <div className="flex justify-end">
               <Link to="/skany" className="btn-outline btn-sm">

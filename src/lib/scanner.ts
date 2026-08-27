@@ -267,6 +267,21 @@ export function canvasNaJpeg(canvas: HTMLCanvasElement, jakosc = 0.9): string {
   return canvas.toDataURL('image/jpeg', jakosc)
 }
 
+// Recompresja istniejacego skanu (base64) do mniejszego rozmiaru - do zwalniania miejsca
+// w chmurze, gdy baza przekroczy limit. Sciezki (nie-base64) zostawiamy bez zmian.
+// Dokument pozostaje czytelny (1600 px), ale plik jest wyraznie mniejszy.
+export async function zmniejszDataUrl(dataUrl: string, maxDim = 1600, jakosc = 0.72): Promise<string> {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) return dataUrl
+  try {
+    const c = await zaladujObraz(dataUrl, maxDim)
+    const wynik = canvasNaJpeg(c, jakosc)
+    // Bierzemy mniejszy z dwoch (nie powiekszamy przypadkiem juz-malego skanu).
+    return wynik.length < dataUrl.length ? wynik : dataUrl
+  } catch {
+    return dataUrl
+  }
+}
+
 // Auto-propozycja rogow (lekkie wciecie od krawedzi) gdy brak detekcji
 export function domyslneRogi(w: number, h: number, margines = 0.04): Rogi {
   const mx = w * margines,
