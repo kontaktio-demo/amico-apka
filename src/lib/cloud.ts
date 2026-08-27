@@ -19,14 +19,98 @@ export type SyncStatus = 'off' | 'laczenie' | 'ok' | 'zapisywanie' | 'offline' |
 // Postgres przechowuje jsonb z kluczami POSORTOWANYMI, wiec zwykly JSON.stringify
 // lokalnego obiektu nigdy nie zgadza sie ze stanem z serwera (inna kolejnosc kluczy).
 // Bez tego porownanie "czy sie rozni" jest ZAWSZE prawdziwe i dwa urzadzenia
-// w nieskonczonosc odsylaja sobie cala baze. Porownujemy postac kanoniczna.
-function stabilnyJson(v: any): string {
-  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null'
-  if (Array.isArray(v)) return `[${v.map(stabilnyJson).join(',')}]`
-  const klucze = Object.keys(v)
-    .filter((k) => v[k] !== undefined)
-    .sort()
-  return `{${klucze.map((k) => `${JSON.stringify(k)}:${stabilnyJson(v[k])}`).join(',')}}`
+// w nieskonczonosc odsylaja sobie cala baze.
+//
+// KRYTYCZNE (pamiec): NIE budujemy pelnego stringa calej bazy. Przy wielu skanach
+// baza ma dziesiatki MB (base64), a materializowanie jej jako string 2-3x zajmowalo
+// ~100+ MB naraz -> iPhone (PWA) zabijal karte (Safari "Wielokrotnie wystapil problem").
+// Zamiast tego LICZYMY skrot strumieniowo: przechodzimy strukture kanonicznie (klucze
+// posortowane, undefined pomijane) i zwijamy w dwa niezalezne 32-bit akumulatory FNV-1a.
+// Pamiec O(1), szansa kolizji ~2^-64 (znikoma). Rowna postac kanoniczna -> rowny hash.
+function stabilnyHash(v: any): string {
+  let h1 = 0x811c9dc5 | 0
+  let h2 = 0x1b873593 | 0
+  const zwin = (s: string) => {
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i)
+      h1 = Math.imul(h1 ^ c, 0x01000193)
+      h2 = Math.imul(h2 ^ c, 0x01000193)
+      h2 = (h2 << 13) | (h2 >>> 19) // rotacja -> drugi hash niezalezny od pierwszego
+    }
+  }
+  const idz = (x: any) => {
+    // Znaczniki typu + PREFIKS DLUGOSCI dla stringow/kluczy -> postac jednoznaczna:
+    // dwie rozne struktury kanoniczne nie moga dac tego samego strumienia.
+    if (x === null) return zwin("n;")
+    const t = typeof x
+    if (t === "string") {
+      zwin("s" + x.length + ":")
+      zwin(x)
+      return
+    }
+    if (t === "number") return zwin("#" + x + ";")
+    if (t === "boolean") return zwin(x ? "bT;" : "bF;")
+    if (t !== "object") return zwin("?" + String(x) + ";")
+    if (Array.isArray(x)) {
+      zwin("[" + x.length + ":")
+      for (let i = 0; i < x.length; i++) idz(x[i])
+      return zwin("]")
+    }
+    const klucze = Object.keys(x)
+      .filter((k) => x[k] !== undefined)
+      .sort()
+    zwin("{" + klucze.length + ":")
+    for (const k of klucze) {
+      zwin("k" + k.length + ":")
+      zwin(k)
+      idz(x[k])
+    }
+    zwin("}")
+  }
+  idz(v)
+  return (h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0')
+}
+
+// Przyblizony rozmiar bazy w bajtach - liczony strumieniowo (bez budowania pelnego
+// stringa) tylko do wyswietlenia "rozmiar bazy" w Ustawieniach. Nie musi byc co do
+// bajta; chodzi o to, by NIE alokowac dziesiatek MB przy kazdym zapisie duzej bazy.
+function rozmiarBajtowPrzybl(v: any): number {
+  let n = 0
+  const idz = (x: any) => {
+    if (x === null) {
+      n += 4
+      return
+    }
+    const t = typeof x
+    if (t === 'string') {
+      n += (x as string).length + 2
+      return
+    }
+    if (t === 'number' || t === 'boolean') {
+      n += String(x).length
+      return
+    }
+    if (t !== 'object') {
+      n += 4
+      return
+    }
+    if (Array.isArray(x)) {
+      n += 2
+      for (let i = 0; i < x.length; i++) {
+        n += 1
+        idz(x[i])
+      }
+      return
+    }
+    for (const k of Object.keys(x)) {
+      if (x[k] === undefined) continue
+      n += k.length + 4
+      idz(x[k])
+    }
+    n += 2
+  }
+  idz(v)
+  return n
 }
 
 // Czy blad wynika z niewaznej sesji (usuniety user, zmienione haslo, wygasly/uniewazniony token)?
@@ -526,8 +610,8 @@ async function zapisz(): Promise<void> {
   try {
     for (let i = 0; i < 4; i++) {
       const doWyslania = bezSekretow(useStore.getState().baza)
-      const json = JSON.stringify(doWyslania)
-      C().ustaw({ rozmiarKB: Math.round(json.length / 1024) })
+      // Rozmiar liczymy strumieniowo (bez budowania 25+ MB stringa tylko dla licznika).
+      C().ustaw({ rozmiarKB: Math.round(rozmiarBajtowPrzybl(doWyslania) / 1024) })
 
       const { data, error } = await supabase.rpc('amico_save_state', {
         p_workspace: ws,
@@ -620,15 +704,15 @@ async function pobierzIScal(ws: string) {
   // normalizacja tablic) i zapisuje WYNIK. Porownujemy zatem to, co REALNIE zapisano
   // (po migracji), a nie `scalona` sprzed migracji - inaczej sprzatanie migracji nie
   // zostaloby wypchniete do chmury i stan lokalny rozjezdzalby sie z serwerem.
-  const zapisanaJson = stabilnyJson(bezSekretow(useStore.getState().baza))
+  const zapisanyHash = stabilnyHash(bezSekretow(useStore.getState().baza))
   // Szybka sciezka: gdy stan lokalny = surowa migawka zdalna, nie ma co wysylac (typowy
   // stan ustabilizowany - unikamy drugiego migruj na duzej bazie ze skanami base64).
-  let rozne = zapisanaJson !== stabilnyJson(zdalny.data)
+  let rozne = zapisanyHash !== stabilnyHash(zdalny.data)
   // Dopiero gdy sie roznia, sprawdzamy czy to NIE jest wylacznie efekt mechanicznej
   // migracji (usuniecie firma_milena, przepiecie firmaId, normalizacja tablic) - porownujac
   // ze ZNORMALIZOWANA (po migruj) migawka zdalna. Inaczej sama migracja wypychalaby CALA
   // baze w kolko (petla zapisow przy mieszanej flocie). Realne zmiany dalej sie wysylaja.
-  if (rozne) rozne = zapisanaJson !== stabilnyJson(bezSekretow(migruj(zdalny.data as Baza)))
+  if (rozne) rozne = zapisanyHash !== stabilnyHash(bezSekretow(migruj(zdalny.data as Baza)))
   if (rozne) zaplanujZapis(300)
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }
