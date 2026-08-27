@@ -7,6 +7,7 @@ import {
   SectionCard,
   Field,
   Input,
+  KwotaInput,
   Textarea,
   Select,
   Toggle,
@@ -21,7 +22,7 @@ import { PrintSendBar } from '../components/PrintSendBar'
 import { FakturaDoc } from '../documents/Faktura'
 import { klientNazwa, klientAdres } from '../lib/helpers'
 import { KlientPicker } from '../components/KlientPicker'
-import { fmtPLN, fmtKonto, fmtDate, today, nowISO, podsumuj, pozycjaNetto, kwotaSlownie, parseNum } from '../lib/format'
+import { fmtPLN, fmtKonto, fmtDate, today, nowISO, podsumuj, pozycjaNetto, kwotaSlownie } from '../lib/format'
 import { uid } from '../lib/id'
 import type { Faktura, FakturaTyp, FakturaStatus, Pozycja, Unit, VatRate, Klient } from '../lib/types'
 
@@ -233,6 +234,10 @@ function Edytor({ id }: { id: string }) {
   const splitSugerowany = sum.brutto > 15000
 
   const zapisz = () => {
+    // Walidacja: pusta faktura "spalalaby" kolejny numer (dziura w numeracji) - wymagamy
+    // choc nabywcy i jednej pozycji.
+    if (!f.nabywcaNazwa?.trim()) return push('Podaj nabywcę faktury', 'err')
+    if (!f.pozycje.length) return push('Dodaj przynajmniej jedną pozycję', 'err')
     // Proforma NIE jest faktura VAT - musi miec osobna serie (PF), inaczej robilaby
     // dziure w ciaglej numeracji FV. Zaliczkowa i koncowa to faktury VAT -> seria FV.
     const prefix = f.typ === 'proforma' ? 'PF' : 'FV'
@@ -452,12 +457,7 @@ function Edytor({ id }: { id: string }) {
                         <Input value={p.nazwa} onChange={(e) => setPoz(p.id, { nazwa: e.target.value })} />
                       </Field>
                       <Field label="Ilość" className="sm:col-span-3">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={p.ilosc}
-                          onChange={(e) => setPoz(p.id, { ilosc: parseNum(e.target.value) })}
-                        />
+                        <KwotaInput value={p.ilosc} onChange={(n) => setPoz(p.id, { ilosc: n })} placeholder="1" />
                       </Field>
                       <Field label="Jedn." className="sm:col-span-3">
                         <Select
@@ -472,12 +472,7 @@ function Edytor({ id }: { id: string }) {
                         </Select>
                       </Field>
                       <Field label="Cena netto" className="sm:col-span-3">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={p.cenaNetto}
-                          onChange={(e) => setPoz(p.id, { cenaNetto: parseNum(e.target.value) })}
-                        />
+                        <KwotaInput value={p.cenaNetto} onChange={(n) => setPoz(p.id, { cenaNetto: n })} />
                       </Field>
                       <Field label="VAT" className="sm:col-span-3">
                         <Select

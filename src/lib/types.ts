@@ -223,6 +223,9 @@ export interface Wycena {
   doplata?: string
   waznosc?: ISODate
   uwagi?: string
+  // Wieloliniowe "standardowe uwagi" edytowalne per wycena (kazda linia = punkt na wydruku).
+  // Gdy brak - uzywamy domyslnych z ustawien. Zapis TU sprawia, ze edycja nie ginie.
+  uwagiStandardowe?: string[]
   // przygotowanie pod montaz
   przygBlaty?: boolean
   przygWodaPrad?: boolean

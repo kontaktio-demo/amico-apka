@@ -426,8 +426,11 @@ function ProduktKarta({ p, onEdit, onDelete }: { p: Produkt; onEdit: () => void;
 
 // ---------- Pomocnicze ----------
 function parseCena(s: string): number {
-  const cleaned = s.replace(/\s/g, '').replace(/zł/gi, '').replace(',', '.')
-  const n = parseFloat(cleaned)
+  // Polski format: przecinek = dziesietny; gdy jest, kropki to tysiace (usun). Inaczej
+  // "1.234,56" ucinalo sie do 1.234 (jak w starym parseNum).
+  let c = s.replace(/\s/g, '').replace(/zł/gi, '')
+  if (c.includes(',')) c = c.replace(/\./g, '').replace(',', '.')
+  const n = parseFloat(c)
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0
 }
 

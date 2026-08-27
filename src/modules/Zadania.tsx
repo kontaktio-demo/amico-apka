@@ -12,6 +12,7 @@ import {
   Badge,
   EmptyState,
   useToast,
+  useConfirm,
   cx,
 } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
@@ -38,6 +39,7 @@ export default function Zadania() {
   const upsert = useStore((s) => s.upsert)
   const remove = useStore((s) => s.remove)
   const { push } = useToast()
+  const { confirm, confirmNode } = useConfirm()
   const { user } = useAuth()
   const montaz = user?.rola === 'montazysta'
 
@@ -240,13 +242,16 @@ export default function Zadania() {
           klienci={b.klienci.map((x) => ({ id: x.id, label: klientNazwa(x) }))}
           onClose={() => setEdycja(null)}
           onZapisz={zapisz}
-          onUsun={() => {
+          onUsun={async () => {
+            if (!(await confirm(`Usunąć zadanie „${edycja.tytul || 'bez nazwy'}"? Tej operacji nie można cofnąć.`)))
+              return
             remove('zadania', edycja.id)
             setEdycja(null)
             push('Usunięto zadanie', 'info')
           }}
         />
       )}
+      {confirmNode}
     </div>
   )
 }

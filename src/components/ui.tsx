@@ -2,8 +2,46 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { createPortal } from 'react-dom'
 import { clsx } from 'clsx'
 import { X, Search, Check, AlertTriangle, Info, Loader2 } from 'lucide-react'
+import { parseNum } from '../lib/format'
 
 export const cx = clsx
+
+// ---------- Pole KWOTOWE (liczbowe, przyjmuje polski przecinek) ----------
+// Bufor tekstowy + inputMode="decimal": na iPhone daje klawiature numeryczna Z przecinkiem,
+// a przecinek NIE zeruje wartosci (jak type="number") - kluczowe dla poprawnych kwot/ilosci
+// na fakturach i wycenach. Pole 0 pokazujemy jako puste (mniej walki z wpisana wartoscia).
+export function KwotaInput({
+  value,
+  onChange,
+  className,
+  placeholder,
+  ...reszta
+}: {
+  value?: number
+  onChange: (n: number) => void
+  className?: string
+  placeholder?: string
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>) {
+  const [txt, setTxt] = useState(value ? String(value).replace('.', ',') : '')
+  useEffect(() => {
+    // synchronizuj z zewnetrzna wartoscia, ale nie nadpisuj tego, co user wlasnie wpisuje
+    if (parseNum(txt) !== (value || 0)) setTxt(value ? String(value).replace('.', ',') : '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+  return (
+    <input
+      className={cx('input', className)}
+      inputMode="decimal"
+      placeholder={placeholder ?? '0,00'}
+      value={txt}
+      onChange={(e) => {
+        setTxt(e.target.value)
+        onChange(parseNum(e.target.value))
+      }}
+      {...reszta}
+    />
+  )
+}
 
 // ---------- Naglowek strony ----------
 export function PageHeader({
@@ -132,13 +170,16 @@ export function Checkbox({
   className?: string
 }) {
   return (
-    <label className={cx('flex items-start gap-2.5 cursor-pointer select-none', className)}>
+    // onClick na CALYM <label> - klikalny jest tez tekst, nie tylko maly kwadracik.
+    <label
+      className={cx('flex items-start gap-2.5 cursor-pointer select-none', className)}
+      onClick={() => onChange?.(!checked)}
+    >
       <span
         className={cx(
           'mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border transition',
           checked ? 'border-brand-700 bg-brand-700 text-white' : 'border-stone-300 bg-white',
         )}
-        onClick={() => onChange?.(!checked)}
       >
         {checked && <Check size={14} strokeWidth={3} />}
       </span>
@@ -157,9 +198,8 @@ export function Toggle({
   label?: string
 }) {
   return (
-    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+    <label className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => onChange(!checked)}>
       <span
-        onClick={() => onChange(!checked)}
         className={cx('relative h-6 w-11 rounded-full transition', checked ? 'bg-brand-700' : 'bg-stone-300')}
       >
         <span

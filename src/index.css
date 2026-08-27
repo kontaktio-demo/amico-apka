@@ -78,6 +78,17 @@ h3,
   @apply bg-stone-400;
 }
 
+/* iOS auto-zoom: KAZDE pole tekstowe MUSI miec >= 16px. Ponizej 16px iPhone Safari sam
+   przyblizal cala apke przy fokusie pola i nie wracal (viewport user-scalable=no jest na
+   iOS ignorowane od iOS 10 - jedyny pewny fix to font-size). Wymuszamy globalnie 16px na
+   wszystkich polach tekstowych (poza checkbox/radio/file/range). Regula jest POZA @layer,
+   wiec bije klasy narzedziowe Tailwind (np. text-[14px]) niezaleznie od kolejnosci warstw. */
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']),
+textarea,
+select {
+  font-size: 16px;
+}
+
 @layer components {
   .card {
     @apply rounded-2xl border border-white/[0.07] shadow-card;

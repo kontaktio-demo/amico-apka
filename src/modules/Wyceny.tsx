@@ -20,6 +20,7 @@ import {
   SectionCard,
   Field,
   Input,
+  KwotaInput,
   Textarea,
   Select,
   Toggle,
@@ -34,7 +35,7 @@ import { PrintSendBar } from '../components/PrintSendBar'
 import { SignatureField, SignatureModal } from '../components/SignaturePad'
 import { WycenaDoc } from '../documents/Wycena'
 import { uid } from '../lib/id'
-import { fmtPLN, fmtDate, nowISO, today, podsumuj, pozycjaNetto, parseNum } from '../lib/format'
+import { fmtPLN, fmtDate, nowISO, today, podsumuj, pozycjaNetto } from '../lib/format'
 import { klientNazwa, klientAdres, wycenaStatusInfo, domyslneEtapyZlecenia } from '../lib/helpers'
 import type { Wycena, Pozycja, Produkt, VatRate, Unit, WycenaStatus, Umowa, Zlecenie, Signature } from '../lib/types'
 
@@ -256,7 +257,9 @@ function EdytorInner({ rec }: { rec: Wycena }) {
   const { confirm, confirmNode } = useConfirm()
 
   const [w, setW] = useState<Wycena>(rec)
-  const [uwagi, setUwagi] = useState<string[]>(() => b.ustawienia.standardoweUwagiWyceny.slice())
+  // Uwagi trzymamy NA rekordzie (w.uwagiStandardowe) - inaczej edycja ginela po wyjsciu.
+  // Gdy rekord ich nie ma, pokazujemy domyslne z ustawien.
+  const uwagi = w.uwagiStandardowe ?? b.ustawienia.standardoweUwagiWyceny
   const [sigTarget, setSigTarget] = useState<null | 'klient' | 'firma'>(null)
 
   // Autozapis do bazy przy kazdej zmianie (offline-first).
@@ -536,7 +539,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                     if (prod) addPoz(prod)
                     e.currentTarget.value = ''
                   }}
-                  className="!w-52"
+                  className="w-full sm:!w-52"
                 >
                   <option value="">+ z katalogu...</option>
                   {b.produkty
@@ -589,11 +592,11 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                         />
                       </td>
                       <td className="td">
-                        <Input
-                          type="number"
+                        <KwotaInput
                           className="text-right"
                           value={p.ilosc}
-                          onChange={(e) => setPoz(p.id, { ilosc: parseNum(e.target.value) })}
+                          onChange={(n) => setPoz(p.id, { ilosc: n })}
+                          placeholder="1"
                         />
                       </td>
                       <td className="td">
@@ -609,11 +612,10 @@ function EdytorInner({ rec }: { rec: Wycena }) {
                         </Select>
                       </td>
                       <td className="td">
-                        <Input
-                          type="number"
+                        <KwotaInput
                           className="text-right"
                           value={p.cenaNetto}
-                          onChange={(e) => setPoz(p.id, { cenaNetto: parseNum(e.target.value) })}
+                          onChange={(n) => setPoz(p.id, { cenaNetto: n })}
                         />
                       </td>
                       <td className="td">
@@ -720,11 +722,15 @@ function EdytorInner({ rec }: { rec: Wycena }) {
             title="Dodatkowe informacje / standardowe uwagi"
             desc="Każda linia to osobny punkt na wydruku. Możesz edytować dla tej wyceny."
           >
-            <Textarea rows={7} value={uwagi.join('\n')} onChange={(e) => setUwagi(e.target.value.split('\n'))} />
+            <Textarea
+              rows={7}
+              value={uwagi.join('\n')}
+              onChange={(e) => set('uwagiStandardowe', e.target.value.split('\n'))}
+            />
             <div className="mt-2">
               <button
                 className="btn-ghost btn-sm"
-                onClick={() => setUwagi(b.ustawienia.standardoweUwagiWyceny.slice())}
+                onClick={() => set('uwagiStandardowe', b.ustawienia.standardoweUwagiWyceny.slice())}
               >
                 Przywróć standardowe uwagi
               </button>

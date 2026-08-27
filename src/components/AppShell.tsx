@@ -130,7 +130,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <PasekChmury />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 animate-fade-in">{children}</div>
+          {/* pb-28: zapas na dole, zeby plywajacy przycisk "Skanuj" nie zaslanial ostatniej
+              tresci (prawy dolny rog) i dalo sie ja przewinac ponad przycisk. */}
+          <div className="mx-auto max-w-[1200px] px-4 pt-6 pb-28 sm:px-6 lg:px-8 lg:pt-8 animate-fade-in">
+            {children}
+          </div>
         </main>
       </div>
 
