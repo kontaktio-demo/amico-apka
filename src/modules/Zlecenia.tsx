@@ -543,7 +543,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   const location = useLocation()
   const [skanerOpen, setSkanerOpen] = useState(false)
   const [podglad, setPodglad] = useState<Skan | null>(null)
-  const skany = b.skany.filter((s) => s.zlecenieId === z.id).slice().sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+  const skany = b.skany.filter((s) => s.zlecenieId === z.id).slice().sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
 
   const klient = z.klientId ? b.klienci.find((k) => k.id === z.klientId) : undefined
   const ei = etapInfo(z.etap)

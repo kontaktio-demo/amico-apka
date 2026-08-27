@@ -37,6 +37,10 @@ interface AppState {
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
+// Ostatnio ZAPISANA do IndexedDB referencja bazy. Baza jest niemutowalna (upsert/remove/migruj
+// tworza nowa referencje), wiec rownosc referencji = te same dane. Pozwala pominac zbedny,
+// kosztowny zapis calej bazy (structured-clone dziesiatek MB) gdy nic sie realnie nie zmienilo.
+let ostatnioZapisana: unknown = null
 
 // Numeracja dokumentow jest osobna dla KAZDEGO podmiotu (firma_andrzej / firma_milena),
 // bo kazdy podatnik prowadzi wlasna, ciagla serie faktur. Wspolny licznik robilby
@@ -104,9 +108,14 @@ export const useStore = create<AppState>((setState, getState) => ({
 
   persist: () => {
     if (saveTimer) clearTimeout(saveTimer)
+    // 700 ms (debounce trailing): przy pisaniu w polach zapis leci RAZ po pauzie, a nie co
+    // chwile - kazdy zapis materializuje CALA baze do IndexedDB, wiec rzadziej = mniej szarpania.
     saveTimer = setTimeout(() => {
-      saveBaza(getState().baza)
+      const b = getState().baza
+      if (b === ostatnioZapisana) return // nic sie nie zmienilo od ostatniego zapisu
+      saveBaza(b)
         .then(() => {
+          ostatnioZapisana = b
           if (getState().bladZapisu) setState({ bladZapisu: null })
         })
         .catch((e) => {
@@ -118,7 +127,7 @@ export const useStore = create<AppState>((setState, getState) => ({
                 : 'Nie udało się zapisać danych lokalnie.',
           })
         })
-    }, 250)
+    }, 700)
   },
 
   setBaza: (b) => {
@@ -153,13 +162,18 @@ export const useStore = create<AppState>((setState, getState) => ({
   zastapBaze: (b) => {
     // migruj - dane z chmury moga pochodzic z innej wersji aplikacji
     const m = migruj(b)
+    if (saveTimer) clearTimeout(saveTimer) // ten zapis zastepuje ewentualny zaplanowany persist
     setState({ baza: m })
-    saveBaza(m).catch((e) => {
-      setState({
-        bladZapisu:
-          e?.name === 'QuotaExceededError' ? 'Brak miejsca na urządzeniu.' : 'Nie udało się zapisać danych lokalnie.',
+    saveBaza(m)
+      .then(() => {
+        ostatnioZapisana = m // nastepny persist tej samej referencji nie bedzie juz zapisywal
       })
-    })
+      .catch((e) => {
+        setState({
+          bladZapisu:
+            e?.name === 'QuotaExceededError' ? 'Brak miejsca na urządzeniu.' : 'Nie udało się zapisać danych lokalnie.',
+        })
+      })
   },
 
   patch: (fn) => {

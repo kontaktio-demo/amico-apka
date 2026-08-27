@@ -73,7 +73,7 @@ function Lista() {
   const filtr = q.trim().toLowerCase()
   const faktury = b.faktury
     .slice()
-    .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+    .sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
     .filter((f) => {
       if (!filtr) return true
       return `${f.numer} ${f.nabywcaNazwa || ''}`.toLowerCase().includes(filtr)

@@ -113,6 +113,34 @@ function rozmiarBajtowPrzybl(v: any): number {
   return n
 }
 
+// Rozklad rozmiaru bazy (KB) na klasy - do DIAGNOZY bledu limitu 20 MB. Rozroznia skany od
+// pozostalych base64 (podpisy, logo), zeby komunikat/log nie wskazywal falszywie na skany.
+function diagnozaRozmiaruBazy(): Record<string, number> {
+  const b: any = useStore.getState().baza
+  let skanyB64 = 0
+  for (const s of b.skany || []) for (const p of s.strony || []) if (czyBase64Strona(p)) skanyB64 += p.length
+  let wszystkieB64 = 0
+  const walk = (x: any) => {
+    if (typeof x === 'string') {
+      if (x.startsWith('data:')) wszystkieB64 += x.length
+      return
+    }
+    if (Array.isArray(x)) {
+      for (const e of x) walk(e)
+      return
+    }
+    if (x && typeof x === 'object') for (const k of Object.keys(x)) walk(x[k])
+  }
+  walk(b)
+  const calosc = rozmiarBajtowPrzybl(b)
+  return {
+    calkowita: Math.round(calosc / 1024),
+    skany_base64: Math.round(skanyB64 / 1024),
+    inne_base64_podpisy_logo: Math.round((wszystkieB64 - skanyB64) / 1024),
+    metadane: Math.round((calosc - wszystkieB64) / 1024),
+  }
+}
+
 // Czy blad wynika z niewaznej sesji (usuniety user, zmienione haslo, wygasly/uniewazniony token)?
 function czyBladSesji(e: any): boolean {
   const m = `${e?.message || ''} ${e?.details || ''} ${e?.hint || ''}`.toLowerCase()
@@ -149,7 +177,7 @@ export function bladPoPolsku(e: any): string {
   // dozwolony rozmiar". Bez tego wpisu wpadal do ogolnego bledu i user nie wiedzial, ze
   // problem to ROZMIAR (za duzo skanow), a nie internet.
   if (/payload|too large|entity too large|\b413\b|przekracz|dozwolony rozmiar|rozmiar|20\s?mb|\bsize\b/i.test(m))
-    return 'Baza jest za duża, żeby zapisać w chmurze - to przez zbyt wiele/duże skany. Usuń lub zmniejsz stare skany (moduł Skany albo Ustawienia → Chmura), a zapis znów zadziała.'
+    return 'Baza jest za duża, żeby zapisać w chmurze (najczęściej dużo skanów). Sprawdź w Ustawieniach → Chmura co zajmuje najwięcej i usuń/zmniejsz stare skany. Jeśli magazyn skanów nie był jeszcze skonfigurowany, uruchom w Supabase skrypt amico-skany.sql.'
   if (/statement timeout|canceling statement/i.test(m))
     return 'Zapis do chmury trwał za długo (duża baza). Zmniejsz liczbę/rozmiar skanów - spróbuję ponownie.'
   if (/does not exist|schema cache|PGRST202|amico_/i.test(m))
@@ -401,14 +429,21 @@ function dataUrlNaBlob(dataUrl: string): Blob {
   for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
   return new Blob([arr], { type: mime })
 }
-async function wgrajSkanStrone(dataUrl: string, sciezka: string): Promise<boolean> {
+type WynikUpladu = 'ok' | 'brak-bucketa' | 'blad'
+function czyBrakBucketa(m: string): boolean {
+  return /bucket|not found|does not exist/i.test(m || '')
+}
+async function wgrajSkanStrone(dataUrl: string, sciezka: string): Promise<WynikUpladu> {
   try {
     const { error } = await supabase.storage
       .from(BUCKET_SKAN)
       .upload(sciezka, dataUrlNaBlob(dataUrl), { upsert: true, contentType: 'image/jpeg' })
-    return !error
-  } catch {
-    return false
+    if (!error) return 'ok'
+    // Rozrozniamy brak konfiguracji (bucket nie istnieje) od zwyklego bledu sieci - inaczej
+    // offload po cichu pada w nieskonczonosc i baza rosnie do limitu (patrz zapisz/limit 20 MB).
+    return czyBrakBucketa(error.message || '') ? 'brak-bucketa' : 'blad'
+  } catch (e: any) {
+    return czyBrakBucketa(String(e?.message || e)) ? 'brak-bucketa' : 'blad'
   }
 }
 const skanUrlCache = new Map<string, { url: string; do: number }>()
@@ -463,32 +498,51 @@ export async function rozwinStrony(strony: string[]): Promise<string[]> {
 // a zapis do chmury dziala bez limitu. base64 zamieniamy na sciezke DOPIERO po udanym
 // wgraniu (nic nie ginie). Uruchamiane po polaczeniu z chmura i cyklicznie.
 let offloadWTrakcie = false
+// Gdy bucket "skany" nie istnieje (nie uruchomiono amico-skany.sql), nie ponawiamy uploadu
+// w kolko (co 45 s calego zbioru) - pokazujemy JEDEN czytelny komunikat i czekamy. Flaga
+// jest kasowana przy wznowieniu/ponownym polaczeniu, wiec po uruchomieniu SQL offload wroci.
+let brakBucketaSkanow = false
+export function zresetujBrakBucketaSkanow() {
+  brakBucketaSkanow = false
+}
 export async function offloadSkany(): Promise<void> {
   const ws = C().workspaceId
-  if (!ws || offloadWTrakcie) return
+  if (!ws || offloadWTrakcie || brakBucketaSkanow) return
   offloadWTrakcie = true
   try {
     const skany = useStore.getState().baza.skany || []
     for (const s of skany) {
       const strony = s.strony || []
       if (!strony.some(czyBase64Strona)) continue // juz przeniesiony
-      const nowe: string[] = []
-      let zmiana = false
+      // FAZA 1: wgraj wszystkie strony base64 tego skanu, zbierajac mape base64 -> sciezka.
+      // NIE modyfikujemy jeszcze rekordu - w trakcie uploadu (sekundy) uzytkownik moze ten
+      // sam skan edytowac, usunac lub dodac strone; nadpisanie starym snapshotem gubiloby te
+      // zmiany i WSKRZESZALO usuniete skany. Dlatego zapis robimy na AKTUALNYM rekordzie nizej.
+      const mapa = new Map<string, string>()
       for (let i = 0; i < strony.length; i++) {
         const str = strony[i]
-        if (!czyBase64Strona(str)) {
-          nowe.push(str)
-          continue
+        if (!czyBase64Strona(str)) continue
+        const wynik = await wgrajSkanStrone(str, `${ws}/${s.id}-${i}.jpg`)
+        if (wynik === 'brak-bucketa') {
+          brakBucketaSkanow = true
+          C().ustaw({
+            status: 'blad',
+            blad:
+              'Magazyn skanów nie jest gotowy - uruchom raz w Supabase skrypt supabase/amico-skany.sql. Do tego czasu skany zostają w bazie i przy dużej liczbie mogą blokować zapis w chmurze.',
+          })
+          return
         }
-        const sciezka = `${ws}/${s.id}-${i}.jpg`
-        if (await wgrajSkanStrone(str, sciezka)) {
-          nowe.push(sciezka)
-          zmiana = true
-        } else {
-          nowe.push(str) // upload sie nie udal (offline / brak bucketa) - zostaje base64
-        }
+        if (wynik === 'ok') mapa.set(str, `${ws}/${s.id}-${i}.jpg`)
       }
-      if (zmiana) useStore.getState().upsert('skany', { ...s, strony: nowe })
+      if (!mapa.size) continue // offline / nic sie nie wgralo - zostawiamy base64 na pozniej
+
+      // FAZA 2: READ-MODIFY-WRITE na AKTUALNYM rekordzie (moze byc juz inny niz snapshot).
+      const akt = useStore.getState().baza.skany.find((x) => x.id === s.id)
+      if (!akt) continue // skan usuniety w miedzyczasie - USZANUJ usuniecie, nie wskrzeszaj
+      const aktStrony = akt.strony || []
+      const noweStrony = aktStrony.map((p) => mapa.get(p) || p) // podmien TYLKO realnie wgrane base64
+      if (noweStrony.some((p, i) => p !== aktStrony[i]))
+        useStore.getState().upsert('skany', { ...akt, strony: noweStrony })
     }
   } finally {
     offloadWTrakcie = false
@@ -649,6 +703,10 @@ async function zapisz(): Promise<void> {
       '| hint:', e?.hint,
       '| rozmiarKB:', useCloud.getState().rozmiarKB,
     )
+    // Gdy przyczyna to ROZMIAR (limit 20 MB), pokazujemy CO realnie zajmuje baze - zeby nie
+    // szukac po omacku (skany vs podpisy vs logo). Winne moga byc nie tylko skany.
+    if (/payload|too large|\b413\b|przekracz|dozwolony rozmiar|20\s?mb|\bsize\b/i.test(String(e?.message || e)))
+      console.error('AMICO chmura - co zajmuje baze (KB):', diagnozaRozmiaruBazy())
     brudne = true // NIGDY nie gubimy zmian
     if (czyBladSesji(e)) {
       wTrakcie = false
@@ -717,6 +775,25 @@ async function pobierzIScal(ws: string) {
   else C().ustaw({ status: 'ok', ostatniZapis: nowISO(), blad: null })
 }
 
+// Koalescencja: wznowienie PWA na iPhone odpala 'visibilitychange' + 'focus' + realtime
+// SUBSCRIBED niemal jednoczesnie. Bez tego kazde z nich ciagnie i scala CALA baze osobno
+// (2-4x) -> zbedne skoki CPU/pamieci i transfer. Gdy pobranie juz trwa, oddajemy te sama
+// obietnice zamiast startowac kolejne.
+let pobierzWTrakcie: Promise<void> | null = null
+function pobierzIScalRaz(ws: string): Promise<void> {
+  if (pobierzWTrakcie) return pobierzWTrakcie
+  pobierzWTrakcie = pobierzIScal(ws).finally(() => {
+    pobierzWTrakcie = null
+  })
+  return pobierzWTrakcie
+}
+// Pelna baze ciagniemy TYLKO gdy serwer ma nowsza wersje - inaczej tanie sprawdzenie rev.
+async function dogonJesliNowszy(ws: string): Promise<void> {
+  const r = await pobierzRev(ws)
+  if (r != null && r > getRev(ws)) await pobierzIScalRaz(ws)
+  else C().ustaw({ status: 'ok', blad: null })
+}
+
 // Dane lokalne naleza do INNEJ firmy - nie wolno ich wmieszac. Bierzemy stan zdalny.
 async function zastapLokalneZdalnym(ws: string) {
   const zdalny = await pobierzStan(ws)
@@ -764,9 +841,11 @@ function onWznowienie() {
     void startSync()
     return
   }
+  zresetujBrakBucketaSkanow() // uzytkownik mogl w miedzyczasie uruchomic amico-skany.sql
   podlaczRealtime(ws)
-  pobierzIScal(ws).catch(() => {})
+  dogonJesliNowszy(ws).catch(() => {}) // tanio: pelna baza tylko gdy serwer nowszy
   zaplanujZapis(300)
+  offloadSkany().catch(() => {})
 }
 
 function podlaczRealtime(ws: string) {
@@ -780,7 +859,7 @@ function podlaczRealtime(ws: string) {
         const nowaRev = Number(payload?.new?.rev ?? 0)
         if (nowaRev && nowaRev <= getRev(ws)) return // to nasz wlasny zapis
         try {
-          await pobierzIScal(ws)
+          await pobierzIScalRaz(ws)
         } catch {
           /* ponowimy przy nastepnej zmianie */
         }
@@ -788,8 +867,9 @@ function podlaczRealtime(ws: string) {
     )
     .subscribe((status) => {
       // Po (ponownym) podlaczeniu kanalu dogniamy zmiany, ktore mogly uciec, gdy kanal
-      // byl zerwany (uspienie iPhone). Ewentualne bledy kanalu lata heartbeat i wznowienie.
-      if (status === 'SUBSCRIBED') pobierzIScal(ws).catch(() => {})
+      // byl zerwany (uspienie iPhone) - ale TANIO (rev), bez bezwarunkowego ciagniecia
+      // calej bazy. Ewentualne bledy kanalu lata heartbeat i wznowienie.
+      if (status === 'SUBSCRIBED') dogonJesliNowszy(ws).catch(() => {})
     })
 }
 
@@ -801,7 +881,7 @@ function startHeartbeat(ws: string) {
   heartbeat = setInterval(() => {
     if (document.visibilityState === 'hidden' || !C().workspaceId) return
     pobierzRev(ws).then((r) => {
-      if (r != null && r > getRev(ws)) pobierzIScal(ws).catch(() => {})
+      if (r != null && r > getRev(ws)) pobierzIScalRaz(ws).catch(() => {})
     })
     if (brudne) zaplanujZapis(200)
     offloadSkany().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
@@ -816,6 +896,7 @@ export async function startSync(imie = '') {
     return
   }
   C().ustaw({ status: 'laczenie', email: sesja.user.email || null, blad: null })
+  zresetujBrakBucketaSkanow() // nowe polaczenie - sprobuj offloadu jeszcze raz (mogl powstac bucket)
 
   // KRYTYCZNE: nasluch podpinamy PRZED operacjami sieciowymi.
   // Gdyby bootstrap padl (brak sieci), zmiany i tak beda kolejkowane i wysla sie po powrocie online.

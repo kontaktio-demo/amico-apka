@@ -108,7 +108,7 @@ export default function Ekspozycje() {
   const [edit, setEdit] = useState<Ekspozycja | null>(null)
 
   const sprzedawcy = b.kontrahenci.filter((k) => k.typ === 'sprzedawca')
-  const lista = b.ekspozycje.slice().sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+  const lista = b.ekspozycje.slice().sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
 
   const otworzNowa = () => {
     // Numer to na razie PODGLAD; prawdziwy nadajemy przy zapisie, zeby anulowanie

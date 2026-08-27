@@ -54,7 +54,7 @@ export default function Dokumenty() {
   const protokoly = b.protokoly
     .slice()
     .filter((p) => p.firmaId === firma.id)
-    .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+    .sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
     .filter((p) => {
       if (!q) return true
       const kn = p.klientNazwa || klientNazwa(klientById(p.klientId))
@@ -63,7 +63,7 @@ export default function Dokumenty() {
   const kpLista = b.kp
     .slice()
     .filter((kp) => kp.firmaId === firma.id)
-    .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+    .sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
     .filter((kp) => {
       if (!q) return true
       const kn = kp.odKogo || klientNazwa(klientById(kp.klientId))

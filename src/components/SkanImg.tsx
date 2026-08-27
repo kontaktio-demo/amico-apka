@@ -33,5 +33,9 @@ export function SkanImg({
   }, [strona])
 
   if (!src) return <div className={className} aria-label={alt} />
-  return <img src={src} alt={alt} className={className} loading={loading} />
+  // KRYTYCZNE (pamiec iPhone): domyslnie loading="lazy" + decoding="async". Skany to duze
+  // obrazy (~2200 px, ~15 MB zdekodowanej bitmapy/strone). Bez tego siatka/podglad dekoduje
+  // WSZYSTKIE naraz -> iPhone (PWA) ubija karte ("Wielokrotnie wystapil problem"). Z lazy
+  // WebKit dekoduje tylko to, co blisko ekranu, i zwalnia reszte pod presja pamieci.
+  return <img src={src} alt={alt} className={className} loading={loading || 'lazy'} decoding="async" />
 }

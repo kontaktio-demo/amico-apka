@@ -52,8 +52,11 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
       .sort((a, b) => String(a.id).localeCompare(String(b.id)))
   }
 
-  // 3) Tombstones do zapisu (przytnij starsze niz 90 dni)
-  const granica = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString()
+  // 3) Tombstones do zapisu. Retencja 5 LAT (nie 90 dni): tombstone to kilkadziesiat bajtow,
+  // a przyciety za wczesnie pozwala WSKRZESIC usuniety rekord z urzadzenia, ktore bylo dlugo
+  // offline i wciaz go ma. Przy paru usunieciach rocznie w pracowni rozmiar jest znikomy,
+  // a ryzyko powrotu skasowanych danych praktycznie zniwelowane.
+  const granica = new Date(Date.now() - 1825 * 24 * 3600 * 1000).toISOString()
   out.usuniete = [...tomby.entries()]
     .map(([key, t]): Tombstone => {
       const i = key.indexOf('::')

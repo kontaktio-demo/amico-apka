@@ -203,7 +203,10 @@ function adaptiveThreshold(
   C: number,
 ): Uint8ClampedArray {
   const W = w + 1
-  const integ = new Float64Array(W * (h + 1))
+  // Obraz calkowy (integral image). Sumy sa CALKOWITE i <= w*h*255 (dla max ~2200 px to
+  // ~8.7e8 << 2^31), wiec Int32Array jest DOKLADNY i zajmuje polowe pamieci Float64
+  // (~14 MB zamiast ~27 MB) - mniejszy szczyt pamieci przy skanowaniu na iPhone.
+  const integ = new Int32Array(W * (h + 1))
   for (let y = 0; y < h; y++) {
     let rowsum = 0
     for (let x = 0; x < w; x++) {

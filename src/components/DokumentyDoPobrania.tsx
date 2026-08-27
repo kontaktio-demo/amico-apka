@@ -34,7 +34,7 @@ export function DokumentyDoPobrania() {
 
   const widoczny = (d: DokumentPliku) =>
     owner || d.widoczneDlaWszystkich || (user ? (d.widoczneDla || []).includes(user.id) : false)
-  const lista = baza.dokumenty.filter(widoczny).slice().sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+  const lista = baza.dokumenty.filter(widoczny).slice().sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
 
   const onPlik = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const pliki = Array.from(e.target.files || [])

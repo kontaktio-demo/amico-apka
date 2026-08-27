@@ -39,7 +39,7 @@ export default function Pulpit() {
   const wydarzeniaDzis = b.wydarzenia.filter((w) => w.data === t && !w.zrobione)
   const wydarzeniaNadchodzace = b.wydarzenia
     .filter((w) => w.data >= t && !w.zrobione)
-    .sort((a, c) => a.data.localeCompare(c.data))
+    .sort((a, c) => (a.data || '').localeCompare(c.data || ''))
     .slice(0, 6)
 
   const aktywneZlecenia = b.zlecenia.filter((z) => z.etap !== 'zakonczone' && z.etap !== 'utracony')
@@ -202,7 +202,7 @@ export default function Pulpit() {
               <div className="divide-y divide-stone-100">
                 {b.klienci
                   .slice()
-                  .sort((a, c) => c.zaktualizowano.localeCompare(a.zaktualizowano))
+                  .sort((a, c) => (c.zaktualizowano || '').localeCompare(a.zaktualizowano || ''))
                   .slice(0, 5)
                   .map((k) => {
                     const ei = etapInfo(k.etap)
@@ -338,7 +338,7 @@ function ZadaniaToDo() {
     })
   const zrobione = b.zadania
     .filter((z) => z.status === 'zrobione' && pasuje(z))
-    .sort((a, c) => c.zaktualizowano.localeCompare(a.zaktualizowano))
+    .sort((a, c) => (c.zaktualizowano || '').localeCompare(a.zaktualizowano || ''))
 
   const dodaj = () => {
     const ttl = tekst.trim()

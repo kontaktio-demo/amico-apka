@@ -56,7 +56,7 @@ export default function Zamowienia() {
   const [notatka, setNotatka] = useState('')
 
   const firma = aktywnaFirma()
-  const lista = zamowienia.slice().sort((a, b) => b.utworzono.localeCompare(a.utworzono))
+  const lista = zamowienia.slice().sort((a, b) => (b.utworzono || '').localeCompare(a.utworzono || ''))
   const czysto = () => {
     setHurtowniaId('')
     setEmail('')

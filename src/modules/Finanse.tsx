@@ -144,7 +144,7 @@ export function RaportyTab({ firma, nowySygnal }: { firma: Firma; nowySygnal?: n
       b.raportyKasowe
         .filter((r) => r.firmaId === firma.id)
         .slice()
-        .sort((a, c) => (c.od || c.utworzono).localeCompare(a.od || a.utworzono)),
+        .sort((a, c) => (c.od || c.utworzono || '').localeCompare(a.od || a.utworzono || '')),
     [b.raportyKasowe, firma.id],
   )
 
@@ -472,7 +472,7 @@ function PrzelewyTab({ firma }: { firma: Firma }) {
       b.przelewy
         .filter((p) => p.firmaId === firma.id)
         .slice()
-        .sort((a, c) => c.data.localeCompare(a.data)),
+        .sort((a, c) => (c.data || '').localeCompare(a.data || '')),
     [b.przelewy, firma.id],
   )
 
@@ -751,7 +751,7 @@ function ObrotTab({ firma }: { firma: Firma }) {
       b.obrot
         .filter((p) => p.firmaId === firma.id)
         .slice()
-        .sort((a, c) => c.data.localeCompare(a.data)),
+        .sort((a, c) => (c.data || '').localeCompare(a.data || '')),
     [b.obrot, firma.id],
   )
 

@@ -54,25 +54,31 @@ export function kontrahentTypNazwa(t: KontrahentTyp): string {
 }
 
 export function wycenaStatusInfo(s: WycenaStatus): { label: string; tone: string } {
+  // Fallback dla nieznanego/pustego statusu (stary rekord, import) - inaczej si.tone/label
+  // rzuca i kladzie CALY widok (bialy ekran).
   return (
-    {
-      szkic: { label: 'Szkic', tone: 'stone' },
-      wyslana: { label: 'Wysłana', tone: 'blue' },
-      zaakceptowana: { label: 'Zaakceptowana', tone: 'green' },
-      odrzucona: { label: 'Odrzucona', tone: 'red' },
-      zrealizowana: { label: 'Zrealizowana', tone: 'green' },
-    } as const
-  )[s]
+    (
+      {
+        szkic: { label: 'Szkic', tone: 'stone' },
+        wyslana: { label: 'Wysłana', tone: 'blue' },
+        zaakceptowana: { label: 'Zaakceptowana', tone: 'green' },
+        odrzucona: { label: 'Odrzucona', tone: 'red' },
+        zrealizowana: { label: 'Zrealizowana', tone: 'green' },
+      } as const
+    )[s] || { label: s ? String(s) : 'Szkic', tone: 'stone' }
+  )
 }
 export function umowaStatusInfo(s: UmowaStatus): { label: string; tone: string } {
   return (
-    {
-      szkic: { label: 'Szkic', tone: 'stone' },
-      do_podpisu: { label: 'Do podpisu', tone: 'amber' },
-      podpisana: { label: 'Podpisana', tone: 'green' },
-      anulowana: { label: 'Anulowana', tone: 'red' },
-    } as const
-  )[s]
+    (
+      {
+        szkic: { label: 'Szkic', tone: 'stone' },
+        do_podpisu: { label: 'Do podpisu', tone: 'amber' },
+        podpisana: { label: 'Podpisana', tone: 'green' },
+        anulowana: { label: 'Anulowana', tone: 'red' },
+      } as const
+    )[s] || { label: s ? String(s) : 'Szkic', tone: 'stone' }
+  )
 }
 
 export const UMOWA_TYPY: { typ: string; nazwa: string; opis: string }[] = [

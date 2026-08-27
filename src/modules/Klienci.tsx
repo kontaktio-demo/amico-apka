@@ -98,7 +98,7 @@ function ListaKlientow() {
         return hay.includes(q)
       })
       .slice()
-      .sort((a, c) => c.zaktualizowano.localeCompare(a.zaktualizowano))
+      .sort((a, c) => (c.zaktualizowano || '').localeCompare(a.zaktualizowano || ''))
   }, [b.klienci, szukaj, etapF])
 
   return (

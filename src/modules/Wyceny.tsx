@@ -121,7 +121,7 @@ function Lista() {
   const q = szukaj.trim().toLowerCase()
   const lista = b.wyceny
     .slice()
-    .sort((a, c) => c.zaktualizowano.localeCompare(a.zaktualizowano))
+    .sort((a, c) => (c.zaktualizowano || '').localeCompare(a.zaktualizowano || ''))
     .filter((w) => !q || [w.numer, w.klientNazwa, w.nazwaMaterialu].filter(Boolean).join(' ').toLowerCase().includes(q))
 
   const wartoscRazem = b.wyceny

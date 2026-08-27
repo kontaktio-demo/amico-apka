@@ -71,7 +71,7 @@ function Lista() {
       !q ? true : [u.numer, u.zamawiajacyNazwa, typNazwa(u.typ)].filter(Boolean).join(' ').toLowerCase().includes(q),
     )
     .slice()
-    .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+    .sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
 
   const utworz = (typ: UmowaTyp) => {
     const nowa: Umowa = {

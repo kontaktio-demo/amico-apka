@@ -57,7 +57,7 @@ export default function Skany() {
           `${s.nazwa} ${s.notatka || ''} ${zl?.numer || ''} ${zl?.tytul || ''} ${kl ? klientNazwa(kl) : ''}`.toLowerCase()
         return hay.includes(szukaj.toLowerCase())
       })
-      .sort((a, c) => c.utworzono.localeCompare(a.utworzono))
+      .sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
   }, [b.skany, b.zlecenia, b.klienci, katFiltr, szukaj])
 
   return (
