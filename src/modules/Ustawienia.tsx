@@ -103,8 +103,24 @@ export default function Ustawienia() {
   }
 
   // ---------- Kopia ----------
-  function onExport() {
-    downloadFile(`AMICO_kopia_${today()}.json`, eksportJSON())
+  async function onExport() {
+    const json = eksportJSON()
+    const nazwa = `AMICO_kopia_${today()}.json`
+    // iPhone (PWA na ekranie glownym): <a download> bywa NIEAKTYWNE - plik sie nie zapisuje.
+    // Najpierw probujemy natywne udostepnianie pliku (arkusz "Zapisz w Plikach / Wyslij"),
+    // a gdy niedostepne (desktop) - klasyczne pobranie.
+    try {
+      const plik = new File([json], nazwa, { type: 'application/json' })
+      if (typeof navigator !== 'undefined' && (navigator as any).canShare?.({ files: [plik] })) {
+        await navigator.share({ files: [plik], title: 'Kopia zapasowa AMICO' })
+        push('Kopia zapasowa gotowa do zapisania')
+        return
+      }
+    } catch (e: any) {
+      if (e?.name === 'AbortError') return // uzytkownik anulowal arkusz
+      // inny blad udostepniania - spadamy do pobrania ponizej
+    }
+    downloadFile(nazwa, json)
     push('Kopia zapasowa wyeksportowana')
   }
   function onImport(e: React.ChangeEvent<HTMLInputElement>) {
