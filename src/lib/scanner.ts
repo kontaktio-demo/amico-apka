@@ -17,7 +17,7 @@ export interface Rogi {
 export type FiltrSkanu = 'auto' | 'kolor' | 'szary' | 'bw' | 'oryginal'
 
 // ---------- Wczytanie obrazu do canvas (z ograniczeniem rozmiaru) ----------
-export function zaladujObraz(src: string, maxDim = 2200): Promise<HTMLCanvasElement> {
+export function zaladujObraz(src: string, maxDim = 3000): Promise<HTMLCanvasElement> {
   return new Promise((res, rej) => {
     const img = new Image()
     img.onload = () => {
@@ -78,7 +78,7 @@ function kwadratNaCzworokat(r: Rogi) {
 }
 
 // ---------- Kadrowanie perspektywiczne ----------
-export function kadrujPerspektywe(src: HTMLCanvasElement, rogi: Rogi, maxWynik = 1700): HTMLCanvasElement {
+export function kadrujPerspektywe(src: HTMLCanvasElement, rogi: Rogi, maxWynik = 2200): HTMLCanvasElement {
   // rozmiar docelowy ~ srednia dlugosc bokow, proporcje A4 zachowane naturalnie
   const dist = (p: Punkt, q: Punkt) => Math.hypot(p.x - q.x, p.y - q.y)
   const szerokosc = (dist(rogi.tl, rogi.tr) + dist(rogi.bl, rogi.br)) / 2
@@ -147,10 +147,12 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
     h = canvas.height
 
   if (filtr === 'kolor' || filtr === 'auto') {
-    // wzmocnienie: kontrast + jasnosc + lekka saturacja (dokument "czysty")
-    const kontrast = filtr === 'auto' ? 1.35 : 1.18
-    const jasnosc = filtr === 'auto' ? 14 : 6
-    const sat = filtr === 'auto' ? 1.12 : 1.06
+    // wzmocnienie: kontrast + jasnosc + lekka saturacja (dokument "czysty").
+    // Kontrast LAGODNIEJSZY niz wczesniej - za mocny (1.35) mial mial i "zjadal" cienki
+    // tekst. Czytelnosc daje przede wszystkim WYOSTRZENIE ponizej.
+    const kontrast = filtr === 'auto' ? 1.2 : 1.12
+    const jasnosc = filtr === 'auto' ? 8 : 4
+    const sat = filtr === 'auto' ? 1.1 : 1.05
     for (let i = 0; i < d.length; i += 4) {
       let r = d[i],
         g = d[i + 1],
@@ -163,6 +165,7 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
       d[i + 1] = clamp((g - 128) * kontrast + 128 + jasnosc)
       d[i + 2] = clamp((b - 128) * kontrast + 128 + jasnosc)
     }
+    wyostrz(d, w, h, filtr === 'auto' ? 0.9 : 0.6) // ostry tekst
     ctx.putImageData(img, 0, 0)
     return canvas
   }
@@ -178,6 +181,7 @@ export function zastosujFiltr(canvas: HTMLCanvasElement, filtr: FiltrSkanu): HTM
       const g = clamp((gray[p] - 128) * 1.15 + 128 + 4)
       d[i] = d[i + 1] = d[i + 2] = g
     }
+    wyostrz(d, w, h, 0.7)
     ctx.putImageData(img, 0, 0)
     return canvas
   }
@@ -228,8 +232,38 @@ function clamp(v: number): number {
   return v < 0 ? 0 : v > 255 ? 255 : v
 }
 
+// ---------- Wyostrzenie (unsharp mask) ----------
+// Zdjecie dokumentu z telefonu jest zawsze lekko miekkie (rozmycie obiektywu +
+// przeskalowania). Unsharp mask: wynik = oryginal + sila*(oryginal - rozmycie 3x3).
+// To NAJWIEKSZA poprawa czytelnosci tekstu na bajt (bez podnoszenia rozdzielczosci).
+function wyostrz(d: Uint8ClampedArray, w: number, h: number, sila = 0.8) {
+  if (w < 3 || h < 3 || sila <= 0) return
+  const src = new Uint8ClampedArray(d) // kopia zrodlowa (RGBA)
+  const row = w * 4
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = (y * w + x) * 4
+      for (let k = 0; k < 3; k++) {
+        const c = src[i + k]
+        const blur =
+          (src[i - 4 + k] +
+            src[i + 4 + k] +
+            src[i - row + k] +
+            src[i + row + k] +
+            src[i - row - 4 + k] +
+            src[i - row + 4 + k] +
+            src[i + row - 4 + k] +
+            src[i + row + 4 + k] +
+            c) /
+          9
+        d[i + k] = clamp(c + (c - blur) * sila * 3)
+      }
+    }
+  }
+}
+
 // ---------- Eksport ----------
-export function canvasNaJpeg(canvas: HTMLCanvasElement, jakosc = 0.82): string {
+export function canvasNaJpeg(canvas: HTMLCanvasElement, jakosc = 0.9): string {
   return canvas.toDataURL('image/jpeg', jakosc)
 }
 

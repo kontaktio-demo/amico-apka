@@ -116,8 +116,15 @@ export function Skaner({
     async function start() {
       if (!open || etap !== 'kamera') return
       try {
+        // Prosimy o MOZLIWIE WYSOKA rozdzielczosc tylnej kamery. Bez tego przegladarka
+        // domyslnie daje np. 640x480 / 720p i tekst dokumentu jest nieczytelny niezaleznie
+        // od dalszej obrobki. `ideal` = najlepsze co kamera potrafi (z bezpiecznym spadkiem).
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 3840 },
+            height: { ideal: 2160 },
+          },
           audio: false,
         })
         if (anulowane) {
@@ -150,7 +157,7 @@ export function Skaner({
     const v = videoRef.current
     if (!v || !v.videoWidth) return
     const c = document.createElement('canvas')
-    const skala = Math.min(1, 2200 / Math.max(v.videoWidth, v.videoHeight))
+    const skala = Math.min(1, 3000 / Math.max(v.videoWidth, v.videoHeight))
     c.width = Math.round(v.videoWidth * skala)
     c.height = Math.round(v.videoHeight * skala)
     c.getContext('2d')!.drawImage(v, 0, 0, c.width, c.height)
@@ -194,11 +201,12 @@ export function Skaner({
         br: { x: rogi.br.x * captured.width, y: rogi.br.y * captured.height },
         bl: { x: rogi.bl.x * captured.width, y: rogi.bl.y * captured.height },
       }
-      // 1500 px + q0.78 - czytelny dokument przy rozsadnym rozmiarze (wazne dla synchronizacji)
-      const warped = kadrujPerspektywe(captured, rp, 1500)
-      const warpJpeg = canvasNaJpeg(warped, 0.85)
+      // 2200 px + wyostrzenie (w zastosujFiltr) + q0.88 - CZYTELNY dokument (~188 DPI dla A4).
+      // warp trzymamy w wyzszej jakosci (transient, do zmiany filtra), a zapisujemy `wynik`.
+      const warped = kadrujPerspektywe(captured, rp, 2200)
+      const warpJpeg = canvasNaJpeg(warped, 0.92)
       const filtered = zastosujFiltr(warped, filtr)
-      const wynik = canvasNaJpeg(filtered, 0.78)
+      const wynik = canvasNaJpeg(filtered, 0.88)
       setStrony((s) => [...s, { id: uid('str'), warp: warpJpeg, filtr, wynik }])
       setCaptured(null)
       setEtap('przeglad')
@@ -211,7 +219,7 @@ export function Skaner({
     const str = strony.find((s) => s.id === id)
     if (!str) return
     const canvas = await zaladujObraz(str.warp)
-    const wynik = canvasNaJpeg(zastosujFiltr(canvas, nowy), 0.82)
+    const wynik = canvasNaJpeg(zastosujFiltr(canvas, nowy), 0.88)
     setStrony((s) => s.map((x) => (x.id === id ? { ...x, filtr: nowy, wynik } : x)))
   }
 
