@@ -126,7 +126,8 @@ h3,
   .input,
   .textarea,
   .select {
-    @apply w-full rounded-lg border border-white/10 px-3.5 py-2.5 text-[15px] text-stone-700
+    /* 16px (nie 15px) - ponizej 16px iPhone auto-przybliza przy fokusie pola i nie wraca. */
+    @apply w-full rounded-lg border border-white/10 px-3.5 py-2.5 text-[16px] text-stone-700
  placeholder:text-stone-400 outline-none transition
  focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15;
     background-color: #10121a;

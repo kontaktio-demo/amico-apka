@@ -243,8 +243,8 @@ export function Skaner({
 
   return (
     <div className="fixed inset-0 z-[80] flex flex-col bg-[#070810] text-stone-700 no-print">
-      {/* pasek gorny */}
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+      {/* pasek gorny - pt uwzglednia notch iPhone (safe-area), zeby X nie chowal sie pod nim */}
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <div className="flex items-center gap-2 font-semibold">
           <ScanLine size={20} className="text-brand-400" /> Skaner dokumentów
         </div>
