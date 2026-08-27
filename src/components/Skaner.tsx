@@ -258,10 +258,13 @@ export function Skaner({
 
       {/* KAMERA */}
       {etap === 'kamera' && (
-        <div className="relative flex flex-1 flex-col">
-          <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
+        // min-h-0 KRYTYCZNE: bez tego kontener flex rosnie do WEWNETRZNEJ wysokosci obrazu
+        // z kamery (przy 4K az 2160px), przez co podglad "przyblizal sie" i wypychal kolko
+        // migawki poza ekran na iPhone. min-h-0 pozwala kurczyc sie do przydzielonej wysokosci.
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black">
             {kamOk !== false ? (
-              <video ref={videoRef} playsInline muted className="max-h-full max-w-full" />
+              <video ref={videoRef} playsInline muted className="h-full w-full object-contain" />
             ) : (
               <div className="max-w-sm p-8 text-center text-stone-400">
                 <Camera size={40} className="mx-auto mb-3 opacity-50" />
@@ -301,7 +304,7 @@ export function Skaner({
 
       {/* KADROWANIE */}
       {etap === 'kadr' && captured && (
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
           <KadrOverlay canvas={captured} rogi={rogi} onChange={setRogi} />
           <div className="border-t border-white/10 px-3 py-3">
             <div className="mb-3 flex justify-center gap-1.5 overflow-x-auto">
@@ -486,7 +489,7 @@ function KadrOverlay({
 
   return (
     <div
-      className="relative flex flex-1 items-center justify-center overflow-hidden bg-black p-3"
+      className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black p-3"
       onPointerMove={move}
       onPointerUp={() => (drag.current = null)}
       onPointerLeave={() => (drag.current = null)}
