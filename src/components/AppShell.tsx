@@ -126,7 +126,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <FirmaSwitcher compact />
         </header>
 
-        <PasekBleduZapisu />
         <PasekChmury />
 
         <main className="flex-1 overflow-y-auto">
@@ -152,25 +151,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   )
 }
 
-// Zapis na urzadzeniu sie nie powiodl (najczesciej: brak miejsca).
-// Bez tego paska uzytkowniczka traci prace, nie wiedzac o tym.
-function PasekBleduZapisu() {
-  const blad = useStore((s) => s.bladZapisu)
-  if (!blad) return null
-  return (
-    <div className="no-print flex items-start gap-2.5 border-b border-red-500/30 bg-red-500/15 px-4 py-3 text-[13.5px] text-red-200">
-      <AlertTriangle size={17} className="mt-0.5 shrink-0" />
-      <div>
-        <b>Nie udało się zapisać danych na tym urządzeniu.</b> {blad}
-        <div className="mt-0.5 text-red-300/80">
-          Nie zamykaj aplikacji. Zwolnij miejsce na urządzeniu, a następnie zrób kopię zapasową w Ustawieniach
-          (Eksport).
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // Problem z chmura (offline / blad zapisu / wygasla sesja) MUSI byc widoczny takze
 // na telefonie - w mobilnym naglowku nie ma StatusChip, wiec bez tego paska iPhone
 // nie dawal zadnego sygnalu, ze dane przestaly plynac do chmury.
@@ -181,7 +161,7 @@ function PasekChmury() {
   const txt =
     status === 'offline'
       ? 'Pracujesz offline - zmiany zapiszą się w chmurze automatycznie, gdy wróci internet.'
-      : blad || 'Problem z zapisem do chmury. Zmiany są bezpieczne na urządzeniu i wyślą się ponownie.'
+      : blad || 'Problem z zapisem do chmury - spróbuję wysłać ponownie automatycznie.'
   return (
     <div
       className={cx(

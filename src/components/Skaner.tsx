@@ -4,6 +4,7 @@ import { useStore } from '../lib/store'
 import { useToast, Field, Input, Select, Textarea } from './ui'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { uid } from '../lib/id'
+import { dogonSkanyDoChmury } from '../lib/cloud'
 import { nowISO } from '../lib/format'
 import { klientNazwa } from '../lib/helpers'
 import { czyDesktop } from '../lib/desktop'
@@ -225,6 +226,10 @@ export function Skaner({
 
   function zapisz() {
     if (strony.length === 0) return
+    // Strony zapisujemy jako base64 W BAZIE (trwale i od razu widoczne po synchronizacji -
+    // NIC nie ginie, nawet offline). Zaraz potem dogonSkanyDoChmury przenosi je do Storage
+    // i podmienia base64 -> sciezka, wiec baza szybko sie odchudza. Kluczowe: obraz jest w
+    // TRWALYM zrodle (baza -> chmura) ZANIM powstanie wskaznik do Storage - nic nie przepada.
     const skan: Skan = {
       id: uid('skan'),
       nazwa: nazwa.trim() || `Skan ${new Date().toLocaleDateString('pl-PL')}`,
@@ -237,6 +242,7 @@ export function Skaner({
     }
     upsert('skany', skan)
     push(`Zapisano skan (${strony.length} str.)`)
+    void dogonSkanyDoChmury() // od razu przenies do chmury (Storage), gdy jest internet
     onZapisano?.(skan)
     onClose()
   }

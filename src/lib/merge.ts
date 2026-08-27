@@ -4,6 +4,11 @@ import { pustaBaza } from './seed'
 // Znacznik ostatniej zmiany rekordu (ustawiany w store.upsert)
 const zm = (r: any): string => (r?._zm || r?.zaktualizowano || r?.utworzono || '') as string
 
+// Ile stron skanu jest juz sciezkami w chmurze (nie base64). Sluzy do zbieznego rozstrzygania
+// remisu base64 vs sciezka - patrz nizej.
+const liczbaSciezek = (r: any): number =>
+  ((r?.strony || []) as any[]).filter((p) => typeof p === 'string' && !p.startsWith('data:')).length
+
 /**
  * Scala dwie wersje bazy (lokalna + z serwera) tak, aby NIC nie zginelo:
  * - rekordy laczone po id; wygrywa nowszy (znacznik _zm),
@@ -36,7 +41,20 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
     for (const rec of l) {
       if (!rec?.id) continue
       const ist = mapa.get(rec.id)
-      if (!ist || zm(rec) >= zm(ist)) mapa.set(rec.id, rec)
+      if (!ist) {
+        mapa.set(rec.id, rec)
+        continue
+      }
+      const zr = zm(rec)
+      const zi = zm(ist)
+      if (zr > zi) mapa.set(rec.id, rec)
+      else if (zr === zi && k === 'skany') {
+        // REMIS na skanie: preferuj wersje z WIEKSZA liczba sciezek w chmurze (mniej base64).
+        // Przy tym samym _zm obie wersje to ten sam obraz (sciezka jest deterministyczna),
+        // wiec wybor sciezki jest bezpieczny i ZBIEGA oba urzadzenia do postaci chmurowej -
+        // inaczej base64 vs sciezka odbijaja sie w nieskonczonosc (petla zapisow).
+        if (liczbaSciezek(rec) >= liczbaSciezek(ist)) mapa.set(rec.id, rec)
+      } else if (zr === zi) mapa.set(rec.id, rec) // dotychczasowe: lokalny wygrywa remis
     }
 
     out[k] = [...mapa.values()]

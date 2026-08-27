@@ -17,7 +17,7 @@ import {
 } from '../components/ui'
 import { Skaner } from '../components/Skaner'
 import { SkanImg } from '../components/SkanImg'
-import { rozwinStrony, usunSkanyZChmury } from '../lib/cloud'
+import { rozwinStrony } from '../lib/cloud'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { fmtDate } from '../lib/format'
 import { klientNazwa } from '../lib/helpers'
@@ -152,13 +152,21 @@ export default function Skany() {
           klienci={b.klienci.map((k) => ({ id: k.id, label: klientNazwa(k) }))}
           onClose={() => setPodglad(null)}
           onZapisz={(s) => {
-            upsert('skany', s)
-            setPodglad(s)
+            // WAZNE: zapis metadanych (nazwa/kategoria/przypisania/notatka) NIE moze nadpisac
+            // pola `strony` STARA migawka - offload mogl juz zamienic base64 -> sciezke w
+            // chmurze; wziecie strony z podgladu cofneloby to (utrata/ponowny upload).
+            const akt = useStore.getState().baza.skany.find((x) => x.id === s.id)
+            const scalony = { ...s, strony: akt?.strony ?? s.strony }
+            upsert('skany', scalony)
+            setPodglad(scalony)
             push('Zapisano zmiany')
           }}
           onUsun={async () => {
             if (await confirm(`Usunąć skan "${podglad.nazwa}"?`)) {
-              usunSkanyZChmury(podglad.strony) // usun tez obrazy z magazynu plikow
+              // NIE kasujemy tu obrazow z chmury! Gdyby ktos na innym urzadzeniu (offline)
+              // wlasnie edytowal ten skan, po scaleniu "edycja wygrywa z usunieciem" skan by
+              // wrocil - a obrazy juz by nie istnialy (puste strony = utrata dokumentu).
+              // Obiekty w chmurze sprzata bezpiecznie, z opoznieniem, sprzatnijOsieroconeSkany.
               remove('skany', podglad.id)
               setPodglad(null)
               push('Usunięto skan', 'info')

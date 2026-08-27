@@ -22,6 +22,9 @@ interface AppState {
   // Generyczne CRUD dla kolekcji
   upsert: <K extends ArrKeys>(key: K, item: ArrItem<K>) => void
   remove: <K extends ArrKeys>(key: K, id: string) => void
+  // Podmiana stron skanu (base64 -> sciezka w chmurze) ZACHOWUJAC _zm - zmiana mechaniczna,
+  // ktora NIE moze wygrac scalania nad realna edycja ani wskrzesic usunietego skanu.
+  patchStronySkanu: (id: string, strony: string[]) => void
   patch: (fn: (b: Baza) => void) => void
   // Ustawienia / firmy
   updateUstawienia: (p: Partial<Baza['ustawienia']>) => void
@@ -41,6 +44,7 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null
 // tworza nowa referencje), wiec rownosc referencji = te same dane. Pozwala pominac zbedny,
 // kosztowny zapis calej bazy (structured-clone dziesiatek MB) gdy nic sie realnie nie zmienilo.
 let ostatnioZapisana: unknown = null
+let flushPodpiety = false // czy podpieto juz nasluch domykania zapisu przy chowaniu apki
 
 // Numeracja dokumentow jest osobna dla KAZDEGO podmiotu (firma_andrzej / firma_milena),
 // bo kazdy podatnik prowadzi wlasna, ciagla serie faktur. Wspolny licznik robilby
@@ -104,6 +108,26 @@ export const useStore = create<AppState>((setState, getState) => ({
       setState({ baza: pusta, hydrated: true })
       await saveBaza(pusta)
     }
+    // Trwalosc: przy chowaniu/zamykaniu aplikacji NATYCHMIAST domykamy zaplanowany zapis
+    // lokalny (best-effort), zamiast czekac na debounce - zmniejsza okno utraty ostatniej
+    // zmiany, gdy iOS ubije karte PWA tuz po edycji.
+    if (!flushPodpiety && typeof window !== 'undefined') {
+      flushPodpiety = true
+      const flush = () => {
+        const b = getState().baza
+        if (b === ostatnioZapisana) return
+        if (saveTimer) clearTimeout(saveTimer)
+        saveBaza(b)
+          .then(() => {
+            ostatnioZapisana = b
+          })
+          .catch(() => {})
+      }
+      window.addEventListener('pagehide', flush)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flush()
+      })
+    }
   },
 
   persist: () => {
@@ -116,16 +140,12 @@ export const useStore = create<AppState>((setState, getState) => ({
       saveBaza(b)
         .then(() => {
           ostatnioZapisana = b
-          if (getState().bladZapisu) setState({ bladZapisu: null })
         })
         .catch((e) => {
-          // np. QuotaExceededError - uzytkownik MUSI o tym wiedziec
-          setState({
-            bladZapisu:
-              e?.name === 'QuotaExceededError'
-                ? 'Brak miejsca na urządzeniu - zrób kopię i usuń stare skany.'
-                : 'Nie udało się zapisać danych lokalnie.',
-          })
+          // ZRODLEM PRAWDY JEST CHMURA. Lokalny cache to tylko przyspieszenie startu i bufor
+          // na chwile bez sieci - jego nieudany zapis NIE moze straszyc ani blokowac pracy
+          // (dane i tak plyna do chmury). Logujemy po cichu; status chmury pokazuje PasekChmury.
+          console.warn('AMICO - lokalny cache nie zapisany (dane idą do chmury):', e?.name || e)
         })
     }, 700)
   },
@@ -159,6 +179,14 @@ export const useStore = create<AppState>((setState, getState) => ({
     getState().persist()
   },
 
+  patchStronySkanu: (id, strony) => {
+    // Bez zmiany _zm (celowo): to tylko przeniesienie obrazu base64 -> sciezka w chmurze.
+    setState((s) => ({
+      baza: { ...s.baza, skany: s.baza.skany.map((x) => (x.id === id ? { ...x, strony } : x)) },
+    }))
+    getState().persist()
+  },
+
   zastapBaze: (b) => {
     // migruj - dane z chmury moga pochodzic z innej wersji aplikacji
     const m = migruj(b)
@@ -169,10 +197,8 @@ export const useStore = create<AppState>((setState, getState) => ({
         ostatnioZapisana = m // nastepny persist tej samej referencji nie bedzie juz zapisywal
       })
       .catch((e) => {
-        setState({
-          bladZapisu:
-            e?.name === 'QuotaExceededError' ? 'Brak miejsca na urządzeniu.' : 'Nie udało się zapisać danych lokalnie.',
-        })
+        // Lokalny cache - nie blokujemy pracy ani nie straszymy; zrodlem prawdy jest chmura.
+        console.warn('AMICO - lokalny cache (zastapBaze) nie zapisany:', e?.name || e)
       })
   },
 

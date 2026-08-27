@@ -469,7 +469,7 @@ export async function usunSkanyZChmury(sciezki: string[]): Promise<void> {
     /* obraz i tak znika z listy - metadane usuwamy lokalnie */
   }
 }
-// Do PDF/druku potrzebne base64 - sciezki zamieniamy z powrotem na dataURL.
+// Do PDF/druku potrzebne base64 - sciezki w chmurze zamieniamy z powrotem na dataURL.
 export async function rozwinStrony(strony: string[]): Promise<string[]> {
   const out: string[] = []
   for (const s of strony || []) {
@@ -505,7 +505,7 @@ let brakBucketaSkanow = false
 export function zresetujBrakBucketaSkanow() {
   brakBucketaSkanow = false
 }
-export async function offloadSkany(): Promise<void> {
+export async function dogonSkanyDoChmury(): Promise<void> {
   const ws = C().workspaceId
   if (!ws || offloadWTrakcie || brakBucketaSkanow) return
   offloadWTrakcie = true
@@ -513,39 +513,78 @@ export async function offloadSkany(): Promise<void> {
     const skany = useStore.getState().baza.skany || []
     for (const s of skany) {
       const strony = s.strony || []
-      if (!strony.some(czyBase64Strona)) continue // juz przeniesiony
-      // FAZA 1: wgraj wszystkie strony base64 tego skanu, zbierajac mape base64 -> sciezka.
-      // NIE modyfikujemy jeszcze rekordu - w trakcie uploadu (sekundy) uzytkownik moze ten
-      // sam skan edytowac, usunac lub dodac strone; nadpisanie starym snapshotem gubiloby te
-      // zmiany i WSKRZESZALO usuniete skany. Dlatego zapis robimy na AKTUALNYM rekordzie nizej.
-      const mapa = new Map<string, string>()
+      if (!strony.some(czyBase64Strona)) continue // juz w chmurze (same sciezki)
+      // FAZA 1: wgraj do Storage kazda strone base64. NIE modyfikujemy jeszcze rekordu - w
+      // trakcie uploadu (sekundy) uzytkownik moze ten skan edytowac/usunac; podmiane robimy
+      // nizej na AKTUALNYM rekordzie, zachowujac _zm (to zmiana MECHANICZNA, nie edycja).
+      const mapa = new Map<string, string>() // base64 -> sciezka w chmurze
       for (let i = 0; i < strony.length; i++) {
-        const str = strony[i]
-        if (!czyBase64Strona(str)) continue
-        const wynik = await wgrajSkanStrone(str, `${ws}/${s.id}-${i}.jpg`)
+        const ref = strony[i]
+        if (!czyBase64Strona(ref)) continue
+        const sciezka = `${ws}/${s.id}-${i}.jpg`
+        const wynik = await wgrajSkanStrone(ref, sciezka)
         if (wynik === 'brak-bucketa') {
           brakBucketaSkanow = true
           C().ustaw({
             status: 'blad',
             blad:
-              'Magazyn skanów nie jest gotowy - uruchom raz w Supabase skrypt supabase/amico-skany.sql. Do tego czasu skany zostają w bazie i przy dużej liczbie mogą blokować zapis w chmurze.',
+              'Magazyn skanów nie jest gotowy - uruchom raz w Supabase skrypt supabase/amico-skany.sql. Do tego czasu skany są bezpieczne w bazie i pojawią się w magazynie po uruchomieniu skryptu.',
           })
           return
         }
-        if (wynik === 'ok') mapa.set(str, `${ws}/${s.id}-${i}.jpg`)
+        if (wynik === 'ok') mapa.set(ref, sciezka)
       }
       if (!mapa.size) continue // offline / nic sie nie wgralo - zostawiamy base64 na pozniej
 
       // FAZA 2: READ-MODIFY-WRITE na AKTUALNYM rekordzie (moze byc juz inny niz snapshot).
       const akt = useStore.getState().baza.skany.find((x) => x.id === s.id)
       if (!akt) continue // skan usuniety w miedzyczasie - USZANUJ usuniecie, nie wskrzeszaj
+      // Skan usuniety na INNYM urzadzeniu (tombstone jeszcze nie scalony)? Nie wskrzeszaj.
+      const tomb = (useStore.getState().baza.usuniete || []).find((t) => t.k === 'skany' && t.id === s.id)
+      const aktZm = (akt as any)._zm || (akt as any).zaktualizowano || akt.utworzono || ''
+      if (tomb && tomb.t > aktZm) continue
       const aktStrony = akt.strony || []
       const noweStrony = aktStrony.map((p) => mapa.get(p) || p) // podmien TYLKO realnie wgrane base64
-      if (noweStrony.some((p, i) => p !== aktStrony[i]))
-        useStore.getState().upsert('skany', { ...akt, strony: noweStrony })
+      if (noweStrony.some((p, i) => p !== aktStrony[i])) {
+        // KLUCZOWE: zamiana base64 -> sciezka to zmiana MECHANICZNA. NIE podbijamy _zm, bo
+        // inaczej ta zamiana wygralaby scalanie nad realna edycja metadanych z innego
+        // urzadzenia albo WSKRZESZALA skan usuniety rownolegle (tombstone < swiezy _zm).
+        // Sciezka jest deterministyczna, wiec urzadzenia i tak zbiegaja do tej samej postaci.
+        useStore.getState().patchStronySkanu(s.id, noweStrony)
+      }
     }
   } finally {
     offloadWTrakcie = false
+  }
+}
+
+// Bezpieczne, ODROCZONE sprzatanie plikow w Storage po skanach usunietych DAWNO temu.
+// NIE kasujemy przy usunieciu skanu: gdyby ktos rownolegle (offline) go edytowal, po scaleniu
+// "edycja wygrywa z usunieciem" skan by wrocil i MUSI miec swoje obrazy. Dopiero gdy tombstone
+// ma > 30 dni i skan nie zyje na zadnym urzadzeniu, jego pliki na pewno nie sa juz potrzebne.
+// Uruchamiane RAZ przy starcie synchronizacji (nie w heartbeacie).
+async function sprzatnijOsieroconeSkany(ws: string): Promise<void> {
+  try {
+    const b = useStore.getState().baza
+    const teraz = Date.now()
+    const zyjace = new Set((b.skany || []).map((s) => s.id))
+    const idsGC = new Set(
+      (b.usuniete || [])
+        .filter(
+          (t) => t.k === 'skany' && !zyjace.has(t.id) && teraz - new Date(t.t).getTime() > 30 * 24 * 3600 * 1000,
+        )
+        .map((t) => t.id),
+    )
+    if (!idsGC.size) return
+    const { data } = await supabase.storage.from(BUCKET_SKAN).list(ws, { limit: 1000 })
+    if (!data || !data.length) return
+    const doUsuniecia = data
+      .map((o) => o.name)
+      .filter((n) => idsGC.has(n.replace(/-\d+\.jpg$/, ''))) // nazwa pliku: <id>-<i>.jpg
+      .map((n) => `${ws}/${n}`)
+    if (doUsuniecia.length) await supabase.storage.from(BUCKET_SKAN).remove(doUsuniecia)
+  } catch {
+    /* GC best-effort - bez wplywu na dzialanie aplikacji */
   }
 }
 
@@ -821,8 +860,11 @@ function podlaczNasluch() {
 }
 
 function onOnline() {
-  if (C().workspaceId) zaplanujZapis(200)
-  else void startSync() // start byl offline - bootstrap sie nie udal, ponow
+  zresetujBrakBucketaSkanow() // wrocil internet - sprobuj przeniesc skany do Storage jeszcze raz
+  if (C().workspaceId) {
+    zaplanujZapis(200)
+    dogonSkanyDoChmury().catch(() => {}) // dogon skany, ktore czekaly na sieci
+  } else void startSync() // start byl offline - bootstrap sie nie udal, ponow
 }
 // Zdarzenie 'offline' na iPhone bywa FALSZYWE (usypianie PWA, przelaczanie sieci), wiec
 // NIE strasymy od razu banerem. Prawdziwy brak sieci pokaze OKNO LASKI, gdy zapis
@@ -845,7 +887,7 @@ function onWznowienie() {
   podlaczRealtime(ws)
   dogonJesliNowszy(ws).catch(() => {}) // tanio: pelna baza tylko gdy serwer nowszy
   zaplanujZapis(300)
-  offloadSkany().catch(() => {})
+  dogonSkanyDoChmury().catch(() => {})
 }
 
 function podlaczRealtime(ws: string) {
@@ -884,7 +926,7 @@ function startHeartbeat(ws: string) {
       if (r != null && r > getRev(ws)) pobierzIScalRaz(ws).catch(() => {})
     })
     if (brudne) zaplanujZapis(200)
-    offloadSkany().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
+    dogonSkanyDoChmury().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
   }, 45000)
 }
 
@@ -919,7 +961,8 @@ export async function startSync(imie = '') {
     await zapisz()
     // Przenies obrazy skanow do magazynu plikow (odchudza baze, zeby zapis nie wpadal na
     // limit 20 MB). Po przeniesieniu baza sie kurczy i zapis znow dziala.
-    offloadSkany().catch(() => {})
+    dogonSkanyDoChmury().catch(() => {})
+    sprzatnijOsieroconeSkany(workspaceId).catch(() => {}) // raz na start: pliki po dawno usunietych skanach
   } catch (e: any) {
     if (czyBladSesji(e)) {
       await obsluzWygaslaSesje()
