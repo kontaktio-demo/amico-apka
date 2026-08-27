@@ -343,10 +343,17 @@ function ZadaniaToDo() {
   const dodaj = () => {
     const ttl = tekst.trim()
     if (!ttl) return
+    const przyp2 = rozpoznaj(przyp)
+    // Biuro/montazysta widzi TYLKO swoje zadania. Pusty "Dla kogo" tworzylby zadanie
+    // nieprzypisane, ktore od razu znika im z oczu ("gdzie moje zadanie?"). Domyslnie
+    // przypisujemy do siebie.
+    if (!widziWszystkie && !przyp2.przypisanyDo && !przyp2.wspolniPrzypisani?.length) {
+      przyp2.przypisanyDo = user?.id
+    }
     upsert('zadania', {
       id: uid('zad'),
       tytul: ttl,
-      ...rozpoznaj(przyp),
+      ...przyp2,
       termin: termin || undefined,
       priorytet: 'sredni',
       status: 'do_zrobienia',

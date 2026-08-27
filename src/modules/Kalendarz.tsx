@@ -183,6 +183,12 @@ export default function Kalendarz() {
       return
     }
     upsert('wydarzenia', { ...draft, tytul: draft.tytul.trim() })
+    // Gdy aktywny filtr (pracownik/typ) ukrylby nowe wydarzenie - czyscimy go, zeby uzytkownik
+    // od razu je zobaczyl (inaczej "dodalem, a go nie ma").
+    if ((filtrPracownik && draft.pracownikId !== filtrPracownik) || (filtrTyp && draft.typ !== filtrTyp)) {
+      setFiltrPracownik('')
+      setFiltrTyp('')
+    }
     setModalOpen(false)
     setWybranyDzien(draft.data)
     push(edycja ? 'Zapisano zmiany' : 'Dodano wydarzenie')

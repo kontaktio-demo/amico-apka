@@ -139,16 +139,24 @@ function Lista() {
       </div>
 
       {lista.length === 0 ? (
-        <EmptyState
-          icon={<FileSignature size={26} />}
-          title="Brak umów"
-          desc="Utwórz pierwszą umowę - wybierz typ, uzupełnij dane i zbierz podpisy."
-          action={
-            <button className="btn-primary" onClick={() => setPickerOpen(true)}>
-              <Plus size={17} /> Nowa umowa
-            </button>
-          }
-        />
+        b.umowy.length === 0 ? (
+          <EmptyState
+            icon={<FileSignature size={26} />}
+            title="Brak umów"
+            desc="Utwórz pierwszą umowę - wybierz typ, uzupełnij dane i zbierz podpisy."
+            action={
+              <button className="btn-primary" onClick={() => setPickerOpen(true)}>
+                <Plus size={17} /> Nowa umowa
+              </button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<FileSignature size={26} />}
+            title="Brak wyników"
+            desc="Żadna umowa nie pasuje do filtrów lub wyszukiwania. Zmień kryteria powyżej."
+          />
+        )
       ) : (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">

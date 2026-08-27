@@ -616,12 +616,14 @@ function KartaKlienta({ id }: { id: string }) {
           <Link to="/dokumenty" className="akcja">
             <FileCheck2 size={18} /> Protokół odbioru
           </Link>
-          <a
-            href={mailtoLink({ to: k.email, subject: `Wiadomość od ${firma.marka}`, body: mailBody })}
-            className="akcja"
-          >
-            <Mail size={18} /> Wyślij maila
-          </a>
+          {k.email && (
+            <a
+              href={mailtoLink({ to: k.email, subject: `Wiadomość od ${firma.marka}`, body: mailBody })}
+              className="akcja"
+            >
+              <Mail size={18} /> Wyślij maila
+            </a>
+          )}
           {k.telefon ? (
             <a href={smsLink(k.telefon, smsTresc)} className="akcja">
               <MessageSquare size={18} /> Wyślij SMS

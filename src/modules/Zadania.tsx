@@ -110,7 +110,9 @@ export default function Zadania() {
         icon={<ListTodo size={22} />}
         actions={
           <>
-            {!montaz && (
+            {/* "Moje" ma sens TYLKO dla ról widzacych wszystkie zadania (wlasciciel/kierownik).
+                Biuro/montazysta i tak widza tylko swoje, wiec dla nich to przycisk-atrapa. */}
+            {widziWszystkie && (
               <button
                 className={cx('btn-outline', tylkoMoje && '!border-brand-400 !text-brand-700')}
                 onClick={() => setTylkoMoje((v) => !v)}

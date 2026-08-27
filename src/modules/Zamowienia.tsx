@@ -166,7 +166,8 @@ export default function Zamowienia() {
               const z = zapisz()
               if (z) wyslijMailem(z)
             }}
-            disabled={!mozna}
+            disabled={!mozna || !email.trim()}
+            title={!email.trim() ? 'Podaj adres e-mail, żeby wysłać' : undefined}
           >
             <Send size={16} /> Zapisz i wyślij e-mailem
           </button>
@@ -208,9 +209,11 @@ export default function Zamowienia() {
                       )}
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-1.5">
-                      <button className="btn-primary btn-sm" onClick={() => wyslijMailem(z)}>
-                        <Mail size={14} /> Wyślij e-mailem
-                      </button>
+                      {z.email && (
+                        <button className="btn-primary btn-sm" onClick={() => wyslijMailem(z)}>
+                          <Mail size={14} /> Wyślij e-mailem
+                        </button>
+                      )}
                       <button className="btn-outline btn-sm" onClick={() => kopiuj(z)}>
                         <Copy size={14} /> Kopiuj
                       </button>

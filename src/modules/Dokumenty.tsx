@@ -589,7 +589,12 @@ function KPEditor({
           <button className="btn-ghost" onClick={onClose}>
             Anuluj
           </button>
-          <button className="btn-primary" onClick={() => onSave(draft)}>
+          <button
+            className="btn-primary"
+            onClick={() => onSave(draft)}
+            disabled={!(draft.kwota > 0)}
+            title={draft.kwota > 0 ? undefined : 'Podaj kwotę wpłaty'}
+          >
             Zapisz KP
           </button>
         </>

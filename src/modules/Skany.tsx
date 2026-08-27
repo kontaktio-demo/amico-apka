@@ -86,16 +86,24 @@ export default function Skany() {
       </div>
 
       {skany.length === 0 ? (
-        <EmptyState
-          icon={<ScanLine size={28} />}
-          title="Brak skanów"
-          desc="Zeskanuj dokument, umowę, protokół albo kartkę z pomiaru - jak w Adobe Scan. Zapisze się jako PDF i przypniesz do zlecenia."
-          action={
-            <button className="btn-primary" onClick={() => setSkanerOtwarty(true)}>
-              <ScanLine size={16} /> Skanuj dokument
-            </button>
-          }
-        />
+        b.skany.length === 0 ? (
+          <EmptyState
+            icon={<ScanLine size={28} />}
+            title="Brak skanów"
+            desc="Zeskanuj dokument, umowę, protokół albo kartkę z pomiaru - jak w Adobe Scan. Zapisze się jako PDF i przypniesz do zlecenia."
+            action={
+              <button className="btn-primary" onClick={() => setSkanerOtwarty(true)}>
+                <ScanLine size={16} /> Skanuj dokument
+              </button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<ScanLine size={28} />}
+            title="Brak wyników"
+            desc="Żaden skan nie pasuje do wyszukiwania lub wybranej kategorii. Zmień kryteria powyżej."
+          />
+        )
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {skany.map((s) => {

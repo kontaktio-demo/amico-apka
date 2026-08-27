@@ -197,16 +197,24 @@ function Lista() {
       </div>
 
       {widoczne.length === 0 ? (
-        <EmptyState
-          icon={<ClipboardList size={26} />}
-          title="Brak zleceń"
-          desc="Dodaj pierwsze zlecenie, aby prowadzić realizację przez kolejne etapy."
-          action={
-            <button className="btn-primary" onClick={() => setOpenNowe(true)}>
-              <Plus size={17} /> Nowe zlecenie
-            </button>
-          }
-        />
+        b.zlecenia.length === 0 ? (
+          <EmptyState
+            icon={<ClipboardList size={26} />}
+            title="Brak zleceń"
+            desc="Dodaj pierwsze zlecenie, aby prowadzić realizację przez kolejne etapy."
+            action={
+              <button className="btn-primary" onClick={() => setOpenNowe(true)}>
+                <Plus size={17} /> Nowe zlecenie
+              </button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<ClipboardList size={26} />}
+            title="Brak wyników"
+            desc="Żadne zlecenie nie pasuje do wyszukiwania lub filtrów. Zmień kryteria powyżej."
+          />
+        )
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {widoczne.map((z) => {
@@ -766,6 +774,11 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                 <Input
                   value={z.numer}
                   onChange={(e) => update({ numer: e.target.value })}
+                  onBlur={(e) => {
+                    // Numer nie moze zostac pusty - po wyczyszczeniu przywracamy podpowiedziany.
+                    if (!e.target.value.trim())
+                      update({ numer: sugerowanyNumerZlecenia(b.zlecenia, z.firmaId, dataZlecenia(z).slice(0, 4)) })
+                  }}
                   placeholder="np. 111/2026"
                 />
               </Field>
