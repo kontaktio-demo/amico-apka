@@ -85,6 +85,7 @@ export function Skaner({
   const [zlId, setZlId] = useState(zlecenieId || '')
   const [klId, setKlId] = useState(klientId || '')
   const [notatka, setNotatka] = useState('')
+  const [zapisywanie, setZapisywanie] = useState(false) // MUSI byc PRZED `if (!open) return null` (reguly hookow)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -223,7 +224,6 @@ export function Skaner({
     setStrony((s) => s.map((x) => (x.id === id ? { ...x, filtr: nowy, wynik } : x)))
   }
 
-  const [zapisywanie, setZapisywanie] = useState(false)
   async function zapisz() {
     if (strony.length === 0 || zapisywanie) return
     // Skan trafia jako WIERSZ do tabeli amico_skany (nie do blobu) - skaluje sie bez limitu.

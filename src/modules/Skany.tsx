@@ -51,21 +51,32 @@ export default function Skany() {
   const [laczna, setLaczna] = useState<number | null>(null)
   const reqRef = useRef(0)
 
-  // Pierwsza strona (przy zmianie filtra/szukania - z debounce dla szukania)
-  const zaladujPierwsza = useCallback(async () => {
-    const nr = ++reqRef.current
-    setLadowanie(true)
-    try {
-      const { skany: s, jestWiecej: w } = await listaSkanow({ kategoria: katFiltr, szukaj, offset: 0 })
-      if (nr !== reqRef.current) return // starsze zapytanie - pomin
-      setSkany(s)
-      setJestWiecej(w)
-    } catch {
-      if (nr === reqRef.current) setSkany([])
-    } finally {
-      if (nr === reqRef.current) setLadowanie(false)
-    }
-  }, [katFiltr, szukaj])
+  // Ile skanow jest teraz wczytanych (ref - zeby realtime odswiezal ZACHOWUJAC pozycje,
+  // a nie zwijal listy do pierwszych 60 po kazdej zmianie).
+  const widoczneRef = useRef(0)
+  useEffect(() => {
+    widoczneRef.current = skany.length
+  }, [skany.length])
+
+  // Zaladuj od poczatku `ile` pozycji (reqRef odrzuca spoznione, nieaktualne zapytania).
+  const zaladujOd0 = useCallback(
+    async (ile: number) => {
+      const nr = ++reqRef.current
+      setLadowanie(true)
+      try {
+        const { skany: s, jestWiecej: w } = await listaSkanow({ kategoria: katFiltr, szukaj, offset: 0, limit: ile })
+        if (nr !== reqRef.current) return // starsze zapytanie - pomin
+        setSkany(s)
+        setJestWiecej(w)
+      } catch {
+        if (nr === reqRef.current) setSkany([])
+      } finally {
+        if (nr === reqRef.current) setLadowanie(false)
+      }
+    },
+    [katFiltr, szukaj],
+  )
+  const zaladujPierwsza = useCallback(() => zaladujOd0(STRONA_ROZMIAR), [zaladujOd0])
 
   useEffect(() => {
     const t = setTimeout(zaladujPierwsza, szukaj ? 300 : 0)
@@ -77,19 +88,28 @@ export default function Skany() {
     policzSkany().then(setLaczna).catch(() => setLaczna(null))
   }, [])
 
-  // Realtime: nowy/zmieniony/usuniety skan na innym urzadzeniu -> odswiez pierwsza strone.
+  // Realtime: zmiana skanu (tez z innego urzadzenia) -> odswiez, ale ZACHOWAJ ile wczytano.
   useEffect(() => {
     const off = subskrybujSkany(() => {
-      zaladujPierwsza()
+      zaladujOd0(Math.max(STRONA_ROZMIAR, widoczneRef.current))
       policzSkany().then(setLaczna).catch(() => {})
     })
     return off
-  }, [zaladujPierwsza])
+  }, [zaladujOd0])
 
   async function zaladujWiecej() {
-    const { skany: s, jestWiecej: w } = await listaSkanow({ kategoria: katFiltr, szukaj, offset: skany.length })
-    setSkany((prev) => [...prev, ...s])
-    setJestWiecej(w)
+    const nr = reqRef.current // kontynuacja biezacej listy - NIE inkrementujemy
+    try {
+      const { skany: s, jestWiecej: w } = await listaSkanow({ kategoria: katFiltr, szukaj, offset: skany.length })
+      if (nr !== reqRef.current) return // filtr/szukanie zmienilo sie w miedzyczasie - pomin
+      setSkany((prev) => {
+        const znane = new Set(prev.map((x) => x.id)) // dedup po id (bezpiecznie przy realtime)
+        return [...prev, ...s.filter((x) => !znane.has(x.id))]
+      })
+      setJestWiecej(w)
+    } catch {
+      /* brak sieci - mozna kliknac "Pokaz wiecej" ponownie; nic nie ginie */
+    }
   }
 
   function poZapisaniuSkanu() {

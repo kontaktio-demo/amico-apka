@@ -136,12 +136,14 @@ export async function zapiszSkan(skan: Skan): Promise<void> {
 export async function zapiszMetaSkanu(id: string, p: Partial<Skan>): Promise<void> {
   const w = ws()
   if (!w) throw new Error('Brak połączenia z firmą w chmurze.')
+  // 'klucz' in p (a nie !== undefined): ODPIECIE od zlecenia/klienta przekazuje undefined,
+  // ale klucz JEST obecny -> musimy zapisac null. Inaczej odpiecie ginie po cichu.
   const patch: Record<string, unknown> = { zm: new Date().toISOString() }
-  if (p.nazwa !== undefined) patch.nazwa = p.nazwa || ''
-  if (p.kategoria !== undefined) patch.kategoria = p.kategoria
-  if (p.zlecenieId !== undefined) patch.zlecenie_id = p.zlecenieId || null
-  if (p.klientId !== undefined) patch.klient_id = p.klientId || null
-  if (p.notatka !== undefined) patch.notatka = p.notatka || null
+  if ('nazwa' in p) patch.nazwa = p.nazwa || ''
+  if ('kategoria' in p) patch.kategoria = p.kategoria
+  if ('zlecenieId' in p) patch.zlecenie_id = p.zlecenieId || null
+  if ('klientId' in p) patch.klient_id = p.klientId || null
+  if ('notatka' in p) patch.notatka = p.notatka || null
   const { error } = await supabase.from('amico_skany').update(patch).eq('workspace_id', w).eq('id', id)
   if (error) throw error
 }
@@ -232,14 +234,35 @@ export async function offloadSkanyTabela(): Promise<void> {
 // urzadzeniu dalej je widziala do czasu aktualizacji.
 let migracjaBlobZrobiona = false
 export async function migrujBlobSkanyDoTabeli(): Promise<void> {
-  if (migracjaBlobZrobiona || !ws()) return
-  const blobSkany = (useStore.getState().baza.skany || []) as Skan[]
+  const w = ws()
+  if (migracjaBlobZrobiona || !w) return
+  const blobSkany = (useStore.getState().baza.skany || []) as (Skan & { _zm?: string })[]
   if (!blobSkany.length) {
     migracjaBlobZrobiona = true
     return
   }
   try {
-    for (const s of blobSkany) if (s && s.id) await zapiszSkan(s)
+    const wiersze = blobSkany
+      .filter((s) => s && s.id)
+      .map((s) => ({
+        id: s.id,
+        workspace_id: w,
+        nazwa: s.nazwa || '',
+        kategoria: s.kategoria || 'inne',
+        strony: s.strony || [],
+        zlecenie_id: s.zlecenieId || null,
+        klient_id: s.klientId || null,
+        notatka: s.notatka || null,
+        utworzono: s.utworzono || new Date().toISOString(),
+        zm: s._zm || s.utworzono || new Date().toISOString(),
+        usuniety: false,
+        ma_base64: (s.strony || []).some(czyBase64),
+      }))
+    // KLUCZOWE: ignoreDuplicates (INSERT ... ON CONFLICT DO NOTHING) - migracja z blobu tylko
+    // WSTAWIA brakujace skany, NIGDY nie nadpisuje istniejacych. Inaczej wskrzeszalaby skan
+    // usuniety w tabeli (usuniety=true) albo cofala edycje metadanych (blob ma stara wersje).
+    const { error } = await supabase.from('amico_skany').upsert(wiersze, { onConflict: 'id', ignoreDuplicates: true })
+    if (error) throw error
     migracjaBlobZrobiona = true
     void offloadSkanyTabela()
   } catch {
