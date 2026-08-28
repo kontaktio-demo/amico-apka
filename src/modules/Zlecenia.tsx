@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
+import { skanyDlaZlecenia, subskrybujSkany } from '../lib/skanyDb'
 import {
   ClipboardList,
   Plus,
@@ -543,7 +544,17 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   const location = useLocation()
   const [skanerOpen, setSkanerOpen] = useState(false)
   const [podglad, setPodglad] = useState<Skan | null>(null)
-  const skany = b.skany.filter((s) => s.zlecenieId === z.id).slice().sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
+  // Skany zlecenia ladujemy z tabeli (nie z blobu) - skaluje sie i widac je od razu na innych urzadzeniach.
+  const [skany, setSkany] = useState<Skan[]>([])
+  const odswiezSkany = useCallback(() => {
+    skanyDlaZlecenia(z.id)
+      .then(setSkany)
+      .catch(() => setSkany([]))
+  }, [z.id])
+  useEffect(() => {
+    odswiezSkany()
+    return subskrybujSkany(odswiezSkany)
+  }, [odswiezSkany])
 
   const klient = z.klientId ? b.klienci.find((k) => k.id === z.klientId) : undefined
   const ei = etapInfo(z.etap)
@@ -890,7 +901,13 @@ function Szczegoly({ z }: { z: Zlecenie }) {
         </div>
       </div>
 
-      <Skaner open={skanerOpen} onClose={() => setSkanerOpen(false)} zlecenieId={z.id} klientId={z.klientId} />
+      <Skaner
+        open={skanerOpen}
+        onClose={() => setSkanerOpen(false)}
+        zlecenieId={z.id}
+        klientId={z.klientId}
+        onZapisano={odswiezSkany}
+      />
 
       <Modal open={!!podglad} onClose={() => setPodglad(null)} title={podglad?.nazwa || 'Skan'} size="lg">
         {podglad && (

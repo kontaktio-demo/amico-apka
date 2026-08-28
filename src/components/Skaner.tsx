@@ -4,7 +4,7 @@ import { useStore } from '../lib/store'
 import { useToast, Field, Input, Select, Textarea } from './ui'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { uid } from '../lib/id'
-import { dogonSkanyDoChmury } from '../lib/cloud'
+import { zapiszSkan } from '../lib/skanyDb'
 import { nowISO } from '../lib/format'
 import { klientNazwa } from '../lib/helpers'
 import { czyDesktop } from '../lib/desktop'
@@ -58,7 +58,6 @@ export function Skaner({
   onZapisano?: (skan: Skan) => void
 }) {
   const b = useStore((s) => s.baza)
-  const upsert = useStore((s) => s.upsert)
   const { push } = useToast()
   // UWAGA: NIE uzywamy useConfirm() (jego okno jest portalowane na z-50 i chowa sie POD
   // pelnoekranowym skanerem z-80 - uzytkownik nie mogl potwierdzic i byl uwieziony,
@@ -224,12 +223,13 @@ export function Skaner({
     setStrony((s) => s.map((x) => (x.id === id ? { ...x, filtr: nowy, wynik } : x)))
   }
 
-  function zapisz() {
-    if (strony.length === 0) return
-    // Strony zapisujemy jako base64 W BAZIE (trwale i od razu widoczne po synchronizacji -
-    // NIC nie ginie, nawet offline). Zaraz potem dogonSkanyDoChmury przenosi je do Storage
-    // i podmienia base64 -> sciezka, wiec baza szybko sie odchudza. Kluczowe: obraz jest w
-    // TRWALYM zrodle (baza -> chmura) ZANIM powstanie wskaznik do Storage - nic nie przepada.
+  const [zapisywanie, setZapisywanie] = useState(false)
+  async function zapisz() {
+    if (strony.length === 0 || zapisywanie) return
+    // Skan trafia jako WIERSZ do tabeli amico_skany (nie do blobu) - skaluje sie bez limitu.
+    // Strony wgrywamy jako base64 w wierszu; offloadSkanyTabela przenosi je do Storage i
+    // podmienia na sciezki. Gdy zapis do chmury sie nie uda (brak sieci) - NIE zamykamy
+    // skanera i pokazujemy blad, zeby strony nie przepadly (uzytkownik ponawia).
     const skan: Skan = {
       id: uid('skan'),
       nazwa: nazwa.trim() || `Skan ${new Date().toLocaleDateString('pl-PL')}`,
@@ -240,11 +240,17 @@ export function Skaner({
       notatka: notatka.trim() || undefined,
       utworzono: nowISO(),
     }
-    upsert('skany', skan)
-    push(`Zapisano skan (${strony.length} str.)`)
-    void dogonSkanyDoChmury() // od razu przenies do chmury (Storage), gdy jest internet
-    onZapisano?.(skan)
-    onClose()
+    setZapisywanie(true)
+    try {
+      await zapiszSkan(skan)
+      push(`Zapisano skan (${strony.length} str.)`)
+      onZapisano?.(skan)
+      onClose()
+    } catch {
+      push('Nie udało się zapisać skanu - sprawdź internet i spróbuj ponownie.', 'err')
+    } finally {
+      setZapisywanie(false)
+    }
   }
 
   return (
@@ -430,8 +436,8 @@ export function Skaner({
               <button className="btn-ghost !text-stone-400" onClick={() => setEtap('kamera')}>
                 <ChevronLeft size={17} /> Skanuj dalej
               </button>
-              <button className="btn-primary btn-lg" onClick={zapisz} disabled={strony.length === 0}>
-                <Check size={18} /> Zapisz dokument ({strony.length})
+              <button className="btn-primary btn-lg" onClick={zapisz} disabled={strony.length === 0 || zapisywanie}>
+                <Check size={18} /> {zapisywanie ? 'Zapisywanie...' : `Zapisz dokument (${strony.length})`}
               </button>
             </div>
           </div>

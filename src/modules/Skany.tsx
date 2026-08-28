@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { ScanLine, Search, FileText, Printer, Send, Download, Trash2, Link2, X, Plus } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { ScanLine, Search, FileText, Printer, Send, Download, Trash2, Link2, X, Plus, Loader2 } from 'lucide-react'
 import { useStore } from '../lib/store'
 import {
   PageHeader,
@@ -18,6 +18,7 @@ import {
 import { Skaner } from '../components/Skaner'
 import { SkanImg } from '../components/SkanImg'
 import { rozwinStrony } from '../lib/cloud'
+import { listaSkanow, policzSkany, zapiszMetaSkanu, usunSkan, subskrybujSkany, STRONA_ROZMIAR } from '../lib/skanyDb'
 import type { Skan, SkanKategoria } from '../lib/types'
 import { fmtDate } from '../lib/format'
 import { klientNazwa } from '../lib/helpers'
@@ -35,9 +36,7 @@ const KAT: Record<SkanKategoria, string> = {
 }
 
 export default function Skany() {
-  const b = useStore((s) => s.baza)
-  const remove = useStore((s) => s.remove)
-  const upsert = useStore((s) => s.upsert)
+  const b = useStore((s) => s.baza) // tylko do etykiet: numer zlecenia / nazwa klienta
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
 
@@ -46,19 +45,57 @@ export default function Skany() {
   const [katFiltr, setKatFiltr] = useState<string>('')
   const [podglad, setPodglad] = useState<Skan | null>(null)
 
-  const skany = useMemo(() => {
-    return b.skany
-      .filter((s) => !katFiltr || s.kategoria === katFiltr)
-      .filter((s) => {
-        if (!szukaj) return true
-        const zl = b.zlecenia.find((z) => z.id === s.zlecenieId)
-        const kl = b.klienci.find((k) => k.id === s.klientId)
-        const hay =
-          `${s.nazwa} ${s.notatka || ''} ${zl?.numer || ''} ${zl?.tytul || ''} ${kl ? klientNazwa(kl) : ''}`.toLowerCase()
-        return hay.includes(szukaj.toLowerCase())
-      })
-      .sort((a, c) => (c.utworzono || '').localeCompare(a.utworzono || ''))
-  }, [b.skany, b.zlecenia, b.klienci, katFiltr, szukaj])
+  const [skany, setSkany] = useState<Skan[]>([])
+  const [ladowanie, setLadowanie] = useState(true)
+  const [jestWiecej, setJestWiecej] = useState(false)
+  const [laczna, setLaczna] = useState<number | null>(null)
+  const reqRef = useRef(0)
+
+  // Pierwsza strona (przy zmianie filtra/szukania - z debounce dla szukania)
+  const zaladujPierwsza = useCallback(async () => {
+    const nr = ++reqRef.current
+    setLadowanie(true)
+    try {
+      const { skany: s, jestWiecej: w } = await listaSkanow({ kategoria: katFiltr, szukaj, offset: 0 })
+      if (nr !== reqRef.current) return // starsze zapytanie - pomin
+      setSkany(s)
+      setJestWiecej(w)
+    } catch {
+      if (nr === reqRef.current) setSkany([])
+    } finally {
+      if (nr === reqRef.current) setLadowanie(false)
+    }
+  }, [katFiltr, szukaj])
+
+  useEffect(() => {
+    const t = setTimeout(zaladujPierwsza, szukaj ? 300 : 0)
+    return () => clearTimeout(t)
+  }, [zaladujPierwsza, szukaj])
+
+  // Licznik wszystkich skanow (do rozroznienia "brak skanow" vs "brak wynikow")
+  useEffect(() => {
+    policzSkany().then(setLaczna).catch(() => setLaczna(null))
+  }, [])
+
+  // Realtime: nowy/zmieniony/usuniety skan na innym urzadzeniu -> odswiez pierwsza strone.
+  useEffect(() => {
+    const off = subskrybujSkany(() => {
+      zaladujPierwsza()
+      policzSkany().then(setLaczna).catch(() => {})
+    })
+    return off
+  }, [zaladujPierwsza])
+
+  async function zaladujWiecej() {
+    const { skany: s, jestWiecej: w } = await listaSkanow({ kategoria: katFiltr, szukaj, offset: skany.length })
+    setSkany((prev) => [...prev, ...s])
+    setJestWiecej(w)
+  }
+
+  function poZapisaniuSkanu() {
+    zaladujPierwsza()
+    policzSkany().then(setLaczna).catch(() => {})
+  }
 
   return (
     <div>
@@ -75,7 +112,7 @@ export default function Skany() {
 
       <div className="mb-5 flex flex-wrap gap-2">
         <div className="min-w-[220px] flex-1">
-          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj: nazwa, zlecenie, klient..." />
+          <SearchInput value={szukaj} onChange={setSzukaj} placeholder="Szukaj: nazwa, notatka..." />
         </div>
         <Select className="w-auto" value={katFiltr} onChange={(e) => setKatFiltr(e.target.value)}>
           <option value="">Wszystkie kategorie</option>
@@ -87,8 +124,12 @@ export default function Skany() {
         </Select>
       </div>
 
-      {skany.length === 0 ? (
-        b.skany.length === 0 ? (
+      {ladowanie && skany.length === 0 ? (
+        <div className="flex items-center justify-center py-16 text-stone-400">
+          <Loader2 size={22} className="mr-2 animate-spin" /> Wczytywanie skanów...
+        </div>
+      ) : skany.length === 0 ? (
+        laczna === 0 ? (
           <EmptyState
             icon={<ScanLine size={28} />}
             title="Brak skanów"
@@ -107,43 +148,52 @@ export default function Skany() {
           />
         )
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {skany.map((s) => {
-            const zl = b.zlecenia.find((z) => z.id === s.zlecenieId)
-            const kl = b.klienci.find((k) => k.id === s.klientId)
-            return (
-              <button
-                key={s.id}
-                onClick={() => setPodglad(s)}
-                className="card overflow-hidden text-left transition hover:border-white/20"
-              >
-                <div className="relative aspect-[3/4] bg-white">
-                  <SkanImg strona={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" />
-                  {s.strony.length > 1 && (
-                    <span className="absolute right-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
-                      {s.strony.length} str.
-                    </span>
-                  )}
-                </div>
-                <div className="p-2.5">
-                  <div className="truncate text-[13.5px] font-medium text-ink">{s.nazwa}</div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <Badge tone="stone">{KAT[s.kategoria]}</Badge>
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {skany.map((s) => {
+              const zl = b.zlecenia.find((z) => z.id === s.zlecenieId)
+              const kl = b.klienci.find((k) => k.id === s.klientId)
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setPodglad(s)}
+                  className="card overflow-hidden text-left transition hover:border-white/20"
+                >
+                  <div className="relative aspect-[3/4] bg-white">
+                    <SkanImg strona={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" />
+                    {s.strony.length > 1 && (
+                      <span className="absolute right-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
+                        {s.strony.length} str.
+                      </span>
+                    )}
                   </div>
-                  {(zl || kl) && (
-                    <div className="mt-1.5 flex items-center gap-1 truncate text-[11.5px] text-stone-400">
-                      <Link2 size={11} /> {zl ? zl.numer : klientNazwa(kl)}
+                  <div className="p-2.5">
+                    <div className="truncate text-[13.5px] font-medium text-ink">{s.nazwa}</div>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <Badge tone="stone">{KAT[s.kategoria]}</Badge>
                     </div>
-                  )}
-                  <div className="mt-1 text-[11px] text-stone-500">{fmtDate(s.utworzono)}</div>
-                </div>
+                    {(zl || kl) && (
+                      <div className="mt-1.5 flex items-center gap-1 truncate text-[11.5px] text-stone-400">
+                        <Link2 size={11} /> {zl ? zl.numer : klientNazwa(kl)}
+                      </div>
+                    )}
+                    <div className="mt-1 text-[11px] text-stone-500">{fmtDate(s.utworzono)}</div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+          {jestWiecej && (
+            <div className="mt-5 flex justify-center">
+              <button className="btn-outline" onClick={zaladujWiecej}>
+                <Plus size={16} /> Pokaż więcej
               </button>
-            )
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
-      <Skaner open={skanerOtwarty} onClose={() => setSkanerOtwarty(false)} />
+      <Skaner open={skanerOtwarty} onClose={() => setSkanerOtwarty(false)} onZapisano={poZapisaniuSkanu} />
 
       {podglad && (
         <PodgladSkanu
@@ -151,23 +201,23 @@ export default function Skany() {
           zlecenia={b.zlecenia.map((z) => ({ id: z.id, label: `${z.numer} · ${z.tytul}` }))}
           klienci={b.klienci.map((k) => ({ id: k.id, label: klientNazwa(k) }))}
           onClose={() => setPodglad(null)}
-          onZapisz={(s) => {
-            // WAZNE: zapis metadanych (nazwa/kategoria/przypisania/notatka) NIE moze nadpisac
-            // pola `strony` STARA migawka - offload mogl juz zamienic base64 -> sciezke w
-            // chmurze; wziecie strony z podgladu cofneloby to (utrata/ponowny upload).
-            const akt = useStore.getState().baza.skany.find((x) => x.id === s.id)
-            const scalony = { ...s, strony: akt?.strony ?? s.strony }
-            upsert('skany', scalony)
-            setPodglad(scalony)
+          onZapisz={async (s) => {
+            await zapiszMetaSkanu(s.id, {
+              nazwa: s.nazwa,
+              kategoria: s.kategoria,
+              zlecenieId: s.zlecenieId,
+              klientId: s.klientId,
+              notatka: s.notatka,
+            })
+            setPodglad(s)
+            setSkany((prev) => prev.map((x) => (x.id === s.id ? { ...x, ...s, strony: x.strony } : x)))
             push('Zapisano zmiany')
           }}
           onUsun={async () => {
             if (await confirm(`Usunąć skan "${podglad.nazwa}"?`)) {
-              // NIE kasujemy tu obrazow z chmury! Gdyby ktos na innym urzadzeniu (offline)
-              // wlasnie edytowal ten skan, po scaleniu "edycja wygrywa z usunieciem" skan by
-              // wrocil - a obrazy juz by nie istnialy (puste strony = utrata dokumentu).
-              // Obiekty w chmurze sprzata bezpiecznie, z opoznieniem, sprzatnijOsieroconeSkany.
-              remove('skany', podglad.id)
+              await usunSkan(podglad.id)
+              setSkany((prev) => prev.filter((x) => x.id !== podglad.id))
+              setLaczna((n) => (n == null ? n : Math.max(0, n - 1)))
               setPodglad(null)
               push('Usunięto skan', 'info')
             }

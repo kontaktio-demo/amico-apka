@@ -5,6 +5,7 @@ import { scalBaze, pustyStan, bezSekretow } from './merge'
 import { pustaBaza } from './seed'
 import type { Baza, Rola, Uzytkownik } from './types'
 import { hashHasla, losowaSol, zapiszOstatniego } from './auth'
+import { offloadSkanyTabela, migrujBlobSkanyDoTabeli } from './skanyDb'
 import { nowISO } from './format'
 
 // ============================================================================
@@ -863,7 +864,7 @@ function onOnline() {
   zresetujBrakBucketaSkanow() // wrocil internet - sprobuj przeniesc skany do Storage jeszcze raz
   if (C().workspaceId) {
     zaplanujZapis(200)
-    dogonSkanyDoChmury().catch(() => {}) // dogon skany, ktore czekaly na sieci
+    offloadSkanyTabela().catch(() => {}) // dogon skany, ktore czekaly na sieci
   } else void startSync() // start byl offline - bootstrap sie nie udal, ponow
 }
 // Zdarzenie 'offline' na iPhone bywa FALSZYWE (usypianie PWA, przelaczanie sieci), wiec
@@ -887,7 +888,7 @@ function onWznowienie() {
   podlaczRealtime(ws)
   dogonJesliNowszy(ws).catch(() => {}) // tanio: pelna baza tylko gdy serwer nowszy
   zaplanujZapis(300)
-  dogonSkanyDoChmury().catch(() => {})
+  offloadSkanyTabela().catch(() => {})
 }
 
 function podlaczRealtime(ws: string) {
@@ -926,7 +927,7 @@ function startHeartbeat(ws: string) {
       if (r != null && r > getRev(ws)) pobierzIScalRaz(ws).catch(() => {})
     })
     if (brudne) zaplanujZapis(200)
-    dogonSkanyDoChmury().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
+    offloadSkanyTabela().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
   }, 45000)
 }
 
@@ -959,9 +960,10 @@ export async function startSync(imie = '') {
     podlaczRealtime(workspaceId)
     startHeartbeat(workspaceId)
     await zapisz()
-    // Przenies obrazy skanow do magazynu plikow (odchudza baze, zeby zapis nie wpadal na
-    // limit 20 MB). Po przeniesieniu baza sie kurczy i zapis znow dziala.
-    dogonSkanyDoChmury().catch(() => {})
+    // Skany: przenies ewentualne stare skany z blobu do tabeli, potem przenies base64 stron
+    // do Storage. Dzieki tabeli skany skaluja sie do dziesiatkow tysiecy (baza zostaje mala).
+    migrujBlobSkanyDoTabeli().catch(() => {})
+    offloadSkanyTabela().catch(() => {})
     sprzatnijOsieroconeSkany(workspaceId).catch(() => {}) // raz na start: pliki po dawno usunietych skanach
   } catch (e: any) {
     if (czyBladSesji(e)) {

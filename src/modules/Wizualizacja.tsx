@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Sparkles, Save, Layers, Home, SquareStack } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { zapiszSkan } from '../lib/skanyDb'
 import { PageHeader, Card, CardBody, Field, Input, Select, Toggle, Badge, useToast, cx } from '../components/ui'
 import { PrintSendBar } from '../components/PrintSendBar'
 import { DocSheet } from '../documents/DocShell'
@@ -88,7 +89,6 @@ function StoneRect({
 
 export default function Wizualizacja() {
   const b = useStore((s) => s.baza)
-  const upsert = useStore((s) => s.upsert)
   const firma = useStore((s) => s.aktywnaFirma)()
   const { push } = useToast()
 
@@ -132,10 +132,10 @@ export default function Wizualizacja() {
         notatka: `${nazwaKamienia} · ${ksztalt === 'prosty' ? `${a}×${b2} cm` : 'blat w kształcie L'} · ${fmtNum(pow, 2)} m²`,
         utworzono: nowISO(),
       }
-      upsert('skany', skan)
+      await zapiszSkan(skan)
       push('Wizualizacja zapisana w Archiwum')
     } catch {
-      push('Nie udało się zapisać wizualizacji', 'err')
+      push('Nie udało się zapisać wizualizacji - sprawdź internet', 'err')
     }
   }
 
