@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { skanyDlaZlecenia, subskrybujSkany } from '../lib/skanyDb'
+import { useCloud } from '../lib/cloud'
 import {
   ClipboardList,
   Plus,
@@ -545,7 +546,8 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   const [skanerOpen, setSkanerOpen] = useState(false)
   const [podglad, setPodglad] = useState<Skan | null>(null)
   // Skany zlecenia ladujemy z tabeli (nie z blobu) - skaluje sie i widac je od razu na innych urzadzeniach.
-  const [skany, setSkany] = useState<Skan[]>([])
+  const skanyWs = useCloud((s) => s.workspaceId) // gdy chmura sie polaczy -> zaladuj i subskrybuj ponownie
+  const [skany, setSkany] = useState<Skan[] | null>(null) // null = jeszcze nie wczytano (nie myl z "brak")
   const odswiezSkany = useCallback(() => {
     skanyDlaZlecenia(z.id)
       .then(setSkany)
@@ -554,7 +556,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   useEffect(() => {
     odswiezSkany()
     return subskrybujSkany(odswiezSkany)
-  }, [odswiezSkany])
+  }, [odswiezSkany, skanyWs])
 
   const klient = z.klientId ? b.klienci.find((k) => k.id === z.klientId) : undefined
   const ei = etapInfo(z.etap)
@@ -708,18 +710,20 @@ function Szczegoly({ z }: { z: Zlecenie }) {
           </SectionCard>
 
           <SectionCard
-            title={`Dokumenty i skany${skany.length ? ` (${skany.length})` : ''}`}
+            title={`Dokumenty i skany${skany && skany.length ? ` (${skany.length})` : ''}`}
             icon={<ScanLine size={17} />}
             desc="Umowy, pomiary, projekty – wszystko podpięte pod to zlecenie"
             actions={
-              skany.length > 0 ? (
+              skany && skany.length > 0 ? (
                 <button className="btn-primary btn-sm" onClick={() => setSkanerOpen(true)}>
                   <ScanLine size={15} /> Skanuj
                 </button>
               ) : undefined
             }
           >
-            {skany.length === 0 ? (
+            {skany === null ? (
+              <div className="flex items-center justify-center py-8 text-[13px] text-stone-400">Wczytywanie skanów...</div>
+            ) : skany.length === 0 ? (
               <button
                 onClick={() => setSkanerOpen(true)}
                 className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-white/15 py-8 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"

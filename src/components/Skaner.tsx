@@ -211,6 +211,10 @@ export function Skaner({
       setStrony((s) => [...s, { id: uid('str'), warp: warpJpeg, filtr, wynik }])
       setCaptured(null)
       setEtap('przeglad')
+    } catch {
+      // Na iPhone przetwarzanie bardzo duzego zdjecia moze paść z braku pamieci - NIE zostawiamy
+      // tego po cichu (strona by przepadla). Zostajemy na kadrze, user moze sprobowac ponownie.
+      push('Nie udało się przetworzyć strony (za duże zdjęcie?). Spróbuj ponownie lub zrób zdjęcie z mniejszej odległości.', 'err')
     } finally {
       setBusy(false)
     }
@@ -246,8 +250,11 @@ export function Skaner({
       push(`Zapisano skan (${strony.length} str.)`)
       onZapisano?.(skan)
       onClose()
-    } catch {
-      push('Nie udało się zapisać skanu - sprawdź internet i spróbuj ponownie.', 'err')
+    } catch (e) {
+      // Pokazujemy PRAWDZIWA przyczyne (np. "Brak połączenia z firmą w chmurze - zaloguj się"),
+      // a nie zawsze internet. Dla bledu sieci zostaje przyjazny komunikat.
+      const m = e instanceof Error ? e.message : ''
+      push(m && !/fetch|network|load failed/i.test(m) ? m : 'Nie udało się zapisać skanu - sprawdź internet i spróbuj ponownie.', 'err')
     } finally {
       setZapisywanie(false)
     }
@@ -262,7 +269,7 @@ export function Skaner({
         </div>
         <div className="flex items-center gap-2 text-[13px] text-stone-400">
           {strony.length > 0 && <span>{strony.length} str.</span>}
-          <button className="btn-ghost !px-2" onClick={zamknij}>
+          <button className="btn-ghost !px-2" onClick={zamknij} disabled={zapisywanie}>
             <X size={22} />
           </button>
         </div>
@@ -411,7 +418,7 @@ export function Skaner({
                     <option value="">- brak -</option>
                     {b.zlecenia.map((z) => (
                       <option key={z.id} value={z.id}>
-                        {z.numer} · {z.tytul}
+                        {[z.numer, z.tytul].filter(Boolean).join(' · ')}
                       </option>
                     ))}
                   </Select>

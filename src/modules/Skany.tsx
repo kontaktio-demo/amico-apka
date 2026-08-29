@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ScanLine, Search, FileText, Printer, Send, Download, Trash2, Link2, X, Plus, Loader2 } from 'lucide-react'
+import { ScanLine, FileText, Printer, Send, Download, Trash2, Link2, Plus, Loader2, AlertTriangle } from 'lucide-react'
 import { useStore } from '../lib/store'
 import {
   PageHeader,
@@ -49,6 +49,7 @@ export default function Skany() {
   const [ladowanie, setLadowanie] = useState(true)
   const [jestWiecej, setJestWiecej] = useState(false)
   const [laczna, setLaczna] = useState<number | null>(null)
+  const [blad, setBlad] = useState(false) // blad wczytywania (offline) - NIE mylic z pusta lista
   const reqRef = useRef(0)
 
   // Ile skanow jest teraz wczytanych (ref - zeby realtime odswiezal ZACHOWUJAC pozycje,
@@ -68,8 +69,12 @@ export default function Skany() {
         if (nr !== reqRef.current) return // starsze zapytanie - pomin
         setSkany(s)
         setJestWiecej(w)
+        setBlad(false)
       } catch {
-        if (nr === reqRef.current) setSkany([])
+        if (nr === reqRef.current) {
+          setSkany([])
+          setBlad(true)
+        }
       } finally {
         if (nr === reqRef.current) setLadowanie(false)
       }
@@ -113,7 +118,7 @@ export default function Skany() {
   }
 
   function poZapisaniuSkanu() {
-    zaladujPierwsza()
+    zaladujOd0(Math.max(STRONA_ROZMIAR, widoczneRef.current)) // zachowaj wczytana liczbe, nie zwijaj do 60
     policzSkany().then(setLaczna).catch(() => {})
   }
 
@@ -121,7 +126,7 @@ export default function Skany() {
     <div>
       <PageHeader
         title="Skany / Archiwum"
-        subtitle="Skanuj dokumenty i kartki, przypnij do zlecenia, przeglądaj i wysyłaj jako PDF"
+        subtitle={`${laczna != null && laczna > 0 ? `${laczna} w archiwum · ` : ''}Skanuj, przypnij do zlecenia, wyślij jako PDF`}
         icon={<ScanLine size={22} />}
         actions={
           <button className="btn-primary" onClick={() => setSkanerOtwarty(true)}>
@@ -148,8 +153,25 @@ export default function Skany() {
         <div className="flex items-center justify-center py-16 text-stone-400">
           <Loader2 size={22} className="mr-2 animate-spin" /> Wczytywanie skanów...
         </div>
+      ) : blad && skany.length === 0 ? (
+        <EmptyState
+          icon={<AlertTriangle size={28} />}
+          title="Nie udało się wczytać skanów"
+          desc="Sprawdź połączenie z internetem. Skany są bezpieczne w chmurze - spróbuj ponownie."
+          action={
+            <button className="btn-outline" onClick={zaladujPierwsza}>
+              Spróbuj ponownie
+            </button>
+          }
+        />
       ) : skany.length === 0 ? (
-        laczna === 0 ? (
+        szukaj.trim() || katFiltr ? (
+          <EmptyState
+            icon={<ScanLine size={28} />}
+            title="Brak wyników"
+            desc="Żaden skan nie pasuje do wyszukiwania lub wybranej kategorii. Zmień kryteria powyżej."
+          />
+        ) : (
           <EmptyState
             icon={<ScanLine size={28} />}
             title="Brak skanów"
@@ -159,12 +181,6 @@ export default function Skany() {
                 <ScanLine size={16} /> Skanuj dokument
               </button>
             }
-          />
-        ) : (
-          <EmptyState
-            icon={<ScanLine size={28} />}
-            title="Brak wyników"
-            desc="Żaden skan nie pasuje do wyszukiwania lub wybranej kategorii. Zmień kryteria powyżej."
           />
         )
       ) : (
@@ -222,24 +238,32 @@ export default function Skany() {
           klienci={b.klienci.map((k) => ({ id: k.id, label: klientNazwa(k) }))}
           onClose={() => setPodglad(null)}
           onZapisz={async (s) => {
-            await zapiszMetaSkanu(s.id, {
-              nazwa: s.nazwa,
-              kategoria: s.kategoria,
-              zlecenieId: s.zlecenieId,
-              klientId: s.klientId,
-              notatka: s.notatka,
-            })
-            setPodglad(s)
-            setSkany((prev) => prev.map((x) => (x.id === s.id ? { ...x, ...s, strony: x.strony } : x)))
-            push('Zapisano zmiany')
+            try {
+              await zapiszMetaSkanu(s.id, {
+                nazwa: s.nazwa,
+                kategoria: s.kategoria,
+                zlecenieId: s.zlecenieId,
+                klientId: s.klientId,
+                notatka: s.notatka,
+              })
+              setPodglad(s)
+              setSkany((prev) => prev.map((x) => (x.id === s.id ? { ...x, ...s, strony: x.strony } : x)))
+              push('Zapisano zmiany')
+            } catch {
+              push('Nie udało się zapisać zmian - sprawdź internet i spróbuj ponownie.', 'err')
+            }
           }}
           onUsun={async () => {
             if (await confirm(`Usunąć skan "${podglad.nazwa}"?`)) {
-              await usunSkan(podglad.id)
-              setSkany((prev) => prev.filter((x) => x.id !== podglad.id))
-              setLaczna((n) => (n == null ? n : Math.max(0, n - 1)))
-              setPodglad(null)
-              push('Usunięto skan', 'info')
+              try {
+                await usunSkan(podglad.id)
+                setSkany((prev) => prev.filter((x) => x.id !== podglad.id))
+                setLaczna((n) => (n == null ? n : Math.max(0, n - 1)))
+                setPodglad(null)
+                push('Usunięto skan', 'info')
+              } catch {
+                push('Nie udało się usunąć - sprawdź internet i spróbuj ponownie.', 'err')
+              }
             }
           }}
           push={push}
@@ -269,11 +293,66 @@ function PodgladSkanu({
 }) {
   const [d, setD] = useState<Skan>(skan)
   const set = (p: Partial<Skan>) => setD({ ...d, ...p })
+  const [zajety, setZajety] = useState<'' | 'pdf' | 'druk' | 'wyslij'>('')
+  const [zapisuje, setZapisuje] = useState(false)
 
-  async function wyslij() {
+  // Rozwija strony do base64; OSTRZEGA, gdy ktorejs nie da sie pobrac (PDF bylby niepelny).
+  async function rozwinBezpiecznie(): Promise<string[] | null> {
     const strony = await rozwinStrony(d.strony)
-    const r = await udostepnijPdf(strony, d.nazwa, d.notatka)
-    push(r === 'shared' ? 'Udostępniono PDF' : 'Pobrano PDF (dołącz do wiadomości)', 'ok')
+    if (strony.length < d.strony.length) {
+      push(`Nie pobrano ${d.strony.length - strony.length} z ${d.strony.length} stron (słaby internet?). Spróbuj ponownie.`, 'err')
+      if (strony.length === 0) return null
+    }
+    return strony
+  }
+  async function wyslij() {
+    if (zajety) return
+    setZajety('wyslij')
+    try {
+      const strony = await rozwinBezpiecznie()
+      if (!strony) return
+      const r = await udostepnijPdf(strony, d.nazwa, d.notatka)
+      push(r === 'shared' ? 'Udostępniono PDF' : 'Pobrano PDF (dołącz do wiadomości)', 'ok')
+    } catch {
+      push('Nie udało się przygotować PDF - spróbuj ponownie.', 'err')
+    } finally {
+      setZajety('')
+    }
+  }
+  async function pobierz() {
+    if (zajety) return
+    setZajety('pdf')
+    try {
+      const strony = await rozwinBezpiecznie()
+      if (strony) pobierzPdf(strony, d.nazwa)
+    } catch {
+      push('Nie udało się przygotować PDF - spróbuj ponownie.', 'err')
+    } finally {
+      setZajety('')
+    }
+  }
+  async function drukuj() {
+    if (zajety) return
+    setZajety('druk')
+    try {
+      const strony = await rozwinBezpiecznie()
+      if (!strony) return
+      const okno = drukujPdf(strony, d.nazwa)
+      if (!okno) push('Zapisano PDF - otwórz go, aby wydrukować', 'ok')
+    } catch {
+      push('Nie udało się przygotować wydruku - spróbuj ponownie.', 'err')
+    } finally {
+      setZajety('')
+    }
+  }
+  async function zapiszZmiany() {
+    if (zapisuje) return
+    setZapisuje(true)
+    try {
+      await onZapisz(d)
+    } finally {
+      setZapisuje(false)
+    }
   }
 
   return (
@@ -287,20 +366,14 @@ function PodgladSkanu({
           <button className="btn-ghost text-red-400 mr-auto" onClick={onUsun}>
             <Trash2 size={16} /> Usuń
           </button>
-          <button className="btn-outline" onClick={async () => pobierzPdf(await rozwinStrony(d.strony), d.nazwa)}>
-            <Download size={16} /> PDF
+          <button className="btn-outline" onClick={pobierz} disabled={!!zajety}>
+            {zajety === 'pdf' ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} PDF
           </button>
-          <button
-            className="btn-outline"
-            onClick={async () => {
-              const okno = drukujPdf(await rozwinStrony(d.strony), d.nazwa)
-              if (!okno) push('Zapisano PDF - otwórz go, aby wydrukować', 'ok')
-            }}
-          >
-            <Printer size={16} /> Drukuj
+          <button className="btn-outline" onClick={drukuj} disabled={!!zajety}>
+            {zajety === 'druk' ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />} Drukuj
           </button>
-          <button className="btn-primary" onClick={wyslij}>
-            <Send size={16} /> Wyślij
+          <button className="btn-primary" onClick={wyslij} disabled={!!zajety}>
+            {zajety === 'wyslij' ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} Wyślij
           </button>
         </>
       }
@@ -308,7 +381,7 @@ function PodgladSkanu({
       <div className="grid gap-5 md:grid-cols-[1fr_260px]">
         <div className="max-h-[60vh] space-y-3 overflow-y-auto rounded-xl bg-black/20 p-3">
           {d.strony.map((s, i) => (
-            <div key={i} className="relative">
+            <div key={i} className="relative min-h-[30vh]">
               <SkanImg strona={s} alt={`Strona ${i + 1}`} className="w-full rounded-lg bg-white" />
               <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-[11px] text-white">
                 {i + 1} / {d.strony.length}
@@ -352,8 +425,8 @@ function PodgladSkanu({
           <Field label="Notatka">
             <Textarea rows={3} value={d.notatka || ''} onChange={(e) => set({ notatka: e.target.value })} />
           </Field>
-          <button className="btn-outline w-full" onClick={() => onZapisz(d)}>
-            Zapisz zmiany
+          <button className="btn-outline w-full" onClick={zapiszZmiany} disabled={zapisuje}>
+            {zapisuje ? 'Zapisywanie...' : 'Zapisz zmiany'}
           </button>
         </div>
       </div>

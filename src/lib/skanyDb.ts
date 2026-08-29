@@ -70,7 +70,10 @@ export async function listaSkanow(opts: {
   if (opts.kategoria) q = q.eq('kategoria', opts.kategoria)
   const szukaj = (opts.szukaj || '').trim()
   if (szukaj) {
-    const esc = szukaj.replace(/[%,()]/g, ' ')
+    // Neutralizujemy znaki, ktore albo lamia skladnie filtra .or() PostgREST ( , ( ) " \ ),
+    // albo sa wieloznacznikami LIKE ( % _ ) - zamieniamy na spacje, wiec szukanie jest
+    // doslowne i nie da sie nim wywolac bledu zapytania.
+    const esc = szukaj.replace(/[%_,()"\\]/g, ' ')
     q = q.or(`nazwa.ilike.%${esc}%,notatka.ilike.%${esc}%`)
   }
   const { data, error } = await q
@@ -179,9 +182,15 @@ export function subskrybujSkany(onZmiana: () => void): () => void {
 
 // ---------- Offload base64 -> Storage (dla wierszy z ma_base64) ----------
 let offloadWTrakcie = false
+// Gdy bucket "skany" nie istnieje (nie uruchomiono amico-skany.sql) - nie ponawiamy w kolko,
+// pokazujemy JEDEN komunikat i czekamy. Kasowane przy wznowieniu/online (zresetujBrakBucketaTabela).
+let brakBucketaSkanow = false
+export function zresetujBrakBucketaTabela() {
+  brakBucketaSkanow = false
+}
 export async function offloadSkanyTabela(): Promise<void> {
   const w = ws()
-  if (!w || offloadWTrakcie) return
+  if (!w || offloadWTrakcie || brakBucketaSkanow) return
   offloadWTrakcie = true
   try {
     // Bierzemy tylko wiersze, ktore realnie maja base64 (partial index) - garść naraz.
@@ -213,6 +222,15 @@ export async function offloadSkanyTabela(): Promise<void> {
         if (eUp) {
           nowe.push(p) // nie udalo sie (offline / brak bucketa) - zostaje base64
           dalejBase64 = true
+          if (/bucket|not found|does not exist/i.test(eUp.message || '')) {
+            brakBucketaSkanow = true
+            useCloud.getState().ustaw({
+              status: 'blad',
+              blad:
+                'Magazyn skanów nie jest gotowy - uruchom raz w Supabase skrypt supabase/amico-skany.sql. Skany są bezpieczne, pojawią się w chmurze po uruchomieniu skryptu.',
+            })
+            return
+          }
         } else {
           nowe.push(sciezka)
           zmiana = true

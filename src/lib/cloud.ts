@@ -5,7 +5,7 @@ import { scalBaze, pustyStan, bezSekretow } from './merge'
 import { pustaBaza } from './seed'
 import type { Baza, Rola, Uzytkownik } from './types'
 import { hashHasla, losowaSol, zapiszOstatniego } from './auth'
-import { offloadSkanyTabela, migrujBlobSkanyDoTabeli } from './skanyDb'
+import { offloadSkanyTabela, migrujBlobSkanyDoTabeli, zresetujBrakBucketaTabela } from './skanyDb'
 import { nowISO } from './format'
 
 // ============================================================================
@@ -559,35 +559,10 @@ export async function dogonSkanyDoChmury(): Promise<void> {
   }
 }
 
-// Bezpieczne, ODROCZONE sprzatanie plikow w Storage po skanach usunietych DAWNO temu.
-// NIE kasujemy przy usunieciu skanu: gdyby ktos rownolegle (offline) go edytowal, po scaleniu
-// "edycja wygrywa z usunieciem" skan by wrocil i MUSI miec swoje obrazy. Dopiero gdy tombstone
-// ma > 30 dni i skan nie zyje na zadnym urzadzeniu, jego pliki na pewno nie sa juz potrzebne.
-// Uruchamiane RAZ przy starcie synchronizacji (nie w heartbeacie).
-async function sprzatnijOsieroconeSkany(ws: string): Promise<void> {
-  try {
-    const b = useStore.getState().baza
-    const teraz = Date.now()
-    const zyjace = new Set((b.skany || []).map((s) => s.id))
-    const idsGC = new Set(
-      (b.usuniete || [])
-        .filter(
-          (t) => t.k === 'skany' && !zyjace.has(t.id) && teraz - new Date(t.t).getTime() > 30 * 24 * 3600 * 1000,
-        )
-        .map((t) => t.id),
-    )
-    if (!idsGC.size) return
-    const { data } = await supabase.storage.from(BUCKET_SKAN).list(ws, { limit: 1000 })
-    if (!data || !data.length) return
-    const doUsuniecia = data
-      .map((o) => o.name)
-      .filter((n) => idsGC.has(n.replace(/-\d+\.jpg$/, ''))) // nazwa pliku: <id>-<i>.jpg
-      .map((n) => `${ws}/${n}`)
-    if (doUsuniecia.length) await supabase.storage.from(BUCKET_SKAN).remove(doUsuniecia)
-  } catch {
-    /* GC best-effort - bez wplywu na dzialanie aplikacji */
-  }
-}
+// (Usunieto sprzatnijOsieroconeSkany - opieralo sie na tombstonach STAREGO blobu. Po przejsciu
+// skanow do tabeli amico_skany kasowanie plikow wg blobu moglo skasowac obrazy skanu, ktory jest
+// AKTYWNY w tabeli, a byl usuniety w blobie starej wersji. Sprzatanie Storage dla usunietych
+// skanow z tabeli mozna dodac osobno; pozostawione pliki sa nieszkodliwe.)
 
 export async function zmienRoleWChmurze(userId: string, rola: Rola) {
   const ws = C().workspaceId
@@ -862,6 +837,7 @@ function podlaczNasluch() {
 
 function onOnline() {
   zresetujBrakBucketaSkanow() // wrocil internet - sprobuj przeniesc skany do Storage jeszcze raz
+  zresetujBrakBucketaTabela()
   if (C().workspaceId) {
     zaplanujZapis(200)
     offloadSkanyTabela().catch(() => {}) // dogon skany, ktore czekaly na sieci
@@ -885,6 +861,7 @@ function onWznowienie() {
     return
   }
   zresetujBrakBucketaSkanow() // uzytkownik mogl w miedzyczasie uruchomic amico-skany.sql
+  zresetujBrakBucketaTabela()
   podlaczRealtime(ws)
   dogonJesliNowszy(ws).catch(() => {}) // tanio: pelna baza tylko gdy serwer nowszy
   zaplanujZapis(300)
@@ -940,6 +917,7 @@ export async function startSync(imie = '') {
   }
   C().ustaw({ status: 'laczenie', email: sesja.user.email || null, blad: null })
   zresetujBrakBucketaSkanow() // nowe polaczenie - sprobuj offloadu jeszcze raz (mogl powstac bucket)
+  zresetujBrakBucketaTabela()
 
   // KRYTYCZNE: nasluch podpinamy PRZED operacjami sieciowymi.
   // Gdyby bootstrap padl (brak sieci), zmiany i tak beda kolejkowane i wysla sie po powrocie online.
@@ -964,7 +942,6 @@ export async function startSync(imie = '') {
     // do Storage. Dzieki tabeli skany skaluja sie do dziesiatkow tysiecy (baza zostaje mala).
     migrujBlobSkanyDoTabeli().catch(() => {})
     offloadSkanyTabela().catch(() => {})
-    sprzatnijOsieroconeSkany(workspaceId).catch(() => {}) // raz na start: pliki po dawno usunietych skanach
   } catch (e: any) {
     if (czyBladSesji(e)) {
       await obsluzWygaslaSesje()
