@@ -555,7 +555,15 @@ function Szczegoly({ z }: { z: Zlecenie }) {
   }, [z.id])
   useEffect(() => {
     odswiezSkany()
-    return subskrybujSkany(odswiezSkany)
+    let t: ReturnType<typeof setTimeout> | undefined
+    const off = subskrybujSkany(() => {
+      clearTimeout(t)
+      t = setTimeout(odswiezSkany, 400) // debounce: seria zmian (offload) -> jedno przeladowanie
+    })
+    return () => {
+      clearTimeout(t)
+      off()
+    }
   }, [odswiezSkany, skanyWs])
 
   const klient = z.klientId ? b.klienci.find((k) => k.id === z.klientId) : undefined

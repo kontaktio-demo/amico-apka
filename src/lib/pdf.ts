@@ -8,8 +8,8 @@ export function skanDoPdf(strony: string[]): jsPDF {
   const pw = pdf.internal.pageSize.getWidth()
   const ph = pdf.internal.pageSize.getHeight()
   const margin = 6
-  strony.forEach((dataUrl, i) => {
-    if (i > 0) pdf.addPage()
+  let dodane = 0
+  for (const dataUrl of strony) {
     try {
       const props = pdf.getImageProperties(dataUrl)
       const maxW = pw - margin * 2
@@ -17,11 +17,15 @@ export function skanDoPdf(strony: string[]): jsPDF {
       const ratio = Math.min(maxW / props.width, maxH / props.height)
       const w = props.width * ratio
       const h = props.height * ratio
+      // Nowa strona DOPIERO gdy mamy poprawny obraz - inaczej uszkodzona strona zostawiala
+      // w PDF pusta kartke (addPage bylo przed dekodowaniem), a dokument szedl do klienta z dziura.
+      if (dodane > 0) pdf.addPage()
       pdf.addImage(dataUrl, 'JPEG', (pw - w) / 2, (ph - h) / 2, w, h, undefined, 'FAST')
+      dodane++
     } catch {
-      /* pomijamy uszkodzona strone */
+      /* pomijamy uszkodzona strone - BEZ pustej kartki */
     }
-  })
+  }
   return pdf
 }
 
@@ -43,10 +47,11 @@ export function drukujPdf(strony: string[], nazwa = 'skan'): boolean {
     return false
   }
   const pdf = skanDoPdf(strony)
-  const url = pdf.output('bloburl')
-  const w = window.open(url as unknown as string, '_blank')
+  const url = pdf.output('bloburl') as unknown as string
+  const w = window.open(url, '_blank')
   if (!w) {
     // Wyskakujace okna zablokowane - zapisujemy plik jako plan awaryjny.
+    URL.revokeObjectURL(url)
     pobierzPdf(strony, nazwa)
     return false
   }
@@ -58,6 +63,10 @@ export function drukujPdf(strony: string[], nazwa = 'skan'): boolean {
       /* ignore */
     }
   }
+  // Zwolnij blob URL po czasie: okno druku zdazy zaladowac PDF, a my nie trzymamy calego
+  // blobu (skany JPEG, kilka MB) w pamieci glownej PWA do przeladowania (iPhone/OOM).
+  // Za wczesny revoke zerwalby ladowanie PDF w nowym oknie, stad hojny timeout.
+  setTimeout(() => URL.revokeObjectURL(url), 60000)
   return true
 }
 

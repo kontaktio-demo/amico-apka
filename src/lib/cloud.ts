@@ -481,7 +481,13 @@ export async function rozwinStrony(strony: string[]): Promise<string[]> {
     const url = await skanUrl(s)
     if (!url) continue
     try {
-      const blob = await (await fetch(url)).blob()
+      const resp = await fetch(url)
+      // Podpisany URL do usunietego/nieistniejacego obiektu zwraca 400 z trescia JSON bledu.
+      // fetch NIE odrzuca na 4xx, wiec bez tego .blob() dalby nie-obraz udajacy poprawna strone
+      // (pusta/uszkodzona kartka w PDF). Pomijamy taka strone jak niepobrana.
+      if (!resp.ok) continue
+      const blob = await resp.blob()
+      if (blob.type && !blob.type.startsWith('image/')) continue
       const dataUrl = await new Promise<string>((res, rej) => {
         const r = new FileReader()
         r.onload = () => res(r.result as string)
@@ -904,6 +910,7 @@ function startHeartbeat(ws: string) {
       if (r != null && r > getRev(ws)) pobierzIScalRaz(ws).catch(() => {})
     })
     if (brudne) zaplanujZapis(200)
+    migrujBlobSkanyDoTabeli().catch(() => {}) // dogon skany przyslane ze starej wersji (blob) - tanie gdy nic nowego
     offloadSkanyTabela().catch(() => {}) // dogon skany, ktore jeszcze nie trafily do magazynu
   }, 45000)
 }

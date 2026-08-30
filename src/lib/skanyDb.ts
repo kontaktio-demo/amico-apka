@@ -246,17 +246,18 @@ export async function offloadSkanyTabela(): Promise<void> {
   }
 }
 
-// Jednorazowe przeniesienie skanow ze STAREGO blobu (baza.skany) do tabeli. Wywolywane po
-// polaczeniu - lapie skany zrobione na tym urzadzeniu zanim wprowadzilismy tabele (np. offline).
-// Tylko WSTAWIA (idempotentnie po id) - NIE czysci blobu, zeby stara wersja aplikacji na innym
-// urzadzeniu dalej je widziala do czasu aktualizacji.
-let migracjaBlobZrobiona = false
+// Przeniesienie skanow ze STAREGO blobu (baza.skany) do tabeli. Lapie skany zrobione na starej
+// wersji (na tym lub innym urzadzeniu). Tylko WSTAWIA (idempotentnie po id, ignoreDuplicates) -
+// NIE czysci blobu ani nie nadpisuje istniejacych. Uruchamiane po polaczeniu I po kazdym scaleniu
+// z chmura (gdy przybyl nowy skan w blobie ze starej wersji) - nie tylko raz na sesje.
+let ostatniaLiczbaBlobSkanow = -1
 export async function migrujBlobSkanyDoTabeli(): Promise<void> {
   const w = ws()
-  if (migracjaBlobZrobiona || !w) return
+  if (!w) return
   const blobSkany = (useStore.getState().baza.skany || []) as (Skan & { _zm?: string })[]
+  if (blobSkany.length === ostatniaLiczbaBlobSkanow) return // nic nowego w blobie od ostatniej migracji
   if (!blobSkany.length) {
-    migracjaBlobZrobiona = true
+    ostatniaLiczbaBlobSkanow = 0
     return
   }
   try {
@@ -281,7 +282,7 @@ export async function migrujBlobSkanyDoTabeli(): Promise<void> {
     // usuniety w tabeli (usuniety=true) albo cofala edycje metadanych (blob ma stara wersje).
     const { error } = await supabase.from('amico_skany').upsert(wiersze, { onConflict: 'id', ignoreDuplicates: true })
     if (error) throw error
-    migracjaBlobZrobiona = true
+    ostatniaLiczbaBlobSkanow = blobSkany.length
     void offloadSkanyTabela()
   } catch {
     /* ponowimy przy nastepnym polaczeniu */

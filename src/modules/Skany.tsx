@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { ScanLine, FileText, Printer, Send, Download, Trash2, Link2, Plus, Loader2, AlertTriangle } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { useCloud } from '../lib/cloud'
 import {
   PageHeader,
   SearchInput,
@@ -37,6 +38,11 @@ const KAT: Record<SkanKategoria, string> = {
 
 export default function Skany() {
   const b = useStore((s) => s.baza) // tylko do etykiet: numer zlecenia / nazwa klienta
+  // KLUCZOWE: po zimnym starcie PWA komponent montuje sie ZANIM chmura ustawi workspaceId.
+  // Wtedy listaSkanow/policzSkany zwracaja pusto, a subskrybujSkany jest no-op. Trzymamy
+  // workspaceId w zaleznosciach efektow, zeby przejscie null->wartosc przeladowalo liste,
+  // licznik i (re)subskrybowalo realtime - inaczej archiwum zostaje puste az do zmiany filtra.
+  const wsId = useCloud((s) => s.workspaceId)
   const { push } = useToast()
   const { confirm, confirmNode } = useConfirm()
 
@@ -86,21 +92,30 @@ export default function Skany() {
   useEffect(() => {
     const t = setTimeout(zaladujPierwsza, szukaj ? 300 : 0)
     return () => clearTimeout(t)
-  }, [zaladujPierwsza, szukaj])
+  }, [zaladujPierwsza, szukaj, wsId])
 
   // Licznik wszystkich skanow (do rozroznienia "brak skanow" vs "brak wynikow")
   useEffect(() => {
     policzSkany().then(setLaczna).catch(() => setLaczna(null))
-  }, [])
+  }, [wsId])
 
   // Realtime: zmiana skanu (tez z innego urzadzenia) -> odswiez, ale ZACHOWAJ ile wczytano.
+  // DEBOUNCE 400 ms: seria zmian (np. offload zamieniajacy base64->sciezki wielu skanow naraz)
+  // zbija sie w JEDNO przeladowanie zamiast wielu - mniej transferu i pamieci na iPhone.
   useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | undefined
     const off = subskrybujSkany(() => {
-      zaladujOd0(Math.max(STRONA_ROZMIAR, widoczneRef.current))
-      policzSkany().then(setLaczna).catch(() => {})
+      clearTimeout(t)
+      t = setTimeout(() => {
+        zaladujOd0(Math.max(STRONA_ROZMIAR, widoczneRef.current))
+        policzSkany().then(setLaczna).catch(() => {})
+      }, 400)
     })
-    return off
-  }, [zaladujOd0])
+    return () => {
+      clearTimeout(t)
+      off()
+    }
+  }, [zaladujOd0, wsId])
 
   async function zaladujWiecej() {
     const nr = reqRef.current // kontynuacja biezacej listy - NIE inkrementujemy

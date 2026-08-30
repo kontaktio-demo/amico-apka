@@ -94,7 +94,16 @@ export function scalBaze(lokalna: Baza, zdalna: Baza): Baza {
   for (const [k2, v] of Object.entries(wygrany?.numeracja || {})) {
     numeracja[k2] = Math.max(Number(v) || 0, Number(numeracja[k2]) || 0)
   }
-  out.ustawienia = { ...(wygrany || {}), numeracja }
+  const scaloneUst: any = { ...(wygrany || {}), numeracja }
+  // Pola, ktore wygrany ma jako undefined (nigdy nieustawione w jego wersji), a przegrany
+  // ma ustawione - uzupelniamy z przegranego. Chroni przed cichym gubieniem ustawienia
+  // wprowadzonego na drugim urzadzeniu (np. klauzulaRodo ustawiona na A, gdy nowszy jest B,
+  // ktory tego pola nie znal). Bezpieczne: tylko UZUPELNIAMY brakujace (undefined) pola -
+  // nie wskrzeszamy skasowanych (czyszczenie ustawia '' , nie undefined) ani nie nadpisujemy wygranego.
+  for (const [k2, v] of Object.entries(przegrany || {})) {
+    if (k2 !== 'numeracja' && scaloneUst[k2] === undefined && v !== undefined) scaloneUst[k2] = v
+  }
+  out.ustawienia = scaloneUst
 
   // 5) Sekrety lokalne (hash hasla, PIN, biometria) NIGDY nie ida do chmury,
   // wiec po scaleniu przywracamy je z wersji lokalnej.

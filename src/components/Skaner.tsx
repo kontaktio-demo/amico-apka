@@ -156,7 +156,10 @@ export function Skaner({
   // --- akcje ---
   function zrobZdjecie() {
     const v = videoRef.current
-    if (!v || !v.videoWidth) return
+    if (!v || !v.videoWidth) {
+      push('Kamera się uruchamia - poczekaj chwilę i spróbuj ponownie.', 'info') // zamiast cichego nic-nie-robienia
+      return
+    }
     const c = document.createElement('canvas')
     const skala = Math.min(1, 3000 / Math.max(v.videoWidth, v.videoHeight))
     c.width = Math.round(v.videoWidth * skala)
@@ -365,7 +368,16 @@ export function Skaner({
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {strony.map((s, i) => (
                 <div key={s.id} className="group relative overflow-hidden rounded-xl border border-white/10 bg-white">
-                  <img src={s.wynik} alt={`Strona ${i + 1}`} className="aspect-[3/4] w-full object-cover" />
+                  {/* loading=lazy + decoding=async: KRYTYCZNE (pamiec iPhone) - inaczej WebKit
+                      dekoduje wszystkie pelnorozdzielcze strony naraz i moze ubic karte przy
+                      wielostronicowym dokumencie (tak jak w SkanImg.tsx). */}
+                  <img
+                    src={s.wynik}
+                    alt={`Strona ${i + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="aspect-[3/4] w-full object-cover"
+                  />
                   <span className="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
                     {i + 1}
                   </span>

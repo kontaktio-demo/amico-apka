@@ -88,7 +88,11 @@ export default function Zadania() {
       priorytet: 'sredni',
       status: 'do_zrobienia',
       termin: today(),
-      przypisanyDo: montaz ? user?.id : undefined,
+      // Domyslnie przypisujemy do siebie takze dla biura/montazysty (nie tylko montaz) -
+      // inaczej nowo utworzone, nieprzypisane zadanie od razu znika z tablicy tworzacego
+      // (filtr "moje"). Spojnie z Pulpit.tsx (ZadaniaToDo.dodaj). Wlasciciel/kierownik i tak
+      // widza wszystko, wiec dla nich to bez roznicy.
+      przypisanyDo: widziWszystkie ? undefined : user?.id,
       utworzono: nowISO(),
       zaktualizowano: nowISO(),
     })
@@ -172,7 +176,10 @@ export default function Zadania() {
                 </div>
                 <div className="space-y-2">
                   {kol.map((z) => {
-                    const pr = PRIORYTETY.find((p) => p.k === z.priorytet)!
+                    // Fallback: rekord z chmury/importu/starej wersji moze miec priorytet
+                    // spoza listy (albo undefined) - bez tego find(...)! -> pr.tone rzuca
+                    // TypeError i kladzie CALY widok Zadania (bialy ekran). Nigdy nie ufamy '!'.
+                    const pr = PRIORYTETY.find((p) => p.k === z.priorytet) || { k: 'sredni', label: 'Średni', tone: 'stone' }
                     const zl = b.zlecenia.find((x) => x.id === z.zlecenieId)
                     const kl = b.klienci.find((x) => x.id === z.klientId)
                     const spozniony = z.termin && z.status !== 'zrobione' && z.termin < today()

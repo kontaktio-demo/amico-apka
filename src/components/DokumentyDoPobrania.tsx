@@ -66,9 +66,22 @@ export function DokumentyDoPobrania() {
   }
 
   const pobierz = async (d: DokumentPliku) => {
-    const url = await dokumentPodpisanyUrl(d.sciezka)
-    if (url) window.open(url, '_blank')
-    else push('Nie udało się pobrać pliku (sprawdź połączenie z chmurą).', 'err')
+    // iPhone/PWA (Safari standalone) blokuje window.open wywolane PO await (gest wygasa).
+    // Dlatego otwieramy karte SYNCHRONICZNIE w handlerze klikniecia, a URL ustawiamy pozniej.
+    const win = window.open('', '_blank')
+    try {
+      const url = await dokumentPodpisanyUrl(d.sciezka)
+      if (!url) {
+        win?.close()
+        push('Nie udało się pobrać pliku (sprawdź połączenie z chmurą).', 'err')
+        return
+      }
+      if (win) win.location.href = url
+      else window.open(url, '_blank') // gdyby pre-open nie przeszlo (blokada popupow) - ostatnia proba
+    } catch (e: any) {
+      win?.close()
+      push(e?.message || 'Nie udało się pobrać pliku (sprawdź połączenie z chmurą).', 'err')
+    }
   }
 
   const usun = async (d: DokumentPliku) => {

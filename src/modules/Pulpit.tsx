@@ -47,8 +47,10 @@ export default function Pulpit() {
   const wartoscOfert = b.wyceny
     .filter((w) => w.status !== 'odrzucona')
     .reduce((sum, w) => sum + podsumuj(w.pozycje).brutto, 0)
+  // Proforma to dokument PRZED sprzedaza (nie ksiegowy) - NIE jest naleznoscia. Bez tego
+  // wyklucznia kafelek "Naleznosci" zawyzal kwote do sciagniecia o wartosc proform.
   const naleznosci = b.faktury
-    .filter((f) => f.status !== 'oplacona')
+    .filter((f) => f.status !== 'oplacona' && f.typ !== 'proforma')
     .reduce((s, f) => s + podsumuj(f.pozycje).brutto - (f.zaplacono || 0), 0)
 
   const godzina = new Date().getHours()
@@ -111,7 +113,7 @@ export default function Pulpit() {
         />
       </div>
 
-      <WymagaDzialania b={b} />
+      <WymagaDzialania b={b} user={user} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Lejek */}
@@ -282,13 +284,14 @@ function ZadaniaToDo() {
       .filter(Boolean)
     if (!czesci.length) return { przypisanyDo: undefined, przypisanyDoNazwa: undefined, wspolniPrzypisani: undefined }
     const ids: string[] = []
-    let custom: string | undefined
+    const customy: string[] = [] // wszystkie wolne imiona (bez konta) - zadne nie moze zginac
     for (const c of czesci) {
       const o = osoby.find((x) => x.nazwa.trim().toLowerCase() === c.toLowerCase())
       if (o) {
         if (!ids.includes(o.id)) ids.push(o.id)
-      } else if (!custom) custom = c
+      } else if (!customy.some((x) => x.toLowerCase() === c.toLowerCase())) customy.push(c)
     }
+    const custom = customy.length ? customy.join(', ') : undefined
     const [glowny, ...reszta] = ids
     return {
       przypisanyDo: glowny || undefined,
@@ -567,8 +570,13 @@ function Qa({ to, icon, label }: { to: string; icon: React.ReactNode; label: str
 }
 
 // ---------- Widget "Wymaga działania" (biuro / właściciel) ----------
-function WymagaDzialania({ b }: { b: ReturnType<typeof useStore.getState>['baza'] }) {
+function WymagaDzialania({ b, user }: { b: ReturnType<typeof useStore.getState>['baza']; user: ReturnType<typeof useAuth>['user'] }) {
   const t = today()
+  // Biuro/montazysta widza na /zadania TYLKO swoje zadania (prywatnosc). Licznik musi liczyc
+  // tym samym predykatem, inaczej chip pokazuje cudze zadania (zawyzony i wchodzacy w pusta liste).
+  const widziWszystkieZadania = user?.rola === 'wlasciciel' || user?.rola === 'kierownik'
+  const mojeZadanie = (z: (typeof b.zadania)[number]) =>
+    widziWszystkieZadania || z.przypisanyDo === user?.id || (z.wspolniPrzypisani || []).includes(user?.id || '')
   const chips = [
     { n: b.wyceny.filter((w) => w.status === 'szkic').length, label: 'ofert do wysłania', to: '/wyceny', tone: 'blue' },
     {
@@ -578,13 +586,13 @@ function WymagaDzialania({ b }: { b: ReturnType<typeof useStore.getState>['baza'
       tone: 'amber',
     },
     {
-      n: b.zadania.filter((z) => z.status !== 'zrobione' && z.termin && z.termin <= t).length,
+      n: b.zadania.filter((z) => mojeZadanie(z) && z.status !== 'zrobione' && z.termin && z.termin <= t).length,
       label: 'zadań na dziś / zaległych',
       to: '/zadania',
       tone: 'amber',
     },
     {
-      n: b.faktury.filter((f) => f.status !== 'oplacona' && f.terminPlatnosci && f.terminPlatnosci < t).length,
+      n: b.faktury.filter((f) => f.status !== 'oplacona' && f.typ !== 'proforma' && f.terminPlatnosci && f.terminPlatnosci < t).length,
       label: 'faktur po terminie',
       to: '/faktury',
       tone: 'red',

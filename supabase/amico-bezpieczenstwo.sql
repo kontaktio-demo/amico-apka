@@ -190,6 +190,14 @@ begin
   if p_rola = 'wlasciciel' and moja_rola <> 'wlasciciel' then
     raise exception 'Tylko właściciel może nadać rolę właściciela';
   end if;
+  -- Istniejacego wlasciciela moze modyfikowac WYLACZNIE inny wlasciciel - kierownik nie
+  -- moze zdegradowac przelozonego (broken access control: podwladny modyfikuje przelozonego).
+  if moja_rola <> 'wlasciciel' and exists (
+    select 1 from public.amico_members m
+     where m.workspace_id = p_workspace and m.user_id = p_user and m.rola = 'wlasciciel'
+  ) then
+    raise exception 'Tylko właściciel może zmienić rolę innego właściciela';
+  end if;
   -- Nie zdejmujemy ostatniego wlasciciela.
   if exists (
     select 1 from public.amico_members m
@@ -225,6 +233,13 @@ begin
   end if;
   if p_user = auth.uid() then
     raise exception 'Nie można usunąć samego siebie';
+  end if;
+  -- Wlasciciela moze usunac WYLACZNIE inny wlasciciel - kierownik nie usunie przelozonego.
+  if moja_rola <> 'wlasciciel' and exists (
+    select 1 from public.amico_members m
+     where m.workspace_id = p_workspace and m.user_id = p_user and m.rola = 'wlasciciel'
+  ) then
+    raise exception 'Tylko właściciel może usunąć innego właściciela';
   end if;
   if exists (
     select 1 from public.amico_members m
