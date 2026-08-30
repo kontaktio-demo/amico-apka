@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Delete, Fingerprint, LogIn, UserPlus, KeyRound } from 'lucide-react'
+import { Delete, Fingerprint, LogIn, KeyRound } from 'lucide-react'
 import { useStore } from '../lib/store'
 import type { Uzytkownik, Rola } from '../lib/types'
 import { initials } from '../lib/format'
@@ -18,7 +18,6 @@ import {
 } from '../lib/auth'
 import {
   zalogujChmura,
-  zarejestrujChmura,
   sesjaChmury,
   startSync,
   zsynchronizujUzytkownikaLokalnie,
@@ -135,12 +134,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 // ---------- Logowanie AMICO (proste: e-mail + haslo) ----------
-// Jeden ekran dla calej firmy AMICO. Zadnych kodow, wyboru "zakladam/dolaczam",
-// listy profili ani osobnego "zaloguj przez chmure". Konto zawsze jest w chmurze,
-// wiec te same dane sa na kazdym urzadzeniu. "Zaloz konto" laczy sie z ta sama firma.
+// TYLKO logowanie. Rejestracja z aplikacji jest WYLACZONA (decyzja wlasciciela):
+// publiczna rejestracja jest wylaczona po stronie Supabase Auth, a nowe konta zaklada
+// wlascicielka w panelu Supabase. Konto zawsze jest w chmurze, wiec te same dane sa
+// na kazdym urzadzeniu. Nowo zalozone (przez wlascicielke) konto po pierwszym logowaniu
+// dolacza do firmy jako montazysta - role podnosi sie w Ustawienia -> Uzytkownicy.
 function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }) {
-  const [rejestracja, setRejestracja] = useState(false)
-  const [imie, setImie] = useState('')
   const [email, setEmail] = useState('')
   const [haslo, setHaslo] = useState('')
   const [busy, setBusy] = useState(false)
@@ -151,17 +150,16 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
     setErr('')
     setBusy(true)
     try {
-      if (rejestracja) await zarejestrujChmura(email.trim(), haslo)
-      else await zalogujChmura(email.trim(), haslo)
+      await zalogujChmura(email.trim(), haslo)
 
       const sesja = await sesjaChmury()
       if (!sesja) throw new Error('Brak sesji – sprawdź e-mail i hasło')
 
-      // Wejscie do jedynej firmy AMICO (dolaczenie / utworzenie jesli to pierwsze konto).
-      const wynik = await wejscieDoAmico(imie.trim())
+      // Wejscie do jedynej firmy AMICO (dolaczenie konta zalozonego przez wlascicielke).
+      const wynik = await wejscieDoAmico('')
       zapamietajWorkspace(wynik.workspaceId)
       // Kolejnosc: najpierw pobranie/scalenie stanu firmy, potem lokalne konto.
-      await startSync(imie.trim())
+      await startSync('')
       // Jesli na liscie jest juz rekord tej osoby po E-MAILU (np. dodany wczesniej
       // recznie z lokalnym id 'usr_...'), scalamy go z kontem chmurowym zamiast tworzyc
       // duplikat - inaczej ta sama osoba pojawilaby sie dwa razy.
@@ -171,7 +169,7 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
         .baza.uzytkownicy.find((u) => (u.email || '').trim().toLowerCase() === mail && u.id !== sesja.user.id)?.id
       const userId = await zsynchronizujUzytkownikaLokalnie({
         id: sesja.user.id,
-        imie: imie.trim(),
+        imie: '',
         email: sesja.user.email || email.trim(),
         rola: wynik.rola,
         haslo,
@@ -188,10 +186,10 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
           ? 'Brak internetu. Do zalogowania potrzebny jest zasięg – spróbuj ponownie, gdy będziesz online.'
           : /Invalid login/i.test(m)
             ? 'Nieprawidłowy e-mail lub hasło.'
-            : /already registered|User already/i.test(m)
-              ? 'Ten e-mail ma już konto – wybierz „Zaloguj się”.'
-              : m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
-                ? 'Potwierdź e-mail (link w wiadomości), zanim się zalogujesz.'
+            : m === 'POTWIERDZ_EMAIL' || /not confirmed/i.test(m)
+              ? 'Potwierdź e-mail (link w wiadomości), zanim się zalogujesz.'
+              : /signup|sign-?up.*disabled|not allowed/i.test(m)
+                ? 'Zakładanie kont jest wyłączone. Konto zakłada właścicielka.'
                 : /amico_wejscie|amico_bootstrap|schema cache|PGRST202|does not exist/i.test(m)
                   ? 'Baza w chmurze nie jest jeszcze gotowa – uruchom skrypt SQL AMICO.'
                   : 'Nie udało się zalogować. Sprawdź e-mail i hasło.',
@@ -204,19 +202,10 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <h1 className="text-[19px] font-display font-semibold text-ink">
-          {rejestracja ? 'Załóż konto AMICO' : 'Zaloguj się'}
-        </h1>
-        <p className="mt-1 text-[13px] leading-relaxed text-stone-400">
-          {rejestracja ? 'Podaj imię, e-mail i hasło.' : 'Podaj e-mail i hasło.'}
-        </p>
+        <h1 className="text-[19px] font-display font-semibold text-ink">Zaloguj się</h1>
+        <p className="mt-1 text-[13px] leading-relaxed text-stone-400">Podaj e-mail i hasło.</p>
       </div>
 
-      {rejestracja && (
-        <Field label="Imię i nazwisko">
-          <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Jan Kowalski" autoFocus />
-        </Field>
-      )}
       <Field label="E-mail">
         <Input
           type="email"
@@ -224,7 +213,7 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
           onChange={(e) => setEmail(e.target.value)}
           placeholder="np. imie@amicco.pl"
           autoComplete="username"
-          autoFocus={!rejestracja}
+          autoFocus
         />
       </Field>
       <Field label="Hasło">
@@ -233,26 +222,15 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
           value={haslo}
           onChange={(e) => setHaslo(e.target.value)}
           placeholder="Wpisz hasło"
-          autoComplete={rejestracja ? 'new-password' : 'current-password'}
+          autoComplete="current-password"
         />
       </Field>
 
       {err && <p className="text-[12.5px] text-red-400">{err}</p>}
 
       <button className="btn-primary w-full btn-lg" disabled={busy}>
-        {rejestracja ? <UserPlus size={18} /> : <LogIn size={18} />}
-        {busy ? 'Chwileczkę…' : rejestracja ? 'Załóż konto' : 'Zaloguj'}
-      </button>
-
-      <button
-        type="button"
-        className="w-full text-center text-[13px] text-stone-400 transition hover:text-white"
-        onClick={() => {
-          setRejestracja((v) => !v)
-          setErr('')
-        }}
-      >
-        {rejestracja ? 'Mam już konto — zaloguj się' : 'Pierwszy raz? Załóż konto'}
+        <LogIn size={18} />
+        {busy ? 'Chwileczkę…' : 'Zaloguj'}
       </button>
     </form>
   )
