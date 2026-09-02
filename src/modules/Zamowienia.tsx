@@ -112,7 +112,7 @@ export default function Zamowienia() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Hurtownia">
             {hurtownie.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-white/10 px-3 py-2.5 text-[12.5px] text-stone-500">
+              <div className="rounded-lg border border-dashed border-black/10 px-3 py-2.5 text-[12.5px] text-stone-500">
                 Brak hurtowni.{' '}
                 <Link to="/hurtownie" className="font-medium text-brand-700 hover:underline">
                   Dodaj hurtownię
@@ -190,7 +190,7 @@ export default function Zamowienia() {
         <Card>
           <CardBody>
             <h3 className="mb-3 text-[15px] font-semibold text-ink">Historia zamówień</h3>
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-black/[0.06]">
               {lista.map((z) => (
                 <div key={z.id} className="py-3">
                   <div className="flex flex-wrap items-start gap-3">
@@ -218,7 +218,7 @@ export default function Zamowienia() {
                         <Copy size={14} /> Kopiuj
                       </button>
                       <button
-                        className="btn-ghost btn-sm text-red-400"
+                        className="btn-ghost btn-sm text-red-600"
                         onClick={async () => {
                           if (await confirm('Usunąć to zamówienie z historii?')) {
                             remove('zamowieniaTowaru', z.id)

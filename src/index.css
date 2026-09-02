@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -22,9 +22,12 @@ body,
 
 body {
   @apply bg-stone-50 text-ink font-sans antialiased;
+  /* Jasne tlo: biel z ledwo widocznym chlodnym rozswietleniem u gory (subtelna glebia,
+     nie przeszkadza w czytelnosci). */
+  background-color: #f6f7fb;
   background-image:
-    radial-gradient(1200px 600px at 80% -10%, rgba(14, 21, 51, 0.55), transparent 60%),
-    radial-gradient(900px 500px at 0% 0%, rgba(20, 22, 31, 0.6), transparent 55%);
+    radial-gradient(1200px 600px at 80% -10%, rgba(29, 42, 86, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(29, 42, 86, 0.04), transparent 55%);
   background-attachment: fixed;
   /* Zachowanie jak w natywnej apce: bez przyblizania gestem i bez "gumowego" przewijania */
   touch-action: pan-x pan-y;
@@ -51,9 +54,9 @@ textarea,
   user-select: text;
 }
 
-/* Czytelny focus dla nawigacji klawiatura */
+/* Czytelny focus dla nawigacji klawiatura (granatowy) */
 :focus-visible {
-  outline: 2px solid rgba(174, 182, 208, 0.7);
+  outline: 2px solid rgba(29, 42, 86, 0.55);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -77,6 +80,9 @@ h3,
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-stone-400;
 }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 /* iOS auto-zoom: KAZDE pole tekstowe MUSI miec >= 16px. Ponizej 16px iPhone Safari sam
    przyblizal cala apke przy fokusie pola i nie wracal (viewport user-scalable=no jest na
@@ -91,8 +97,8 @@ select {
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-white/[0.07] shadow-card;
-    background-color: #14161f;
+    @apply rounded-2xl border border-black/[0.07] shadow-card;
+    background-color: #ffffff;
   }
   .card-pad {
     @apply p-5 sm:p-6;
@@ -103,25 +109,30 @@ select {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
  transition-all select-none active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
   }
+  /* Glowny przycisk = GRANAT z bialym tekstem. */
   .btn-primary {
-    @apply btn text-[#0b0b10];
-    background-color: #f5f5f5;
+    @apply btn text-white;
+    background-color: #1d2a56;
   }
   .btn-primary:hover {
-    background-color: #e2e4ea;
+    background-color: #162043;
   }
   .btn-outline {
-    @apply btn border border-white/15 bg-transparent text-stone-700 hover:bg-white/[0.06] hover:border-white/25;
+    @apply btn border border-stone-300 bg-white text-stone-700 hover:bg-stone-100 hover:border-stone-400;
   }
   .btn-ghost {
-    @apply btn text-stone-500 hover:bg-white/[0.06] hover:text-white;
+    @apply btn text-stone-500 hover:bg-black/[0.05] hover:text-ink;
   }
   .btn-danger {
-    @apply btn bg-red-600/90 text-white hover:bg-red-600;
+    @apply btn bg-red-600 text-white hover:bg-red-700;
   }
+  /* Drugorzedny mocny akcent (ciemny granat) - np. eksport/druk. */
   .btn-gold {
-    @apply btn border border-white/10 text-white;
+    @apply btn text-white;
     background-color: #0e1224;
+  }
+  .btn-gold:hover {
+    background-color: #161c34;
   }
   .btn-sm {
     @apply px-3 py-1.5 text-[13px] rounded-md;
@@ -132,16 +143,16 @@ select {
 
   /* Formularze */
   .label {
-    @apply block text-[13px] font-medium text-stone-400 mb-1.5;
+    @apply block text-[13px] font-medium text-stone-500 mb-1.5;
   }
   .input,
   .textarea,
   .select {
     /* 16px (nie 15px) - ponizej 16px iPhone auto-przybliza przy fokusie pola i nie wraca. */
-    @apply w-full rounded-lg border border-white/10 px-3.5 py-2.5 text-[16px] text-stone-700
+    @apply w-full rounded-lg border border-stone-300 px-3.5 py-2.5 text-[16px] text-stone-700
  placeholder:text-stone-400 outline-none transition
- focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15;
-    background-color: #10121a;
+ focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15;
+    background-color: #ffffff;
   }
   .textarea {
     @apply leading-relaxed;
@@ -150,26 +161,27 @@ select {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
   }
   .badge-green {
-    @apply badge bg-emerald-500/15 text-emerald-300;
+    @apply badge bg-emerald-100 text-emerald-700;
   }
   .badge-stone {
-    @apply badge bg-white/[0.06] text-stone-500;
+    @apply badge bg-stone-100 text-stone-600;
   }
   .badge-amber {
-    @apply badge bg-amber-500/15 text-amber-300;
+    @apply badge bg-amber-100 text-amber-700;
   }
   .badge-blue {
-    @apply badge bg-sky-500/15 text-sky-300;
+    @apply badge bg-sky-100 text-sky-700;
   }
   .badge-red {
-    @apply badge bg-red-500/15 text-red-300;
+    @apply badge bg-red-100 text-red-700;
   }
   .nav-link {
     @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14.5px] font-medium text-stone-500
- transition-colors hover:bg-white/[0.05] hover:text-white;
+ transition-colors hover:bg-black/[0.04] hover:text-ink;
   }
+  /* Aktywna pozycja menu = granatowy kafel. */
   .nav-link-active {
-    @apply bg-white/[0.09] text-white hover:bg-white/[0.09] hover:text-white;
+    @apply bg-brand-700 text-white hover:bg-brand-700 hover:text-white;
   }
   .section-title {
     @apply text-[13px] font-semibold uppercase tracking-wider text-brand-700;
@@ -181,7 +193,7 @@ select {
     @apply px-3 py-2.5 text-[14.5px] text-stone-600 align-middle;
   }
   .row-hover {
-    @apply hover:bg-white/[0.03] transition-colors;
+    @apply hover:bg-black/[0.03] transition-colors;
   }
 }
 

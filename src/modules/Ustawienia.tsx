@@ -378,7 +378,7 @@ export default function Ustawienia() {
               <Upload size={16} /> Wczytaj kopię
             </button>
           </div>
-          <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-[13px] text-amber-200">
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-100 px-3.5 py-2.5 text-[13px] text-amber-700">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
             <span>
               Wczytanie kopii nadpisuje wszystkie bieżące dane. Zrób najpierw eksport, jeśli chcesz zachować obecny

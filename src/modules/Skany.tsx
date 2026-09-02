@@ -208,7 +208,7 @@ export default function Skany() {
                 <button
                   key={s.id}
                   onClick={() => setPodglad(s)}
-                  className="card overflow-hidden text-left transition hover:border-white/20"
+                  className="card overflow-hidden text-left transition hover:border-black/10"
                 >
                   <div className="relative aspect-[3/4] bg-white">
                     <SkanImg strona={s.strony[0]} alt={s.nazwa} className="h-full w-full object-cover" />
@@ -378,7 +378,7 @@ function PodgladSkanu({
       size="xl"
       footer={
         <>
-          <button className="btn-ghost text-red-400 mr-auto" onClick={onUsun}>
+          <button className="btn-ghost text-red-600 mr-auto" onClick={onUsun}>
             <Trash2 size={16} /> Usuń
           </button>
           <button className="btn-outline" onClick={pobierz} disabled={!!zajety}>

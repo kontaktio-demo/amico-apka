@@ -35,7 +35,7 @@ export default function RaportKasowy() {
       {!dzienPracy ? (
         <Card className="mb-5">
           <CardBody className="flex items-center gap-3 text-[13.5px] text-stone-500">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-stone-400">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-black/[0.04] text-stone-400">
               <ScrollText size={17} />
             </span>
             Dziś ({nazwaDnia()}) pracownia jest zamknięta — raport kasowy nie jest wymagany. Możesz w razie potrzeby
@@ -43,18 +43,18 @@ export default function RaportKasowy() {
           </CardBody>
         </Card>
       ) : zrobionyDzis ? (
-        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[14px] text-emerald-200">
+        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-100 px-4 py-3 text-[14px] text-emerald-700">
           <Check size={18} className="shrink-0" />
           <span>
             <b>Raport kasowy na dziś jest zrobiony.</b> Możesz go poprawić lub wydrukować poniżej.
           </span>
         </div>
       ) : (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3.5">
-          <AlertTriangle size={18} className="shrink-0 text-amber-300" />
-          <div className="min-w-0 flex-1 text-[14px] text-amber-100">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-100 px-4 py-3.5">
+          <AlertTriangle size={18} className="shrink-0 text-amber-700" />
+          <div className="min-w-0 flex-1 text-[14px] text-amber-800">
             <b>Raport kasowy na dziś ({fmtDate(t)}) nie jest jeszcze zrobiony.</b>
-            <div className="text-[12.5px] text-amber-200/80">
+            <div className="text-[12.5px] text-amber-700/80">
               Uzupełnij wszystkie kolumny, kliknij „Zapisz raport", a potem możesz go wydrukować.
             </div>
           </div>

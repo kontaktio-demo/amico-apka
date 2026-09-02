@@ -99,14 +99,14 @@ export default function Hurtownie() {
                 </div>
                 <div className="flex shrink-0 gap-0.5">
                   <button
-                    className="grid h-7 w-7 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-white"
+                    className="grid h-7 w-7 place-items-center rounded-lg text-stone-400 hover:bg-black/[0.05] hover:text-ink"
                     onClick={() => setEdycja(h)}
                     title="Edytuj"
                   >
                     <Pencil size={14} />
                   </button>
                   <button
-                    className="grid h-7 w-7 place-items-center rounded-lg text-stone-400 hover:bg-white/[0.06] hover:text-red-400"
+                    className="grid h-7 w-7 place-items-center rounded-lg text-stone-400 hover:bg-black/[0.05] hover:text-red-600"
                     onClick={() => usun(h)}
                     title="Usuń"
                   >

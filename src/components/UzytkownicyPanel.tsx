@@ -94,7 +94,7 @@ export function UzytkownicyPanel() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               {/* PIN */}
-              <div className="rounded-xl border border-white/10 p-4">
+              <div className="rounded-xl border border-black/10 p-4">
                 <div className="mb-2 flex items-center gap-2 text-[13.5px] font-semibold text-ink">
                   <KeyRound size={16} className="text-brand-700" /> Kod PIN
                   {user.pinHash && <Badge tone="green">Ustawiony</Badge>}
@@ -112,14 +112,14 @@ export function UzytkownicyPanel() {
                   </button>
                 </div>
                 {user.pinHash && (
-                  <button className="btn-ghost mt-2 text-red-400" onClick={usunPin}>
+                  <button className="btn-ghost mt-2 text-red-600" onClick={usunPin}>
                     Usuń PIN
                   </button>
                 )}
               </div>
 
               {/* Biometria */}
-              <div className="rounded-xl border border-white/10 p-4">
+              <div className="rounded-xl border border-black/10 p-4">
                 <div className="mb-2 flex items-center gap-2 text-[13.5px] font-semibold text-ink">
                   <Fingerprint size={16} className="text-brand-700" /> Biometria / Face ID
                   {user.webauthnId && <Badge tone="green">Włączona</Badge>}
@@ -220,7 +220,7 @@ function UserRow({
   onUsun: () => void
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 p-2.5">
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-black/10 p-2.5">
       <span
         className="grid h-9 w-9 place-items-center rounded-lg text-[12px] font-semibold text-white"
         style={{ background: us.kolor || '#3a4a7a' }}
@@ -247,7 +247,7 @@ function UserRow({
       </Select>
       <Toggle checked={us.aktywny} onChange={(v) => onZmien({ aktywny: v })} label="Aktywny" />
       {!czyJa && (
-        <button className="btn-ghost !px-2 text-red-400" onClick={onUsun} title="Usuń">
+        <button className="btn-ghost !px-2 text-red-600" onClick={onUsun} title="Usuń">
           <Trash2 size={16} />
         </button>
       )}
@@ -295,7 +295,7 @@ function DodajUzytkownika({ onAdd }: { onAdd: (u: Uzytkownik) => void }) {
     )
   }
   return (
-    <div className="mt-3 rounded-xl border border-white/10 p-4">
+    <div className="mt-3 rounded-xl border border-black/10 p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Imię i nazwisko">
           <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Bogdan" autoFocus />

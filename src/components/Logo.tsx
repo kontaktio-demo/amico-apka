@@ -48,8 +48,9 @@ export function Logo({
   className?: string
   tone?: 'dark' | 'light'
 }) {
-  const color = tone === 'light' ? 'text-white' : 'text-ink'
-  const sub = tone === 'light' ? 'text-white/45' : 'text-stone-500'
+  // tone = kolor TLA, na ktorym stoi logo. 'light' (jasne tlo) -> ciemny napis; 'dark' -> bialy.
+  const color = tone === 'dark' ? 'text-white' : 'text-ink'
+  const sub = tone === 'dark' ? 'text-white/45' : 'text-stone-500'
   return (
     <div className={clsx('flex items-center gap-3', className)}>
       <LogoMark size={variant === 'full' ? 38 : 32} className="rounded-[9px]" />

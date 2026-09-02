@@ -81,7 +81,7 @@ export function PrintSendBar({
             <Send size={size === 'sm' ? 15 : 17} /> Wyślij <ChevronDown size={14} className="opacity-70" />
           </button>
           {open && (
-            <div className="absolute right-0 z-30 mt-1.5 w-60 animate-scale-in overflow-hidden rounded-2xl border border-white/10 bg-[#14161f] p-1.5 shadow-pop">
+            <div className="absolute right-0 z-30 mt-1.5 w-60 animate-scale-in overflow-hidden rounded-2xl border border-black/10 bg-white p-1.5 shadow-pop">
               {typeof navigator !== 'undefined' && 'share' in navigator && (
                 <MenuItem icon={<Share2 size={16} />} onClick={doWebShare}>
                   Udostępnij (system)
@@ -117,7 +117,7 @@ export function PrintSendBar({
               >
                 Kopiuj treść
               </MenuItem>
-              <div className="my-1 border-t border-white/10" />
+              <div className="my-1 border-t border-black/10" />
               <p className="px-3 py-1 text-[11px] leading-tight text-stone-400">
                 {desktop
                   ? 'Aby wysłać PDF w załączniku: kliknij "Zapisz PDF", a potem dołącz zapisany plik do wiadomości.'
@@ -143,7 +143,7 @@ function MenuItem({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-stone-700 transition hover:bg-white/10 active:bg-white/10"
+      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-stone-700 transition hover:bg-black/[0.05] active:bg-black/[0.05]"
     >
       <span className="text-stone-400">{icon}</span>
       {children}

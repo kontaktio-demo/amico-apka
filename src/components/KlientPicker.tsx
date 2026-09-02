@@ -106,7 +106,7 @@ export function KlientPicker({
             </div>
             <button
               type="button"
-              className="shrink-0 rounded-lg px-2 py-1 text-[12.5px] font-medium text-stone-400 hover:bg-white/10 hover:text-white"
+              className="shrink-0 rounded-lg px-2 py-1 text-[12.5px] font-medium text-stone-400 hover:bg-black/[0.05] hover:text-ink"
               onClick={() => {
                 onChange(undefined)
                 setQ('')
@@ -155,7 +155,7 @@ export function KlientPicker({
             key={k.id}
             type="button"
             onClick={() => onChange(k.id, k)}
-            className="flex w-full items-center gap-2.5 rounded-lg border border-white/10 p-2.5 text-left transition hover:border-brand-300 hover:bg-white/[0.04]"
+            className="flex w-full items-center gap-2.5 rounded-lg border border-black/10 p-2.5 text-left transition hover:border-brand-300 hover:bg-black/[0.03]"
           >
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
               {k.typ === 'firma' ? <Building2 size={15} /> : <UserIcon size={15} />}
@@ -169,7 +169,7 @@ export function KlientPicker({
           </button>
         ))}
         {wyniki.length === 0 && (
-          <div className="rounded-lg border border-dashed border-white/10 p-3 text-center text-[12.5px] text-stone-500">
+          <div className="rounded-lg border border-dashed border-black/10 p-3 text-center text-[12.5px] text-stone-500">
             Brak pasujących klientów.
           </div>
         )}
@@ -238,12 +238,12 @@ function NowyKlientInline({
     <div className="rounded-xl border border-brand-300/40 bg-brand-50/30 p-3.5">
       <div className="mb-3 flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-ink">Nowy klient</div>
-        <button type="button" onClick={onAnuluj} className="rounded-lg p-1 text-stone-400 hover:bg-white/10 hover:text-white">
+        <button type="button" onClick={onAnuluj} className="rounded-lg p-1 text-stone-400 hover:bg-black/[0.05] hover:text-ink">
           <X size={16} />
         </button>
       </div>
 
-      <div className="mb-3 inline-flex rounded-lg border border-white/10 p-0.5">
+      <div className="mb-3 inline-flex rounded-lg border border-black/10 p-0.5">
         {(['osoba', 'firma'] as KlientTyp[]).map((t) => (
           <button
             key={t}
@@ -251,7 +251,7 @@ function NowyKlientInline({
             onClick={() => setTyp(t)}
             className={
               typ === t
-                ? 'rounded-md bg-white/10 px-3 py-1 text-[12.5px] font-medium text-white'
+                ? 'rounded-md bg-brand-700 px-3 py-1 text-[12.5px] font-medium text-white'
                 : 'rounded-md px-3 py-1 text-[12.5px] font-medium text-stone-500'
             }
           >

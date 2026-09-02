@@ -660,7 +660,7 @@ function EdytorInner({ rec }: { rec: Wycena }) {
             </div>
 
             {w.pozycje.some(ryzyko8) && (
-              <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-[12.5px] text-amber-200">
+              <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-100 p-3 text-[12.5px] text-amber-700">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                 <span>
                   Zastosowano stawkę <b>8% na blacie</b>. To potencjalne ryzyko podatkowe - standardem dla blatów

@@ -168,7 +168,7 @@ export default function Zadania() {
           {STATUSY.map((st) => {
             const kol = widoczne.filter((z) => z.status === st.k)
             return (
-              <div key={st.k} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-3">
+              <div key={st.k} className="rounded-2xl border border-black/[0.07] bg-black/[0.02] p-3">
                 <div className="mb-2.5 flex items-center justify-between px-1">
                   <span className="flex items-center gap-2 text-[13px] font-semibold text-stone-400">
                     <Badge tone={st.tone as any}>{kol.length}</Badge> {st.label}
@@ -191,9 +191,9 @@ export default function Zadania() {
                             className={cx(
                               'mt-0.5 shrink-0',
                               pr.tone === 'red'
-                                ? 'text-red-400'
+                                ? 'text-red-600'
                                 : pr.tone === 'amber'
-                                  ? 'text-amber-400'
+                                  ? 'text-amber-600'
                                   : 'text-stone-400',
                             )}
                           >
@@ -206,7 +206,7 @@ export default function Zadania() {
                             <User size={12} /> {(z.przypisanyDoNazwa || nazwaOsoby(z.przypisanyDo))}
                           </span>
                           {z.termin && (
-                            <span className={cx('inline-flex items-center gap-1', spozniony && 'text-red-400')}>
+                            <span className={cx('inline-flex items-center gap-1', spozniony && 'text-red-600')}>
                               <Calendar size={12} /> {fmtDate(z.termin)}
                               {z.godzina ? `, ${z.godzina}` : ''}
                             </span>
@@ -227,7 +227,7 @@ export default function Zadania() {
                             <button
                               key={s.k}
                               onClick={() => ustawStatus(z, s.k)}
-                              className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-stone-400 hover:bg-white/5 hover:text-white"
+                              className="rounded-md border border-black/10 px-2 py-1 text-[11px] text-stone-400 hover:bg-black/[0.04] hover:text-ink"
                             >
                               → {s.label}
                             </button>
@@ -294,7 +294,7 @@ function EdytorZadania({
       footer={
         <>
           {istnieje && (
-            <button className="btn-ghost text-red-400 mr-auto" onClick={onUsun}>
+            <button className="btn-ghost text-red-600 mr-auto" onClick={onUsun}>
               <Trash2 size={16} /> Usuń
             </button>
           )}

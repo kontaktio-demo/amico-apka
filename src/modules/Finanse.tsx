@@ -94,14 +94,14 @@ export default function Finanse() {
         icon={<Wallet size={22} />}
       />
 
-      <div className="mb-5 flex flex-wrap gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 shadow-card">
+      <div className="mb-5 flex flex-wrap gap-1.5 rounded-2xl border border-black/10 bg-black/[0.03] p-1.5 shadow-card">
         {zakladki.map((z) => (
           <button
             key={z.klucz}
             onClick={() => setTab(z.klucz)}
             className={cx(
               'flex items-center gap-2 rounded-xl px-4 py-2 text-[14px] font-semibold transition',
-              tab === z.klucz ? 'bg-white/10 text-white shadow-sm' : 'text-stone-600 hover:bg-stone-100',
+              tab === z.klucz ? 'bg-brand-700 text-white shadow-sm' : 'text-stone-600 hover:bg-stone-100',
             )}
           >
             {z.icon}
@@ -408,7 +408,7 @@ function RaportEditor({
                   <td className="td text-right">{fmtPLN(o.rozchod)}</td>
                   <td className="td" />
                 </tr>
-                <tr className="bg-white/10 font-semibold text-white">
+                <tr className="bg-brand-700 font-semibold text-white">
                   <td className="td text-right text-white" colSpan={5}>
                     SALDO
                   </td>

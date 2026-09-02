@@ -559,7 +559,7 @@ function Edytor({ id }: { id: string }) {
           <SectionCard title="Mechanizm podzielonej płatności">
             <Toggle checked={!!f.splitPayment} onChange={(v) => set('splitPayment', v)} label="Split payment" />
             {splitSugerowany && (
-              <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-300">
+              <p className="mt-2 rounded-lg bg-amber-100 px-3 py-2 text-[12.5px] text-amber-700">
                 Kwota brutto przekracza 15 000 zł - dla transakcji B2B rozważ obowiązkowy mechanizm podzielonej
                 płatności.
               </p>

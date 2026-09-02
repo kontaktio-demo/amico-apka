@@ -239,8 +239,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       className={cx(
         'rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition',
         active
-          ? 'border-brand-700 bg-white/10 text-white'
-          : 'border-white/10 bg-white/[0.03] text-stone-600 hover:bg-stone-50',
+          ? 'border-brand-700 bg-brand-700 text-white'
+          : 'border-black/10 bg-black/[0.03] text-stone-600 hover:bg-stone-50',
       )}
     >
       {children}

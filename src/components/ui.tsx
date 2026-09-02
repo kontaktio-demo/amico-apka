@@ -394,7 +394,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               'flex items-center gap-2 rounded-xl px-4 py-2.5 text-[14px] font-medium text-white shadow-pop animate-fade-in',
               t.tone === 'ok' && 'bg-emerald-600',
               t.tone === 'err' && 'bg-red-600',
-              t.tone === 'info' && 'bg-[#181b26] border border-white/10',
+              t.tone === 'info' && 'bg-[#181b26] border border-black/10',
             )}
           >
             {t.tone === 'ok' && <Check size={16} />}

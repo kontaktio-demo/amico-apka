@@ -373,7 +373,7 @@ function TabBtn({
         'inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-[14px] font-medium transition',
         active
           ? 'border-brand-300 bg-brand-50 text-brand-700'
-          : 'border-white/10 bg-white/[0.03] text-stone-600 hover:bg-stone-50',
+          : 'border-black/10 bg-black/[0.03] text-stone-600 hover:bg-stone-50',
       )}
     >
       {icon}

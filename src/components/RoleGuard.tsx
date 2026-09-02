@@ -17,7 +17,7 @@ export function BrakDostepu() {
   return (
     <div className="grid min-h-[50vh] place-items-center">
       <div className="card card-pad max-w-sm text-center">
-        <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.06] text-stone-400">
+        <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-black/[0.05] text-stone-400">
           <Lock size={22} />
         </div>
         <h2 className="text-[17px] font-display font-semibold text-ink">Brak dostępu</h2>

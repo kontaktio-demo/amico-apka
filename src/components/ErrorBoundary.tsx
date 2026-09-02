@@ -32,7 +32,7 @@ export class ErrorBoundary extends React.Component<
       return (
         <div className="grid min-h-[60vh] place-items-center p-6">
           <div className="card card-pad max-w-md text-center">
-            <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-red-500/10 text-red-400">
+            <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-red-100 text-red-600">
               <AlertTriangle size={24} />
             </div>
             <h2 className="text-[18px] font-display font-semibold text-ink">Coś poszło nie tak</h2>

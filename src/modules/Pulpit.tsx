@@ -409,7 +409,7 @@ function ZadaniaToDo() {
         </datalist>
 
         {/* Szybkie dodawanie (jak "Dodaj zadanie" w To Do) */}
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-black/10 bg-black/[0.02] p-2">
           <Plus size={18} className="ml-1 shrink-0 text-brand-700" />
           <input
             value={tekst}
@@ -428,14 +428,14 @@ function ZadaniaToDo() {
               if (e.key === 'Enter') dodaj()
             }}
             placeholder="Dla kogo (kilka po przecinku)"
-            className="w-44 rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
+            className="w-44 rounded-lg border border-black/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
             title="Przydziel osobie/osobom – kilka oddziel przecinkiem, można też wpisać dowolne imię"
           />
           <input
             type="date"
             value={termin}
             onChange={(e) => setTermin(e.target.value)}
-            className="rounded-lg border border-white/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
+            className="rounded-lg border border-black/10 bg-transparent px-2 py-1 text-[12.5px] text-stone-600"
             title="Termin"
           />
           <button className="btn-primary btn-sm" onClick={dodaj} disabled={!tekst.trim()}>
@@ -453,7 +453,7 @@ function ZadaniaToDo() {
             {aktywne.map((z) => (
               <div
                 key={z.id}
-                className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/[0.03]"
+                className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-black/[0.03]"
               >
                 <button
                   onClick={() => toggle(z)}
@@ -465,7 +465,7 @@ function ZadaniaToDo() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[14px] text-ink">{z.tytul}</div>
                   {z.termin && (
-                    <div className={cx('text-[11.5px]', z.termin < t ? 'text-red-400' : 'text-stone-400')}>
+                    <div className={cx('text-[11.5px]', z.termin < t ? 'text-red-600' : 'text-stone-400')}>
                       {fmtDate(z.termin)}
                       {z.godzina ? `, ${z.godzina}` : ''}
                     </div>
@@ -489,14 +489,14 @@ function ZadaniaToDo() {
                     if (e.target.value.trim() !== nazwaPrzypisanego(z)) przypiszNazwa(z, e.target.value)
                   }}
                   placeholder="przydziel"
-                  className="max-w-[110px] shrink-0 rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-[12px] text-stone-500 transition hover:border-white/10"
+                  className="max-w-[110px] shrink-0 rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-[12px] text-stone-500 transition hover:border-black/10"
                   title="Przydziel osobie (dowolne imię)"
                 />
                 <button
                   onClick={() => gwiazdka(z)}
                   className={cx(
                     'shrink-0 transition',
-                    z.priorytet === 'wysoki' ? 'text-amber-400' : 'text-stone-500 hover:text-amber-400',
+                    z.priorytet === 'wysoki' ? 'text-amber-600' : 'text-stone-500 hover:text-amber-600',
                   )}
                   title="Ważne"
                 >
@@ -509,10 +509,10 @@ function ZadaniaToDo() {
 
         {/* Zrobione - zwijane */}
         {zrobione.length > 0 && (
-          <div className="mt-3 border-t border-white/[0.06] pt-2">
+          <div className="mt-3 border-t border-black/[0.06] pt-2">
             <button
               onClick={() => setPokazZrob((v) => !v)}
-              className="flex items-center gap-1.5 text-[13px] font-medium text-stone-500 transition hover:text-white"
+              className="flex items-center gap-1.5 text-[13px] font-medium text-stone-500 transition hover:text-ink"
             >
               {pokazZrob ? <ChevronDown size={15} /> : <ChevronRight size={15} />} Zrobione ({zrobione.length})
             </button>
@@ -548,8 +548,8 @@ function FiltrPill({ active, onClick, children }: { active: boolean; onClick: ()
       onClick={onClick}
       className={
         active
-          ? 'rounded-full bg-white/10 px-3 py-1 text-[12.5px] font-medium text-white'
-          : 'rounded-full border border-white/10 bg-white/[0.02] px-3 py-1 text-[12.5px] font-medium text-stone-500 hover:border-brand-300'
+          ? 'rounded-full bg-brand-700 px-3 py-1 text-[12.5px] font-medium text-white'
+          : 'rounded-full border border-black/10 bg-black/[0.02] px-3 py-1 text-[12.5px] font-medium text-stone-500 hover:border-brand-300'
       }
     >
       {children}
@@ -603,7 +603,7 @@ function WymagaDzialania({ b, user }: { b: ReturnType<typeof useStore.getState>[
     <Card className="mt-6">
       <CardBody>
         <h3 className="mb-3 flex items-center gap-2 text-[15px] font-semibold text-ink">
-          <CalendarClock size={18} className="text-amber-400" /> Wymaga działania
+          <CalendarClock size={18} className="text-amber-600" /> Wymaga działania
         </h3>
         <div className="flex flex-wrap gap-2">
           {chips.map((c) => (
@@ -659,8 +659,8 @@ function PulpitTeren({
           ) : (
             <div className="space-y-2">
               {wydarzeniaDzis.map((w) => (
-                <div key={w.id} className="flex items-center gap-3 rounded-xl border border-white/10 p-3">
-                  <span className="rounded-lg bg-white/[0.06] px-2.5 py-1 text-[13px] font-semibold text-white">
+                <div key={w.id} className="flex items-center gap-3 rounded-xl border border-black/10 p-3">
+                  <span className="rounded-lg bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-700">
                     {w.godzina || '-'}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -675,7 +675,7 @@ function PulpitTeren({
                       href={`https://maps.google.com/?q=${encodeURIComponent(w.adres)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.06] text-stone-400 hover:text-white"
+                      className="grid h-9 w-9 place-items-center rounded-lg bg-black/[0.05] text-stone-400 hover:text-ink"
                     >
                       <MapPin size={16} />
                     </a>
@@ -686,9 +686,9 @@ function PulpitTeren({
                 <Link
                   key={z.id}
                   to="/zadania"
-                  className="flex items-center gap-3 rounded-xl border border-white/10 p-3 hover:bg-white/[0.03]"
+                  className="flex items-center gap-3 rounded-xl border border-black/10 p-3 hover:bg-black/[0.03]"
                 >
-                  <ListTodo size={17} className="text-amber-400" />
+                  <ListTodo size={17} className="text-amber-600" />
                   <span className="flex-1 text-[14px] text-ink">{z.tytul}</span>
                   <Badge tone="amber">na dziś</Badge>
                 </Link>
@@ -714,7 +714,7 @@ function TerenTile({ to, icon, label, n }: { to: string; icon: React.ReactNode; 
   return (
     <Link
       to={to}
-      className="card relative flex flex-col items-center justify-center gap-2 py-7 text-center transition hover:border-white/20"
+      className="card relative flex flex-col items-center justify-center gap-2 py-7 text-center transition hover:border-black/10"
     >
       <span className="text-brand-400">{icon}</span>
       <span className="text-[13.5px] font-medium text-stone-700">{label}</span>

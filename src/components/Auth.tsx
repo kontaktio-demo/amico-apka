@@ -226,7 +226,7 @@ function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }
         />
       </Field>
 
-      {err && <p className="text-[12.5px] text-red-400">{err}</p>}
+      {err && <p className="text-[12.5px] text-red-600">{err}</p>}
 
       <button className="btn-primary w-full btn-lg" disabled={busy}>
         <LogIn size={18} />
@@ -355,12 +355,12 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
                 key={i}
                 className={
                   'h-3.5 w-3.5 rounded-full border transition ' +
-                  (i < pin.length ? 'border-white bg-white' : 'border-white/25')
+                  (i < pin.length ? 'border-white bg-white' : 'border-black/15')
                 }
               />
             ))}
           </div>
-          {err && <p className="text-center text-[12.5px] text-red-400">{err}</p>}
+          {err && <p className="text-center text-[12.5px] text-red-600">{err}</p>}
           <PinPad
             onDigit={(d) => setPin((p) => (p.length < 4 ? p + d : p))}
             onBack={() => setPin((p) => p.slice(0, -1))}
@@ -385,7 +385,7 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
               autoFocus
             />
           </Field>
-          {err && <p className="text-[12.5px] text-red-400">{err}</p>}
+          {err && <p className="text-[12.5px] text-red-600">{err}</p>}
           <button className="btn-primary w-full">
             <LogIn size={16} /> Zaloguj
           </button>
@@ -396,17 +396,17 @@ function Lock({ user, onUnlock, onSwitch }: { user: Uzytkownik; onUnlock: () => 
         {!trybHaslo && (
           <button
             onClick={() => setTrybHaslo(true)}
-            className="flex items-center gap-1 text-stone-500 hover:text-white"
+            className="flex items-center gap-1 text-stone-500 hover:text-ink"
           >
             <KeyRound size={13} /> Zaloguj hasłem
           </button>
         )}
         {trybHaslo && (user.pinHash || user.webauthnId) && !zablokowanyPin && (
-          <button onClick={() => setTrybHaslo(false)} className="text-stone-500 hover:text-white">
+          <button onClick={() => setTrybHaslo(false)} className="text-stone-500 hover:text-ink">
             Szybkie odblokowanie
           </button>
         )}
-        <button onClick={onSwitch} className="text-stone-500 hover:text-white">
+        <button onClick={onSwitch} className="text-stone-500 hover:text-ink">
           Zmień użytkownika
         </button>
       </div>
@@ -425,7 +425,7 @@ function PinPad({ onDigit, onBack }: { onDigit: (d: string) => void; onBack: () 
           <button
             key={i}
             onClick={onBack}
-            className="grid h-14 place-items-center rounded-xl border border-white/10 text-stone-400 hover:bg-white/[0.05]"
+            className="grid h-14 place-items-center rounded-xl border border-black/10 text-stone-400 hover:bg-black/[0.04]"
           >
             <Delete size={20} />
           </button>
@@ -433,7 +433,7 @@ function PinPad({ onDigit, onBack }: { onDigit: (d: string) => void; onBack: () 
           <button
             key={i}
             onClick={() => onDigit(k)}
-            className="grid h-14 place-items-center rounded-xl border border-white/10 text-[20px] font-semibold text-ink transition hover:bg-white/[0.06] active:scale-95"
+            className="grid h-14 place-items-center rounded-xl border border-black/10 text-[20px] font-semibold text-ink transition hover:bg-black/[0.05] active:scale-95"
           >
             {k}
           </button>

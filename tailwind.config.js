@@ -4,35 +4,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        // AMICO - ciemny, monochromatyczny motyw ze strony amico.kontaktio.pl
-        // Skala "stone" = neutralne tło/tekst (polaryzacja jak w motywie jasnym,
-        // ale wartości dobrane pod ciemne tło).
+        // AMICO - JASNY motyw: biel + granatowe akcenty. Przejrzysty, wysoki kontrast.
+        // Skala "stone" = neutralne tło/tekst (polaryzacja jasna: 50 = biel, 900 = prawie czerń).
         stone: {
-          25: '#0d0e14',
-          50: '#0b0b10', // tło strony
-          100: '#181b26', // subtelne wypełnienie / hover
-          200: '#242836', // obramowania / dzielniki
-          300: '#2e3342', // mocniejsze obramowanie / input
-          400: '#7a7e8c', // tekst przygaszony / placeholder / ikony
-          500: '#9ca3af', // tekst drugorzędny
-          600: '#b4bac6', // tekst
-          700: '#e5e7eb', // tekst mocny
-          800: '#f0f1f3',
-          900: '#f7f7f8',
+          25: '#fcfcfd',
+          50: '#ffffff', // tło strony (biel)
+          100: '#f3f4f7', // subtelne wypełnienie / hover
+          200: '#e6e8ee', // obramowania / dzielniki
+          300: '#d3d7e0', // mocniejsze obramowanie / input
+          400: '#8b91a0', // tekst przygaszony / placeholder / ikony
+          500: '#5c6472', // tekst drugorzędny
+          600: '#3b414d', // tekst
+          700: '#232833', // tekst mocny
+          800: '#161a22',
+          900: '#0d1017',
         },
-        // Akcent - chłodny stalowo-granatowy (nawiązanie do navy #0E1224)
+        // Akcent - granatowy (navy). 700 = podstawowy granat na przyciskach/akcentach.
         brand: {
-          50: '#151a2e',
-          100: '#1b2140',
-          200: '#252d52',
-          300: '#37416b',
-          400: '#4d5a85',
-          500: '#6b78a0',
-          600: '#8b96b8',
-          700: '#aeb6d0',
-          800: '#cdd3e4',
-          900: '#e8ebf3',
-          950: '#f2f4f9',
+          50: '#eef1f9',
+          100: '#dde3f3',
+          200: '#c1cbe8',
+          300: '#98a6d5',
+          400: '#6979b4',
+          500: '#43548f',
+          600: '#2a3a6e',
+          700: '#1d2a56', // podstawowy granat (przyciski, aktywne, nagłówki sekcji)
+          800: '#162043',
+          900: '#0e1533',
+          950: '#0a0f26',
         },
         navy: {
           DEFAULT: '#0e1224',
@@ -40,11 +39,11 @@ export default {
           tile: '#0e1533',
         },
         gold: {
-          400: '#d9d9d9',
-          500: '#c9ccd6',
-          600: '#aeb4c0',
+          400: '#b98a2e',
+          500: '#a9791f',
+          600: '#8a6414',
         },
-        ink: '#f5f5f5', // podstawowy tekst (nagłówki)
+        ink: '#141821', // podstawowy tekst (nagłówki) - ciemny
       },
       fontFamily: {
         display: ['"Inter Tight Variable"', '"Inter Tight"', '"Space Grotesk Variable"', 'Inter', 'system-ui', 'sans-serif'],
@@ -57,9 +56,10 @@ export default {
         '2xl': '0.75rem',
       },
       boxShadow: {
-        card: '0 2px 8px rgba(0,0,0,0.45), 0 12px 40px -18px rgba(0,0,0,0.6)',
-        pop: '0 24px 80px -20px rgba(0,0,0,0.8)',
-        inset: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+        // Miekkie, jasne cienie (granatowy odcien zamiast czystej czerni - eleganciej na bieli).
+        card: '0 1px 2px rgba(16,24,40,0.05), 0 10px 30px -16px rgba(16,24,40,0.14)',
+        pop: '0 20px 60px -20px rgba(16,24,40,0.28)',
+        inset: 'inset 0 1px 0 rgba(255,255,255,0.6)',
       },
       keyframes: {
         'fade-in': { from: { opacity: '0', transform: 'translateY(4px)' }, to: { opacity: '1', transform: 'none' } },

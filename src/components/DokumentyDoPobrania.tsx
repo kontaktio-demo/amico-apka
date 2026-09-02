@@ -125,7 +125,7 @@ export function DokumentyDoPobrania() {
             {owner ? 'Brak dokumentów. Wgraj plik i wskaż, kto ma go widzieć.' : 'Brak dokumentów do pobrania.'}
           </p>
         ) : (
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-black/[0.06]">
             {lista.map((d) => (
               <div key={d.id} className="py-2.5">
                 <div className="flex items-center gap-3">
@@ -151,14 +151,14 @@ export function DokumentyDoPobrania() {
                       >
                         <Eye size={14} />
                       </button>
-                      <button className="btn-ghost btn-sm text-red-400" onClick={() => usun(d)} title="Usuń">
+                      <button className="btn-ghost btn-sm text-red-600" onClick={() => usun(d)} title="Usuń">
                         <Trash2 size={14} />
                       </button>
                     </>
                   )}
                 </div>
                 {owner && edytujId === d.id && (
-                  <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                  <div className="mt-2 rounded-xl border border-black/10 bg-black/[0.02] p-3">
                     <div className="mb-2 text-[12.5px] font-medium text-stone-600">Kto ma widzieć ten dokument?</div>
                     <label className="mb-2 flex items-center gap-2 text-[13px] text-ink">
                       <input

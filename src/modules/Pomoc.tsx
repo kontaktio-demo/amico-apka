@@ -58,7 +58,7 @@ export default function Pomoc() {
 
       {/* ---------- Powitanie ---------- */}
       <Card className="mb-6 overflow-hidden">
-        <div className="border-b border-white/[0.07] bg-gradient-to-br from-brand-500/10 to-transparent p-6">
+        <div className="border-b border-black/[0.07] bg-gradient-to-br from-brand-500/10 to-transparent p-6">
           <h2 className="text-[22px] font-display font-semibold text-ink">Witaj w AMICO</h2>
           <p className="mt-2.5 max-w-2xl text-[15px] leading-relaxed text-stone-400">
             To Twoja aplikacja do prowadzenia pracowni. Wszystko, co dziś jest w segregatorach, zeszytach i na luźnych
@@ -176,7 +176,7 @@ export default function Pomoc() {
           program z ikoną, na pełnym ekranie.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-white/10 p-4">
+          <div className="rounded-xl border border-black/10 p-4">
             <div className="mb-2 text-[14.5px] font-semibold text-ink">iPad / iPhone</div>
             <ol className="space-y-1.5 text-[13.5px] leading-relaxed text-stone-400">
               <li>
@@ -191,7 +191,7 @@ export default function Pomoc() {
               <li>4. Gotowe - na ekranie pojawi się ikona AMICO.</li>
             </ol>
           </div>
-          <div className="rounded-xl border border-white/10 p-4">
+          <div className="rounded-xl border border-black/10 p-4">
             <div className="mb-2 text-[14.5px] font-semibold text-ink">Android / komputer</div>
             <ol className="space-y-1.5 text-[13.5px] leading-relaxed text-stone-400">
               <li>
@@ -212,7 +212,7 @@ export default function Pomoc() {
           pojawiają się same.
         </Wskazowka>
 
-        <div className="mt-4 rounded-xl border border-white/10 p-4">
+        <div className="mt-4 rounded-xl border border-black/10 p-4">
           <div className="mb-2 text-[14.5px] font-semibold text-ink">Wersja na komputer (Windows)</div>
           <p className="text-[13.5px] leading-relaxed text-stone-400">
             Jest też zwykły program na komputer. Instalujesz go plikiem{' '}
@@ -694,7 +694,7 @@ export default function Pomoc() {
               Ustawienia → Chmura i synchronizacja
             </Link>{' '}
             - jest tam <b>"Kod firmy (dla zespołu)"</b>, np.{' '}
-            <code className="rounded bg-white/[0.06] px-1.5 py-0.5">86D64CD7</code>. Kliknij go, żeby skopiować.
+            <code className="rounded bg-black/[0.05] px-1.5 py-0.5">86D64CD7</code>. Kliknij go, żeby skopiować.
           </Krok>
           <Krok n={2} tytul="Przekaż kod pracownikowi">
             Pracownik otwiera aplikację na swoim telefonie i na pierwszym ekranie klika{' '}
@@ -776,7 +776,7 @@ export default function Pomoc() {
 /* ================= elementy ================= */
 function Korzysc({ ikona, tytul, opis }: { ikona: React.ReactNode; tytul: string; opis: string }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4">
+    <div className="rounded-xl border border-black/10 p-4">
       <span className="mb-2 grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700">{ikona}</span>
       <div className="text-[14.5px] font-semibold text-ink">{tytul}</div>
       <p className="mt-1 text-[13px] leading-relaxed text-stone-400">{opis}</p>
@@ -799,8 +799,8 @@ function Sekcja({ tytul, ikona, children }: { tytul: string; ikona: React.ReactN
 
 function Krok({ n, tytul, children }: { n: number; tytul: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3.5 rounded-xl border border-white/10 p-4">
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-[14px] font-bold text-white">
+    <div className="flex gap-3.5 rounded-xl border border-black/10 p-4">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-700 text-[14px] font-bold text-white">
         {n}
       </span>
       <div className="min-w-0">
@@ -813,7 +813,7 @@ function Krok({ n, tytul, children }: { n: number; tytul: string; children: Reac
 
 function Slowko({ slowo, children }: { slowo: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4">
+    <div className="rounded-xl border border-black/10 p-4">
       <div className="text-[14px] font-semibold text-brand-700">{slowo}</div>
       <p className="mt-1 text-[13.5px] leading-relaxed text-stone-400">{children}</p>
     </div>
@@ -822,7 +822,7 @@ function Slowko({ slowo, children }: { slowo: string; children: React.ReactNode 
 
 function Czynnosc({ etykieta, children }: { etykieta: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl border border-white/10 p-4 sm:flex-row sm:items-baseline sm:gap-4">
+    <div className="flex flex-col gap-1.5 rounded-xl border border-black/10 p-4 sm:flex-row sm:items-baseline sm:gap-4">
       <div className="shrink-0 sm:w-44">
         <span className="inline-flex items-center rounded-lg bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-700">
           {etykieta}
@@ -835,7 +835,7 @@ function Czynnosc({ etykieta, children }: { etykieta: string; children: React.Re
 
 function Znajome({ amico, ios, children }: { amico: string; ios: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4">
+    <div className="rounded-xl border border-black/10 p-4">
       <div className="text-[14px] font-semibold text-stone-700">{amico}</div>
       <div className="mt-1 flex items-center gap-1.5 text-[12.5px] font-medium text-brand-600">
         <Smartphone size={13} className="shrink-0" />
@@ -849,8 +849,8 @@ function Znajome({ amico, ios, children }: { amico: string; ios: string; childre
 function Wskazowka({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] p-3.5">
-      <Lightbulb size={17} className="mt-0.5 shrink-0 text-amber-300" />
-      <p className="text-[13.5px] leading-relaxed text-amber-100/80">{children}</p>
+      <Lightbulb size={17} className="mt-0.5 shrink-0 text-amber-700" />
+      <p className="text-[13.5px] leading-relaxed text-amber-800/90">{children}</p>
     </div>
   )
 }
@@ -870,10 +870,10 @@ function Zakladka({
 }) {
   const [otwarte, setOtwarte] = useState(false)
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10">
+    <div className="overflow-hidden rounded-xl border border-black/10">
       <button
         onClick={() => setOtwarte((o) => !o)}
-        className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-white/[0.03]"
+        className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-black/[0.03]"
       >
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">{ikona}</span>
         <span className="min-w-0 flex-1">
@@ -883,7 +883,7 @@ function Zakladka({
         <ChevronDown size={18} className={cx('shrink-0 text-stone-500 transition', otwarte && 'rotate-180')} />
       </button>
       {otwarte && (
-        <div className="border-t border-white/[0.07] px-4 py-3.5">
+        <div className="border-t border-black/[0.07] px-4 py-3.5">
           <div className="text-[13.5px] leading-relaxed text-stone-400">{children}</div>
           <Link to={href} className="btn-outline btn-sm mt-3">
             Otwórz zakładkę <ArrowRight size={14} />
@@ -896,12 +896,12 @@ function Zakladka({
 
 function Scenariusz({ tytul, kroki }: { tytul: string; kroki: string[] }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4">
+    <div className="rounded-xl border border-black/10 p-4">
       <div className="mb-3 text-[15px] font-semibold text-ink">{tytul}</div>
       <ol className="space-y-2">
         {kroki.map((k, i) => (
           <li key={i} className="flex gap-3 text-[13.5px] leading-relaxed text-stone-400">
-            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/10 text-[11px] font-bold text-white">
+            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-700 text-[11px] font-bold text-white">
               {i + 1}
             </span>
             <span>{k}</span>
@@ -914,7 +914,7 @@ function Scenariusz({ tytul, kroki }: { tytul: string; kroki: string[] }) {
 
 function Przycisk({ ikona, nazwa, children }: { ikona: React.ReactNode; nazwa: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4">
+    <div className="rounded-xl border border-black/10 p-4">
       <div className="mb-1.5 flex items-center gap-2 text-[14.5px] font-semibold text-ink">
         <span className="text-brand-700">{ikona}</span> {nazwa}
       </div>
@@ -925,7 +925,7 @@ function Przycisk({ ikona, nazwa, children }: { ikona: React.ReactNode; nazwa: s
 
 function Faq({ pytanie, children }: { pytanie: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4">
+    <div className="rounded-xl border border-black/10 p-4">
       <div className="text-[14px] font-semibold text-ink">{pytanie}</div>
       <p className="mt-1 text-[13.5px] leading-relaxed text-stone-400">{children}</p>
     </div>

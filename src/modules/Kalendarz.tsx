@@ -329,7 +329,7 @@ export default function Kalendarz() {
                     <span
                       className={cx(
                         'mb-1 grid h-6 w-6 place-items-center rounded-full text-[12px] font-semibold',
-                        c.dzis ? 'bg-white/10 text-white' : 'text-stone-600',
+                        c.dzis ? 'bg-brand-700 text-white' : 'text-stone-600',
                       )}
                     >
                       {c.dzien}

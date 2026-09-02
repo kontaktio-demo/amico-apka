@@ -218,8 +218,8 @@ export default function Wizualizacja() {
                     className={cx(
                       'flex-1 rounded-lg border px-3 py-2 text-[13px] font-medium',
                       ksztalt === k
-                        ? 'border-white/20 bg-white/10 text-white'
-                        : 'border-white/10 text-stone-400 hover:bg-white/5',
+                        ? 'border-black/10 bg-brand-700 text-white'
+                        : 'border-black/10 text-stone-400 hover:bg-black/[0.04]',
                     )}
                   >
                     {k === 'prosty' ? 'Prosty' : 'Kształt L'}
@@ -261,7 +261,7 @@ export default function Wizualizacja() {
               <Toggle checked={zlew} onChange={setZlew} label="Wycięcie na zlew" />
               <Toggle checked={plyta} onChange={setPlyta} label="Płyta grzewcza" />
             </div>
-            <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-3">
+            <div className="grid grid-cols-2 gap-3 border-t border-black/10 pt-3">
               <Field label="Klient">
                 <Select value={klientId} onChange={(e) => setKlientId(e.target.value)}>
                   <option value="">- brak -</option>
@@ -293,7 +293,7 @@ export default function Wizualizacja() {
               onClick={() => setWidok('kuchnia')}
               className={cx(
                 'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium',
-                widok === 'kuchnia' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5',
+                widok === 'kuchnia' ? 'bg-brand-700 text-white' : 'text-stone-400 hover:bg-black/[0.04]',
               )}
             >
               <Home size={15} /> Wizualizacja kuchni
@@ -302,7 +302,7 @@ export default function Wizualizacja() {
               onClick={() => setWidok('blat')}
               className={cx(
                 'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium',
-                widok === 'blat' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5',
+                widok === 'blat' ? 'bg-brand-700 text-white' : 'text-stone-400 hover:bg-black/[0.04]',
               )}
             >
               <SquareStack size={15} /> Rzut blatu

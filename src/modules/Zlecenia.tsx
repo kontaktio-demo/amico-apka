@@ -284,8 +284,8 @@ function FiltrChip({ active, onClick, label, n }: { active: boolean; onClick: ()
       onClick={onClick}
       className={
         active
-          ? 'rounded-full bg-white/10 px-3.5 py-1.5 text-[13px] font-medium text-white'
-          : 'rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-stone-600 hover:border-brand-300'
+          ? 'rounded-full bg-brand-700 px-3.5 py-1.5 text-[13px] font-medium text-white'
+          : 'rounded-full border border-black/10 bg-black/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-stone-600 hover:border-brand-300'
       }
     >
       {label} <span className={active ? 'text-white/70' : 'text-stone-400'}>{n}</span>
@@ -671,8 +671,8 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                   onClick={() => update({ etap: p.klucz })}
                   className={
                     z.etap === p.klucz
-                      ? 'rounded-full bg-white/10 px-3.5 py-1.5 text-[13px] font-medium text-white'
-                      : 'rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-stone-600 hover:border-brand-300'
+                      ? 'rounded-full bg-brand-700 px-3.5 py-1.5 text-[13px] font-medium text-white'
+                      : 'rounded-full border border-black/10 bg-black/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-stone-600 hover:border-brand-300'
                   }
                 >
                   {p.nazwa}
@@ -696,8 +696,8 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                   <span
                     className={
                       e.zrobione
-                        ? 'grid h-6 w-6 shrink-0 place-items-center rounded-md border border-brand-700 bg-white/10 text-white'
-                        : 'grid h-6 w-6 shrink-0 place-items-center rounded-md border border-white/20 bg-transparent'
+                        ? 'grid h-6 w-6 shrink-0 place-items-center rounded-md border border-brand-700 bg-brand-700 text-white'
+                        : 'grid h-6 w-6 shrink-0 place-items-center rounded-md border border-black/10 bg-transparent'
                     }
                   >
                     {e.zrobione && <Check size={15} strokeWidth={3} />}
@@ -734,7 +734,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
             ) : skany.length === 0 ? (
               <button
                 onClick={() => setSkanerOpen(true)}
-                className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-white/15 py-8 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"
+                className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-black/10 py-8 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"
               >
                 <ScanLine size={28} />
                 <span className="text-[13.5px] font-medium">Zeskanuj dokumenty zlecenia</span>
@@ -746,7 +746,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                   <button
                     key={s.id}
                     onClick={() => setPodglad(s)}
-                    className="group overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] text-left transition hover:border-brand-300"
+                    className="group overflow-hidden rounded-lg border border-black/10 bg-black/[0.02] text-left transition hover:border-brand-300"
                   >
                     <div className="aspect-[3/4] overflow-hidden bg-stone-100">
                       {s.strony[0] ? (
@@ -767,7 +767,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
                 ))}
                 <button
                   onClick={() => setSkanerOpen(true)}
-                  className="flex aspect-[3/4] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-white/15 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"
+                  className="flex aspect-[3/4] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-black/10 text-stone-400 transition hover:border-brand-300 hover:text-brand-700"
                 >
                   <Plus size={20} />
                   <span className="text-[11px] font-medium">Dodaj</span>
@@ -925,7 +925,7 @@ function Szczegoly({ z }: { z: Zlecenie }) {
         {podglad && (
           <div className="space-y-3">
             {podglad.strony.map((str, i) => (
-              <SkanImg key={i} strona={str} alt={'Strona ' + (i + 1)} className="w-full rounded-lg border border-white/10" />
+              <SkanImg key={i} strona={str} alt={'Strona ' + (i + 1)} className="w-full rounded-lg border border-black/10" />
             ))}
             <div className="flex justify-end">
               <Link to="/skany" className="btn-outline btn-sm">

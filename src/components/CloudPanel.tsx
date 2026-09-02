@@ -151,24 +151,24 @@ export function CloudPanel({
       </div>
 
       {c.blad && (
-        <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-[13px] text-red-200">
+        <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-100 px-3.5 py-2.5 text-[13px] text-red-700">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <span>{c.blad}</span>
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-white/10 p-3">
+        <div className="rounded-xl border border-black/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Ostatni zapis</div>
           <div className="mt-1 text-[14px] font-semibold text-ink">
             {c.ostatniZapis ? fmtDateTime(c.ostatniZapis) : '-'}
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 p-3">
+        <div className="rounded-xl border border-black/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Rozmiar bazy</div>
           <div className="mt-1 text-[14px] font-semibold text-ink">{c.rozmiarKB ? `${c.rozmiarKB} KB` : '-'}</div>
         </div>
-        <div className="rounded-xl border border-white/10 p-3">
+        <div className="rounded-xl border border-black/10 p-3">
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Kod firmy (dla zespołu)</div>
           <button
             className="mt-1 flex items-center gap-2 text-[14px] font-semibold text-ink hover:text-brand-700"
@@ -181,7 +181,7 @@ export function CloudPanel({
           >
             {c.joinCode || '-'}{' '}
             {skopiowano ? (
-              <Check size={14} className="text-emerald-400" />
+              <Check size={14} className="text-emerald-600" />
             ) : (
               <Copy size={13} className="text-stone-500" />
             )}
@@ -190,7 +190,7 @@ export function CloudPanel({
       </div>
 
       {c.rozmiarKB > 4000 && (
-        <p className="text-[12px] text-amber-300">
+        <p className="text-[12px] text-amber-700">
           Baza jest duża ({c.rozmiarKB} KB) - głównie przez skany. Rozważ archiwizowanie starych skanów.
         </p>
       )}
@@ -200,7 +200,7 @@ export function CloudPanel({
           <RefreshCw size={16} /> Zapisz teraz
         </button>
         <button
-          className="btn-ghost text-red-400"
+          className="btn-ghost text-red-600"
           onClick={async () => {
             await wylogujChmura()
             setMaSesje(false)
@@ -220,7 +220,7 @@ export function CloudPanel({
     // ---------- Widok: logowanie ----------
     <form onSubmit={wykonaj} className="space-y-4">
       {c.status === 'sesja' && c.blad && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-[13px] text-amber-200">
+        <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-100 px-3.5 py-2.5 text-[13px] text-amber-700">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <span>{c.blad}</span>
         </div>
@@ -239,7 +239,7 @@ export function CloudPanel({
             onClick={() => setTryb(k)}
             className={cx(
               'rounded-lg px-3 py-1.5 text-[13px] font-medium transition',
-              tryb === k ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5',
+              tryb === k ? 'bg-brand-700 text-white' : 'text-stone-400 hover:bg-black/[0.04]',
             )}
           >
             {l}
@@ -266,7 +266,7 @@ export function CloudPanel({
         </Field>
       </div>
 
-      {err && <p className="text-[12.5px] text-red-400">{err}</p>}
+      {err && <p className="text-[12.5px] text-red-600">{err}</p>}
 
       <button className="btn-primary w-full" disabled={busy}>
         {tryb === 'rejestracja' ? (

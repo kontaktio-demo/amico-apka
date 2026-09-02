@@ -575,7 +575,7 @@ function KartaKlienta({ id }: { id: string }) {
                   className={cx(
                     'rounded-xl px-3 py-1.5 text-[12.5px] font-medium transition',
                     aktywny
-                      ? 'bg-white/10 text-white shadow-sm'
+                      ? 'bg-brand-700 text-white shadow-sm'
                       : 'border border-stone-200 text-stone-500 hover:border-brand-300 hover:bg-brand-50',
                   )}
                 >
@@ -589,7 +589,7 @@ function KartaKlienta({ id }: { id: string }) {
                 'ml-auto rounded-xl px-3 py-1.5 text-[12.5px] font-medium transition',
                 k.etap === 'utracony'
                   ? 'bg-red-600 text-white'
-                  : 'border border-stone-200 text-stone-400 hover:bg-red-500/15 hover:text-red-600',
+                  : 'border border-stone-200 text-stone-400 hover:bg-red-100 hover:text-red-600',
               )}
             >
               Utracony
@@ -633,7 +633,7 @@ function KartaKlienta({ id }: { id: string }) {
               <MessageSquare size={18} /> Wyślij SMS
             </span>
           )}
-          <button onClick={usunKlienta} className="akcja text-red-600 hover:!border-red-500/40 hover:!bg-red-500/15">
+          <button onClick={usunKlienta} className="akcja text-red-600 hover:!border-red-500/40 hover:!bg-red-100">
             <Trash2 size={18} /> Usuń klienta
           </button>
         </div>

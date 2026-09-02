@@ -132,14 +132,14 @@ export default function Kontrahenci() {
                 'flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[13.5px] font-medium transition',
                 on
                   ? 'border-brand-300 bg-brand-50 text-brand-700'
-                  : 'border-white/10 bg-white/[0.03] text-stone-600 hover:border-brand-200',
+                  : 'border-black/10 bg-black/[0.03] text-stone-600 hover:border-brand-200',
               )}
             >
               {t.lm}
               <span
                 className={cx(
                   'rounded-full px-1.5 py-0.5 text-[11px] font-semibold',
-                  on ? 'bg-white/10 text-white' : 'bg-stone-100 text-stone-500',
+                  on ? 'bg-brand-700 text-white' : 'bg-stone-100 text-stone-500',
                 )}
               >
                 {n}
