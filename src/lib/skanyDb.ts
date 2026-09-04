@@ -108,18 +108,95 @@ export async function skanyDlaZlecenia(zlecenieId: string): Promise<(Skan & { _z
   return ((data || []) as SkanRow[]).map(rowNaSkan)
 }
 
+// ---------- Rownolegle wgrywanie stron do Storage (wspoldzielone przez zapis i offload) ----------
+// Uruchamia `fn` dla kolejnych elementow z ograniczeniem liczby JEDNOCZESNYCH zadan (limit).
+// Dzieki temu 20 stron leci np. po 4 naraz, a nie 20 na raz (pamiec/limit polaczen iPhone) ani
+// jedna po drugiej (wieczne czekanie).
+async function mapZLimitem<T>(items: T[], limit: number, fn: (item: T, index: number) => Promise<void>): Promise<void> {
+  let nast = 0
+  async function pracownik() {
+    while (nast < items.length) {
+      const idx = nast++
+      await fn(items[idx], idx)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => pracownik()))
+}
+
+// Wgrywa JEDNA strone base64 do Storage. Zwraca sciezke (sukces) albo oryginalny base64 (porazka -
+// zostaje w wierszu i dogra sie pozniej). Nie rzuca - offline nie moze zgubic strony.
+async function wgrajStroneDoStorage(
+  w: string,
+  id: string,
+  i: number,
+  dataUrl: string,
+): Promise<{ wartosc: string; ok: boolean; brakBucketa: boolean }> {
+  const sciezka = `${w}/${id}-${i}.jpg`
+  try {
+    const { error } = await supabase.storage.from(BUCKET).upload(sciezka, dataUrlNaBlob(dataUrl), {
+      upsert: true,
+      contentType: 'image/jpeg',
+    })
+    if (error) return { wartosc: dataUrl, ok: false, brakBucketa: /bucket|not found|does not exist/i.test(error.message || '') }
+    return { wartosc: sciezka, ok: true, brakBucketa: false }
+  } catch {
+    return { wartosc: dataUrl, ok: false, brakBucketa: false }
+  }
+}
+
+function zglosBrakBucketa() {
+  brakBucketaSkanow = true
+  useCloud.getState().ustaw({
+    status: 'blad',
+    blad:
+      'Magazyn skanów nie jest gotowy - uruchom raz w Supabase skrypt supabase/amico-skany.sql. Skany są bezpieczne, pojawią się w chmurze po uruchomieniu skryptu.',
+  })
+}
+
 // ---------- Zapis / usuniecie ----------
-export async function zapiszSkan(skan: Skan): Promise<void> {
+// SZYBKI ZAPIS: strony (base64) wgrywamy PROSTO do Storage, ROWNOLEGLE, a do wiersza trafiaja same
+// SCIEZKI (maly wiersz - zapis natychmiastowy niezaleznie od liczby zdjec). Wczesniej caly base64
+// (20-40 MB przy 20+ stronach) szedl do wiersza, a offload pobieral to jeszcze raz i wgrywal po
+// jednej stronie - stad "wieczne" zapisy. Gdy strona sie nie wgra (offline) - zostaje base64 w
+// wierszu (nic nie ginie), a offload dogra ja pozniej. `onPostep` daje pasek "Zapisywanie x/y".
+export async function zapiszSkan(
+  skan: Skan,
+  onPostep?: (gotowe: number, total: number) => void,
+): Promise<void> {
   const w = ws()
   if (!w) throw new Error('Brak połączenia z firmą w chmurze.')
-  const maB64 = (skan.strony || []).some(czyBase64)
+  const strony = [...(skan.strony || [])]
+  const doWgrania = strony.map((p, i) => ({ p, i })).filter((x) => czyBase64(x.p))
+  let gotowe = 0
+  let maB64 = false
+  onPostep?.(0, doWgrania.length)
+
+  if (doWgrania.length > 0) {
+    if (brakBucketaSkanow) {
+      // Wiadomo, ze magazynu nie ma - nie probujemy (zostaje base64, durable, dogra sie pozniej).
+      maB64 = true
+    } else {
+      await mapZLimitem(doWgrania, 4, async ({ p, i }) => {
+        const r = await wgrajStroneDoStorage(w, skan.id, i, p)
+        if (r.ok) strony[i] = r.wartosc
+        else {
+          maB64 = true
+          if (r.brakBucketa && !brakBucketaSkanow) zglosBrakBucketa()
+        }
+        gotowe++
+        onPostep?.(gotowe, doWgrania.length)
+      })
+    }
+  }
+
+  // Wiersz jest teraz maly (same sciezki) - upsert idzie blyskawicznie niezaleznie od liczby zdjec.
   const { error } = await supabase.from('amico_skany').upsert(
     {
       id: skan.id,
       workspace_id: w,
       nazwa: skan.nazwa || '',
       kategoria: skan.kategoria || 'inne',
-      strony: skan.strony || [],
+      strony,
       zlecenie_id: skan.zlecenieId || null,
       klient_id: skan.klientId || null,
       notatka: skan.notatka || null,
@@ -131,7 +208,7 @@ export async function zapiszSkan(skan: Skan): Promise<void> {
     { onConflict: 'id' },
   )
   if (error) throw error
-  if (maB64) void offloadSkanyTabela() // od razu spróbuj przenieść do Storage
+  if (maB64) void offloadSkanyTabela() // dogranie stron, ktore zostaly base64 (offline)
 }
 
 // Zapis SAMYCH metadanych (nazwa/kategoria/przypisania/notatka) - NIE dotyka `strony`,
@@ -203,41 +280,25 @@ export async function offloadSkanyTabela(): Promise<void> {
       .limit(20)
     if (error || !data) return
     for (const row of data as { id: string; strony: string[] }[]) {
-      const strony = row.strony || []
-      const nowe: string[] = []
+      if (brakBucketaSkanow) return
+      const nowe = [...(row.strony || [])]
+      const doWgrania = nowe.map((p, i) => ({ p, i })).filter((x) => czyBase64(x.p))
+      if (!doWgrania.length) continue
       let zmiana = false
       let dalejBase64 = false
-      for (let i = 0; i < strony.length; i++) {
-        const p = strony[i]
-        if (!czyBase64(p)) {
-          nowe.push(p)
-          continue
-        }
-        const sciezka = `${w}/${row.id}-${i}.jpg`
-        const buf = dataUrlNaBlob(p)
-        const { error: eUp } = await supabase.storage.from(BUCKET).upload(sciezka, buf, {
-          upsert: true,
-          contentType: 'image/jpeg',
-        })
-        if (eUp) {
-          nowe.push(p) // nie udalo sie (offline / brak bucketa) - zostaje base64
-          dalejBase64 = true
-          if (/bucket|not found|does not exist/i.test(eUp.message || '')) {
-            brakBucketaSkanow = true
-            useCloud.getState().ustaw({
-              status: 'blad',
-              blad:
-                'Magazyn skanów nie jest gotowy - uruchom raz w Supabase skrypt supabase/amico-skany.sql. Skany są bezpieczne, pojawią się w chmurze po uruchomieniu skryptu.',
-            })
-            return
-          }
-        } else {
-          nowe.push(sciezka)
+      // Strony jednego wiersza wgrywamy ROWNOLEGLE (po 4) - duzo szybciej niz po jednej.
+      await mapZLimitem(doWgrania, 4, async ({ p, i }) => {
+        const r = await wgrajStroneDoStorage(w, row.id, i, p)
+        if (r.ok) {
+          nowe[i] = r.wartosc
           zmiana = true
+        } else {
+          dalejBase64 = true
+          if (r.brakBucketa && !brakBucketaSkanow) zglosBrakBucketa()
         }
-      }
+      })
       if (zmiana) {
-        // NIE zmieniamy zm (to zmiana mechaniczna) - ale kolumny zm nie ruszamy w update:
+        // NIE zmieniamy zm (to zmiana mechaniczna).
         await supabase.from('amico_skany').update({ strony: nowe, ma_base64: dalejBase64 }).eq('workspace_id', w).eq('id', row.id)
       }
     }

@@ -86,6 +86,7 @@ export function Skaner({
   const [klId, setKlId] = useState(klientId || '')
   const [notatka, setNotatka] = useState('')
   const [zapisywanie, setZapisywanie] = useState(false) // MUSI byc PRZED `if (!open) return null` (reguly hookow)
+  const [postep, setPostep] = useState<{ g: number; t: number } | null>(null) // "Zapisywanie x/y"
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -248,8 +249,9 @@ export function Skaner({
       utworzono: nowISO(),
     }
     setZapisywanie(true)
+    setPostep(strony.length > 1 ? { g: 0, t: strony.length } : null)
     try {
-      await zapiszSkan(skan)
+      await zapiszSkan(skan, (g, t) => setPostep(t > 1 ? { g, t } : null))
       push(`Zapisano skan (${strony.length} str.)`)
       onZapisano?.(skan)
       onClose()
@@ -260,6 +262,7 @@ export function Skaner({
       push(m && !/fetch|network|load failed/i.test(m) ? m : 'Nie udało się zapisać skanu - sprawdź internet i spróbuj ponownie.', 'err')
     } finally {
       setZapisywanie(false)
+      setPostep(null)
     }
   }
 
@@ -456,7 +459,12 @@ export function Skaner({
                 <ChevronLeft size={17} /> Skanuj dalej
               </button>
               <button className="btn-primary btn-lg" onClick={zapisz} disabled={strony.length === 0 || zapisywanie}>
-                <Check size={18} /> {zapisywanie ? 'Zapisywanie...' : `Zapisz dokument (${strony.length})`}
+                <Check size={18} />{' '}
+                {zapisywanie
+                  ? postep
+                    ? `Zapisywanie ${postep.g}/${postep.t}...`
+                    : 'Zapisywanie...'
+                  : `Zapisz dokument (${strony.length})`}
               </button>
             </div>
           </div>
