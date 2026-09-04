@@ -94,10 +94,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(t)
   }, [widok, userId, user, uzytkownicy])
 
-  // Auto-blokada po bezczynnosci WYLACZONA na zyczenie wlasciciela (wewnetrzna
-  // aplikacja firmowa, zaufane urzadzenia). Po zalogowaniu aplikacja NIE wylogowuje
-  // ani nie blokuje sie sama. Reczne zablokowanie/zmiana uzytkownika dalej dziala
-  // przyciskami w menu.
+  // Auto-blokada po bezczynnosci. Wlaczona swiadomie kosztem wygody: zgubiony albo
+  // skradziony telefon nie daje juz wiecznego dostepu do danych firmy. Blokada NIE
+  // wylogowuje i nie kasuje danych - odblokowanie PIN-em, biometria albo haslem,
+  // a przez "Zmien uzytkownika" zawsze mozna wrocic logowaniem chmurowym.
+  useEffect(() => {
+    if (widok !== 'in' || !user) return
+    const LIMIT = 15 * 60 * 1000 // 15 minut bezczynnosci
+    let ostatnia = Date.now()
+    const dotyk = () => {
+      ostatnia = Date.now()
+    }
+    const sprawdz = () => {
+      if (Date.now() - ostatnia > LIMIT) setWidok('lock')
+    }
+    // Powrot do aplikacji po dluzszej przerwie (schowana karta / zgaszony ekran) tez blokuje.
+    const naWidocznosc = () => {
+      if (document.visibilityState === 'visible') sprawdz()
+      else ostatnia = Date.now()
+    }
+    const zdarzenia: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'wheel', 'touchstart']
+    zdarzenia.forEach((e) => window.addEventListener(e, dotyk, { passive: true }))
+    document.addEventListener('visibilitychange', naWidocznosc)
+    const t = setInterval(sprawdz, 30_000)
+    return () => {
+      zdarzenia.forEach((e) => window.removeEventListener(e, dotyk))
+      document.removeEventListener('visibilitychange', naWidocznosc)
+      clearInterval(t)
+    }
+  }, [widok, user])
 
   const zaloguj = (id: string) => {
     setUserId(id)
@@ -137,8 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 // TYLKO logowanie. Rejestracja z aplikacji jest WYLACZONA (decyzja wlasciciela):
 // publiczna rejestracja jest wylaczona po stronie Supabase Auth, a nowe konta zaklada
 // wlascicielka w panelu Supabase. Konto zawsze jest w chmurze, wiec te same dane sa
-// na kazdym urzadzeniu. Nowo zalozone (przez wlascicielke) konto po pierwszym logowaniu
-// dolacza do firmy jako montazysta - role podnosi sie w Ustawienia -> Uzytkownicy.
+// na kazdym urzadzeniu. Konto BEZ nadanego dostepu do firmy dostaje odmowe - dostep
+// nadaje wlasciciel. Samo zalozenie konta nie daje juz wgladu w dane firmy.
 function LogowanieAMICO({ onZalogowano }: { onZalogowano: (id: string) => void }) {
   const [email, setEmail] = useState('')
   const [haslo, setHaslo] = useState('')

@@ -4,9 +4,8 @@
 --  nie rusza danych firmy. Wymaga wczesniej uruchomionego schematu AMICO
 --  (funkcja amico_bezpieczny_tekst).
 --
---  Po co: logowanie w aplikacji to teraz sam e-mail + haslo. "Zaloz konto"
---  ma automatycznie dolaczyc do tej samej firmy AMICO (bez kodow, bez wyboru
---  "zakladam/dolaczam"). Ta funkcja to obsluguje.
+--  Po co: logowanie w aplikacji to sam e-mail + haslo. Funkcja zwraca firme, do
+--  ktorej konto MA nadany dostep. Kont bez dostepu NIE wpuszcza.
 -- =====================================================================
 
 create or replace function public.amico_wejscie(p_imie text)
@@ -26,17 +25,11 @@ begin
    order by m.created_at asc
    limit 1;
 
-  -- 2) Nie jest czlonkiem zadnej? Dolacz do JEDYNEJ / najstarszej istniejacej firmy.
-  if w is null then
-    select ws.id into w from public.amico_workspaces ws order by ws.created_at asc limit 1;
-    if w is not null then
-      -- Najnizsza rola (montazysta) - najmniej uprawnien. Wlascicielka podniesie role
-      -- w aplikacji (Ustawienia -> Uzytkownicy), jesli osoba ma miec wiekszy dostep.
-      insert into public.amico_members (user_id, workspace_id, imie, email, rola)
-        values (auth.uid(), w, coalesce(nullif(v_imie, ''), 'Pracownik'),
-                (select u.email from auth.users u where u.id = auth.uid()), 'montazysta')
-      on conflict on constraint amico_members_pkey do update set imie = excluded.imie;
-    end if;
+  -- 2) BEZPIECZENSTWO: NIE dolaczamy nikogo automatycznie. Konto bez nadanego
+  -- czlonkostwa dostaje odmowe - dostep nadaje wlasciciel. (Dawniej kazde konto
+  -- wchodzilo do najstarszej firmy, co bylo realna dziura.)
+  if w is null and exists (select 1 from public.amico_workspaces) then
+    raise exception 'To konto nie ma dostepu do firmy. Dostep nadaje wlasciciel.';
   end if;
 
   -- 3) W ogole nie ma jeszcze zadnej firmy? Pierwsze konto zaklada ja jako wlasciciel.
@@ -63,8 +56,6 @@ end; $$;
 revoke all on function public.amico_wejscie(text) from public, anon;
 grant execute on function public.amico_wejscie(text) to authenticated;
 
--- UWAGA (bezpieczenstwo): punkt 2 sprawia, ze KAZDA osoba, ktora zaloguje sie/zalozy
--- konto, dolacza do firmy AMICO. Dla wewnetrznej apki (prywatny adres, kilka osob) to
--- wygoda. Jesli chcesz, zeby konta zakladala tylko wlascicielka:
--- Supabase -> Authentication -> Sign In / Providers -> wylacz "Allow new users to sign up".
--- Wtedy w aplikacji dziala samo logowanie, a nowe osoby dodaje wlascicielka w panelu Supabase.
+-- BEZPIECZENSTWO: auto-dolaczanie usuniete. Konto bez nadanego czlonkostwa dostaje
+-- odmowe. Dodatkowo zalecane: Supabase -> Authentication -> wylaczona rejestracja.
+-- Pelne hartowanie: supabase/amico-twierdza.sql
