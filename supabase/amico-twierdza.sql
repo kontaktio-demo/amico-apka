@@ -32,7 +32,7 @@ revoke all on public.amico_state_history from anon, authenticated;
 -- 2) POMOCNICZE
 -- ---------------------------------------------------------------------------
 create or replace function public.amico_licz(d jsonb, k text)
-returns int language sql immutable as $fn$
+returns int language sql immutable set search_path = public as $fn$
   select case when jsonb_typeof(d -> k) = 'array' then jsonb_array_length(d -> k) else 0 end
 $fn$;
 revoke all on function public.amico_licz(jsonb, text) from public, anon;

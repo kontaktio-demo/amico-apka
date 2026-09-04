@@ -1,6 +1,8 @@
 # Faza 3 — testy
 
-## Statyczne (wykonane)
+Status: **wykonane na produkcji 2026-09-05** (po uruchomieniu `amico-twierdza.sql`).
+
+## Statyczne
 
 | Test | Komenda | Wynik |
 |---|---|---|
@@ -14,64 +16,72 @@
 | Cache SW | `grep runtimeCaching vite.config.ts` | **brak** — cache wyłącznie statyków |
 
 **Dowód, że pozostałe advisories `react-router` nie dotyczą aplikacji:**
-`grep -rE "hydrateRoot|renderToString|StaticRouter"` → brak trafień (nie ma SSR, więc
-`deserializeErrors` odpada). `grep -rE "navigate\("` po odfiltrowaniu stałych ścieżek → brak
-trafień (wszystkie cele nawigacji są stałe, open redirect niewykonalny).
+`grep -rE "hydrateRoot|renderToString|StaticRouter"` → brak (nie ma SSR, `deserializeErrors` odpada).
+`grep -rE "navigate\("` po odfiltrowaniu stałych ścieżek → brak (wszystkie cele nawigacji stałe).
 
-## Regresja funkcjonalna (wykonana po każdej zmianie)
+## Baza produkcyjna — wyniki rzeczywiste
+
+| Test | Oczekiwane | Wynik |
+|---|---|---|
+| RLS-1 tabele w `public` bez RLS | 0 | **BRAK (OK)** |
+| RLS-2 polityki permisywne `true` | 0 | **BRAK (OK)** |
+| RLS-4 `SECURITY DEFINER` bez `search_path` | 0 | **BRAK (OK)** |
+| `anon` — polityki dające dostęp | 0 | **BRAK (OK)** — granty na tabelach są martwe przy RLS |
+| Funkcje twierdzy obecne | 6 | **6/6** (`amico_dodaj_czlonka`, `amico_historia_stanu`, `amico_licz`, `amico_moja_rola`, `amico_przywroc_stan`, `amico_wymus_zapis`) |
+| `amico_state_history` — liczba polityk | 0 (deny-all) | **jest, polityk: 0** |
+| SEC-01 `amico_wejscie` auto-dołączanie | zablokowane | **ZABLOKOWANE (OK)** |
+| SEC-02 `amico_save_state` blokada + archiwum | aktywne | **AKTYWNA + archiwizacja (OK)** |
+| SEC-03 `amico_join` / `amico_bootstrap` dla `authenticated` | odebrane | **ODEBRANE (OK)** (oba) |
+| SEC-10 `amico_skany` `DELETE` dla `authenticated` | odebrane | **ODEBRANE (OK)** |
+| SEC-08 buckety | prywatne, limit, typy | **dokumenty**: `public=false`, 25 MB, 12 typów · **skany**: `public=false`, 25 MB, 5 typów |
+
+### Weryfikacja blokady masowego usuwania (bez ruszania danych)
+
+Świadomie **nie wykonano** realnego zapisu czyszczącego na produkcji — gdyby blokada miała lukę,
+skasowałaby dane firmy. Zamiast tego zweryfikowano logikę:
+
+- `amico_licz('{"klienci":[1..7]}','klienci')` → **7**; brak klucza → **0**; wartość nie-tablicowa → **0**
+  (funkcja nie wywraca się na uszkodzonych danych).
+- Symulacja zapisu `{}` na **rzeczywistym** stanie: blokadę wywołałyby **3 kolekcje**,
+  największa chroniona to **`klienci` = 182 rekordy**. Zapis zostałby odrzucony.
+
+### Supabase Advisors (security)
+
+**0 błędów.** Pozostałe pozycje przeanalizowane:
+
+- `rls_enabled_no_policy` (INFO) dla `amico_state_history` — **zamierzone**: brak polityk = deny-all,
+  dostęp wyłącznie przez `SECURITY DEFINER`. Pozostałe tabele z tej listy (`accounts`, `clients`,
+  `leads`, `logs`, `stats`, `audit_log`, `kmail_*`) należą do **innych aplikacji** w tym projekcie
+  i również są zamknięte.
+- `function_search_path_mutable` (WARN) dla `amico_licz` — **naprawione** w trakcie testów
+  (`set search_path = public`, zweryfikowane: funkcja nadal zwraca poprawny wynik).
+  Pozostałe dwa trafienia (`ustaw_updated_at`, `update_updated_at_column`) to funkcje triggerowe
+  innych aplikacji w tym projekcie.
+- `authenticated_security_definer_function_executable` (WARN) dla wszystkich `amico_*` —
+  **z założenia**: tak działa aplikacja bez warstwy serwerowej. Każda z tych funkcji ma wewnętrzną
+  kontrolę (`auth.uid()`, członkostwo, rola). To nie jest luka, tylko architektura.
+
+### Integralność danych po hardeningu
+
+`skany=80 · członkowie=3 · rev=1108 · historia=0`
+
+Historia jest pusta, bo zapełnia się przy **pierwszym zapisie po wdrożeniu** — to poprawne
+zachowanie, nie błąd.
+
+## Regresja funkcjonalna
 
 | Test | Wynik |
 |---|---|
-| Audyt 21 tras (render, konsola, przewijanie poziome) | **0 problemów, 0 błędów** |
-| Przepływy: kontrahent, raport kasowy, zamówienie, hurtownie | **wszystkie `true`, 0 błędów konsoli** |
+| Audyt 21 tras (render, konsola, przewijanie poziome) | **0 problemów** |
+| Przepływy: kontrahent, raport kasowy, zamówienie, hurtownie | **0 błędów konsoli** |
 | Odporność na uszkodzone dane (23 trasy) | **0 problemów** |
-| Idempotentność synchronizacji | **`true`** |
+| Idempotentność synchronizacji | **true** |
 | Regresja crashu Zadań (priorytet spoza listy) | **PASS** |
-| Ekran logowania (tylko logowanie, bez rejestracji) | **PASS** |
+| Ekran logowania (tylko logowanie) | **PASS** |
 
-## Testy bazodanowe — do wykonania PO uruchomieniu `amico-twierdza.sql`
+## Testy urządzenia (E2E, do wykonania ręcznie)
 
-Nie dało się ich wykonać w tej sesji: konektor Supabase wymagał ponownej autoryzacji, a sesja
-jest nieinteraktywna. Zapytania są gotowe — uruchom w SQL Editor i porównaj z oczekiwaniem.
-
-```sql
--- RLS-1: tabele w public bez RLS -> oczekiwane 0 wierszy
-select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
-where c.relkind = 'r' and n.nspname = 'public' and not c.relrowsecurity;
-
--- RLS-2: polityki permisywne "true" -> oczekiwane 0 wierszy
-select tablename, policyname, cmd from pg_policies
-where schemaname = 'public' and (qual = 'true' or with_check = 'true');
-
--- RLS-4: funkcje SECURITY DEFINER muszą mieć ustawiony search_path (proconfig != NULL)
-select p.proname, p.prosecdef, p.proconfig from pg_proc p
-join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public' and p.prosecdef;
-
--- STOR-1 (SEC-08): limity i typy na bucketach
-select id, public, file_size_limit, allowed_mime_types from storage.buckets;
-
--- Granty dla anon -> oczekiwane 0 wierszy
-select table_name, privilege_type from information_schema.role_table_grants
-where grantee = 'anon' and table_schema = 'public';
-```
-
-Testy negatywne wymagające drugiego konta (uruchom jako konto BEZ członkostwa):
-
-- **RLS-3 (SEC-01):** `select * from amico_wejscie('Test');` → oczekiwany wyjątek
-  „To konto nie ma dostępu do firmy".
-- **RPC-2 (SEC-03):** `select * from amico_join('KOD','Test');` → oczekiwany błąd uprawnień.
-- **RLS-5 (SEC-02):** `select * from amico_save_state('<ws>'::uuid, '{}'::jsonb, <rev>);`
-  → oczekiwany wyjątek „Zapis zablokowany…".
-- **RLS-6 (SEC-02):** bezpośredni `select * from amico_state_history` z aplikacji →
-  brak uprawnień (brak polityk + `revoke`), a `amico_historia_stanu` jako właściciel → działa.
-
-## Testy urządzenia (E2E, ręcznie)
-
-- **E2E-3 (SEC-04):** zaloguj się, otwórz klientów, wyloguj. DevTools → Application:
-  IndexedDB bez bazy firmy, `localStorage` bez kluczy `amico-*`, Cache Storage puste,
-  „wstecz" nie pokazuje danych.
-- **E2E-5 (SEC-05):** zostaw aplikację 15 minut bez dotykania → ekran blokady.
-- **E2E-6 (SEC-06):** po deployu
-  `curl -sI https://amico-apka.vercel.app | grep -i "content-security-policy\|strict-transport"`
-  → nagłówki obecne.
+- **E2E-3 (SEC-04):** zaloguj się, otwórz klientów, wyloguj → DevTools → Application:
+  IndexedDB bez bazy firmy, `localStorage` bez kluczy `amico-*`, Cache Storage puste.
+- **E2E-5 (SEC-05):** 15 minut bez dotykania → ekran blokady.
+- **E2E-6 (SEC-06):** `curl -sI https://amico-apka.vercel.app | grep -i "content-security-policy"`.

@@ -7,7 +7,10 @@ Status: `[ ]` do zrobienia · `[x]` zrobione · data przy odhaczeniu.
 
 ## 1. Uruchom skrypt hartujący bazę — **NAJWAŻNIEJSZE**
 
-`[ ]` **Supabase → SQL Editor → New query → wklej całość `supabase/amico-twierdza.sql` → Run**
+`[x]` **WYKONANE 2026-09-05** — Supabase → SQL Editor → `supabase/amico-twierdza.sql` → Run.
+ Zweryfikowane na produkcji: wszystkie 6 funkcji obecne, auto-dolaczanie zablokowane,
+ blokada masowego usuwania aktywna, `amico_join`/`amico_bootstrap` odebrane, limity bucketow
+ ustawione. Szczegoly w `03-tests.md`.
 
 Skrypt jest idempotentny (można puścić wielokrotnie). Co robi:
 - historia stanu firmy (`amico_state_history`) — każda wersja archiwizowana, nic nie ginie,
@@ -74,8 +77,9 @@ To celowe — chroni przed wyczyszczeniem bazy przez pomyłkę lub przejęte kon
 `[ ]` **Database → Network Restrictions / Enforce SSL** — włącz, jeśli cokolwiek łączy się
  bezpośrednio do Postgresa (poza aplikacją przez API).
 
-`[ ]` **Advisors → Security i Performance**: przejrzyj listę, każdy błąd zamknij, każde ostrzeżenie
- opisz. Konektor był w tej sesji niedostępny, więc **nie zostało to sprawdzone**.
+`[x]` **Advisors → Security: sprawdzone 2026-09-05 — 0 bledow.** Ostrzezenia przeanalizowane
+ i opisane w `03-tests.md`; `amico_licz` naprawione (`search_path`). Performance advisors
+ nadal warto przejrzec przy okazji.
 
 `[ ]` **MFA na kontach zespołu w Supabase**, każdy ma własne konto (brak współdzielonego logowania).
 
