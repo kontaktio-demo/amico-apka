@@ -17,7 +17,9 @@ import {
   nazwaRoli,
 } from '../lib/auth'
 import {
+  useCloud,
   zalogujChmura,
+  wyczyscUrzadzenie,
   sesjaChmury,
   startSync,
   zsynchronizujUzytkownikaLokalnie,
@@ -30,7 +32,7 @@ import { Field, Input } from './ui'
 interface AuthCtx {
   user: Uzytkownik | null
   lock: () => void
-  logout: () => void
+  logout: () => void | Promise<void>
   // Przelacza zalogowanego uzytkownika na inne konto (np. gdy po polaczeniu z chmura
   // lokalne konto dostaje nowy identyfikator z chmury).
   przelogujNa: (id: string) => void
@@ -137,10 +139,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setWidok('in')
   }
   const lock = () => setWidok(user ? 'lock' : 'login')
-  const logout = () => {
-    wyczyscOstatniego()
-    setUserId(null)
-    setWidok(uzytkownicy.length ? 'login' : 'onboarding')
+  // Wylogowanie CZYSCI URZADZENIE: konczy sesje w chmurze i usuwa lokalna kopie bazy,
+  // localStorage oraz cache. Wspoldzielony tablet nie zostawia danych firmy nastepnej
+  // osobie. Gdy sa niezapisane zmiany, a nie ma sieci - NIE czyscimy i nie wylogowujemy,
+  // zeby praca nie przepadla (uzytkownik zobaczy blad chmury i moze sprobowac pozniej).
+  const [wylogowywanie, setWylogowywanie] = useState(false)
+  const logout = async () => {
+    if (wylogowywanie) return
+    setWylogowywanie(true)
+    try {
+      await wyczyscUrzadzenie()
+      wyczyscOstatniego()
+      setUserId(null)
+      setWidok('login')
+    } catch {
+      // Nie udalo sie zapisac zmian - zostajemy zalogowani, nic nie kasujemy.
+      useCloud.getState().ustaw({
+        status: 'blad',
+        blad: 'Nie wylogowano: masz niezapisane zmiany, a chmura jest nieosiągalna. Spróbuj ponownie, gdy wróci internet.',
+      })
+    } finally {
+      setWylogowywanie(false)
+    }
   }
 
   const ctx: AuthCtx = { user, lock, logout, przelogujNa }

@@ -168,25 +168,6 @@ export function CloudPanel({
           <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Rozmiar bazy</div>
           <div className="mt-1 text-[14px] font-semibold text-ink">{c.rozmiarKB ? `${c.rozmiarKB} KB` : '-'}</div>
         </div>
-        <div className="rounded-xl border border-black/10 p-3">
-          <div className="text-[11.5px] uppercase tracking-wide text-stone-500">Kod firmy (dla zespołu)</div>
-          <button
-            className="mt-1 flex items-center gap-2 text-[14px] font-semibold text-ink hover:text-brand-700"
-            onClick={async () => {
-              if (!c.joinCode) return
-              await navigator.clipboard.writeText(c.joinCode).catch(() => {})
-              setSkopiowano(true)
-              setTimeout(() => setSkopiowano(false), 1500)
-            }}
-          >
-            {c.joinCode || '-'}{' '}
-            {skopiowano ? (
-              <Check size={14} className="text-emerald-600" />
-            ) : (
-              <Copy size={13} className="text-stone-500" />
-            )}
-          </button>
-        </div>
       </div>
 
       {c.rozmiarKB > 4000 && (
@@ -213,7 +194,7 @@ export function CloudPanel({
 
       <p className="text-[12px] text-stone-500">
         Dane zapisują się automatycznie w chmurze i lokalnie. Zaloguj się tym samym e-mailem na innym urządzeniu, aby
-        zobaczyć te same dane. Pracownik dołącza do firmy <b>kodem</b> powyżej.
+        zobaczyć te same dane. Dostęp nowej osobie nadaje właściciel w <b>Ustawienia → Użytkownicy</b>.
       </p>
     </div>
   ) : (
@@ -225,38 +206,9 @@ export function CloudPanel({
           <span>{c.blad}</span>
         </div>
       )}
-      <div className="flex gap-1.5">
-        {(
-          [
-            ['logowanie', 'Zaloguj się'],
-            ['rejestracja', 'Załóż konto'],
-            ['dolacz', 'Dołącz do firmy'],
-          ] as [Tryb, string][]
-        ).map(([k, l]) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => setTryb(k)}
-            className={cx(
-              'rounded-lg px-3 py-1.5 text-[13px] font-medium transition',
-              tryb === k ? 'bg-brand-700 text-white' : 'text-stone-400 hover:bg-black/[0.04]',
-            )}
-          >
-            {l}
-          </button>
-        ))}
-      </div>
-
-      {(tryb === 'rejestracja' || tryb === 'dolacz') && (
-        <Field label="Imię i nazwisko">
-          <Input value={imie} onChange={(e) => setImie(e.target.value)} placeholder="np. Andrzej Fiks" />
-        </Field>
-      )}
-      {tryb === 'dolacz' && (
-        <Field label="Kod firmy (od właściciela)">
-          <Input value={kod} onChange={(e) => setKod(e.target.value.toUpperCase())} placeholder="np. A1B2C3D4" />
-        </Field>
-      )}
+      {/* BEZPIECZENSTWO: tylko logowanie. Zakladanie konta i dolaczanie kodem zostalo
+          wylaczone - kazdy, kto poznal kod firmy, mogl sam wejsc w dane. Dostep nadaje
+          wlasciciel imiennie w Ustawienia -> Uzytkownicy. */}
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="E-mail">
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="biuro@amicco.pl" />

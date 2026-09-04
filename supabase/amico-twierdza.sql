@@ -264,4 +264,74 @@ end; $fn$;
 revoke all on function public.amico_wymus_zapis(uuid, jsonb, bigint) from public, anon;
 grant execute on function public.amico_wymus_zapis(uuid, jsonb, bigint) to authenticated;
 
-select 'Twierdza gotowa: historia stanu, blokada masowego usuwania, koniec auto-dolaczania, RLS skanow' as status;
+-- ---------------------------------------------------------------------------
+-- 7) KONIEC SAMOOBSLUGOWYCH WEJSC.
+--    amico_join pozwalal KAZDEMU zalogowanemu dopisac sie do firmy, jesli znal kod.
+--    Kod jest widoczny dla kazdego czlonka, wiec jego wyciek = obcy w bazie.
+--    amico_bootstrap potrafil zalozyc/przypisac firme. Oba odbieramy uzytkownikom.
+-- ---------------------------------------------------------------------------
+do $blok2$
+begin
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+              where n.nspname='public' and p.proname='amico_join') then
+    execute 'revoke all on function public.amico_join(text, text) from authenticated, public, anon';
+  end if;
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+              where n.nspname='public' and p.proname='amico_bootstrap') then
+    execute 'revoke all on function public.amico_bootstrap(text) from authenticated, public, anon';
+  end if;
+end $blok2$;
+
+-- ---------------------------------------------------------------------------
+-- 8) NADANIE DOSTEPU PRZEZ WLASCICIELA (jedyna droga do firmy).
+--    Wlasciciel podaje e-mail istniejacego konta i role. Bez kodow, bez samoobslugi.
+-- ---------------------------------------------------------------------------
+create or replace function public.amico_dodaj_czlonka(p_workspace uuid, p_email text, p_rola text)
+returns uuid
+language plpgsql security definer set search_path = public as $fn$
+declare uid uuid; v_email text;
+begin
+  if public.amico_moja_rola(p_workspace) <> 'wlasciciel' then
+    raise exception 'Tylko wlasciciel moze nadawac dostep do firmy';
+  end if;
+  if p_rola not in ('wlasciciel','kierownik','biuro','montazysta') then
+    raise exception 'Nieprawidlowa rola';
+  end if;
+  v_email := lower(btrim(coalesce(p_email, '')));
+  if v_email = '' then raise exception 'Podaj adres e-mail'; end if;
+
+  select u.id into uid from auth.users u where lower(u.email) = v_email;
+  if uid is null then
+    raise exception 'Nie ma konta o adresie %. Najpierw zaloz konto w panelu Supabase.', v_email;
+  end if;
+
+  insert into public.amico_members (user_id, workspace_id, imie, email, rola)
+    values (uid, p_workspace, split_part(v_email, '@', 1), v_email, p_rola)
+  on conflict on constraint amico_members_pkey do update set rola = excluded.rola;
+  return uid;
+end; $fn$;
+revoke all on function public.amico_dodaj_czlonka(uuid, text, text) from public, anon;
+grant execute on function public.amico_dodaj_czlonka(uuid, text, text) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 9) STORAGE: limit rozmiaru i lista dozwolonych typow.
+--    Blokujemy text/html i image/svg+xml - to tresci AKTYWNE, ktore w przegladarce
+--    wykonuja skrypt. Dodatkowo aplikacja podaje dokumenty z wymuszonym pobraniem.
+-- ---------------------------------------------------------------------------
+update storage.buckets
+   set public = false,
+       file_size_limit = 26214400, -- 25 MB
+       allowed_mime_types = array['image/jpeg','image/png','image/webp','image/heic','application/pdf']
+ where id = 'skany';
+
+update storage.buckets
+   set public = false,
+       file_size_limit = 26214400, -- 25 MB
+       allowed_mime_types = array[
+         'image/jpeg','image/png','image/webp','image/heic','application/pdf','text/plain','text/csv',
+         'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+         'application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+         'application/zip']
+ where id = 'dokumenty';
+
+select 'Twierdza gotowa: historia stanu, blokada masowego usuwania, koniec auto-dolaczania i kodow, RLS skanow' as status;
