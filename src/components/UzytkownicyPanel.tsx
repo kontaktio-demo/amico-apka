@@ -4,7 +4,7 @@ import { SectionCard, Field, Input, Select, Toggle, Badge, useToast, useConfirm 
 import { useStore } from '../lib/store'
 import { useAuth } from './Auth'
 import { ROLE, nazwaRoli, hashHasla, hashPin, losowaSol, biometriaDostepna, zarejestrujBiometrie } from '../lib/auth'
-import { zmienRoleWChmurze, usunCzlonkaZChmury } from '../lib/cloud'
+import { zmienRoleWChmurze, usunCzlonkaZChmury, nadajDostepDoFirmy } from '../lib/cloud'
 import type { Uzytkownik, Rola } from '../lib/types'
 import { uid } from '../lib/id'
 import { nowISO, initials } from '../lib/format'
@@ -204,6 +204,7 @@ export function UzytkownicyPanel() {
           {confirmNode}
         </SectionCard>
       )}
+      {user?.rola === 'wlasciciel' && <NadajDostep />}
     </>
   )
 }
@@ -330,5 +331,69 @@ function DodajUzytkownika({ onAdd }: { onAdd: (u: Uzytkownik) => void }) {
         </button>
       </div>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Nadanie dostepu do firmy - JEDYNA droga wejscia dla nowej osoby.
+// Kody dolaczenia zostaly wylaczone: kazdy, kto poznal kod (a widzial go kazdy
+// czlonek), mogl sam wejsc do danych firmy. Teraz dostep nadaje wylacznie
+// wlasciciel, imiennie, po adresie e-mail istniejacego juz konta.
+// ---------------------------------------------------------------------------
+function NadajDostep() {
+  const { push } = useToast()
+  const [email, setEmail] = useState('')
+  const [rola, setRola] = useState<Rola>('montazysta')
+  const [busy, setBusy] = useState(false)
+
+  async function nadaj() {
+    const adres = email.trim().toLowerCase()
+    if (!adres) return push('Podaj adres e-mail', 'err')
+    setBusy(true)
+    try {
+      await nadajDostepDoFirmy(adres, rola)
+      push(`Nadano dostęp: ${adres} (${nazwaRoli(rola)})`, 'ok')
+      setEmail('')
+    } catch (e: any) {
+      push(e?.message || 'Nie udało się nadać dostępu', 'err')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <SectionCard
+      title="Dostęp do firmy"
+      desc="Tylko właściciel. Podaj e-mail istniejącego konta - osoba zobaczy dane firmy po zalogowaniu."
+      icon={<ShieldCheck size={18} />}
+    >
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+        <Field label="E-mail konta">
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="np. monter@firma.pl"
+            autoComplete="off"
+          />
+        </Field>
+        <Field label="Rola">
+          <Select value={rola} onChange={(e) => setRola(e.target.value as Rola)}>
+            {ROLE.map((r) => (
+              <option key={r.rola} value={r.rola}>
+                {r.nazwa}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <button className="btn-primary" onClick={nadaj} disabled={busy}>
+          <Check size={16} /> {busy ? 'Nadaję...' : 'Nadaj dostęp'}
+        </button>
+      </div>
+      <p className="mt-3 text-[12.5px] leading-relaxed text-stone-500">
+        Konto musi już istnieć (zakładane w panelu Supabase). Samo założenie konta nie daje
+        wglądu w dane firmy - dostęp nadaje się tutaj, imiennie. Odebrać go można na liście powyżej.
+      </p>
+    </SectionCard>
   )
 }

@@ -7,6 +7,7 @@ import type { Baza, Rola, Uzytkownik } from './types'
 import { hashHasla, losowaSol, zapiszOstatniego } from './auth'
 import { offloadSkanyTabela, migrujBlobSkanyDoTabeli, zresetujBrakBucketaTabela } from './skanyDb'
 import { nowISO } from './format'
+import { clearBaza } from './db'
 
 // ============================================================================
 // AMICO - synchronizacja z chmura (Supabase).
@@ -300,6 +301,36 @@ export async function zalogujChmura(email: string, haslo: string) {
   return true
 }
 
+// Pelne wyczyszczenie URZADZENIA przy wylogowaniu. Wspoldzielony tablet w warsztacie
+// albo zgubiony telefon nie moze zostawiac calej bazy firmy w IndexedDB i zywej sesji
+// w localStorage. NAJPIERW zapisujemy niezapisane zmiany - gdy sie nie uda (brak sieci),
+// NIC nie kasujemy i zglaszamy blad, zeby czyjas praca nie przepadla.
+export async function wyczyscUrzadzenie(): Promise<void> {
+  if (brudne || wTrakcie) await zapisz() // rzuci przy braku sieci - wtedy nie czyscimy
+  stopSync()
+  try {
+    await supabase.auth.signOut({ scope: 'local' })
+  } catch {
+    /* i tak czyscimy slady lokalne */
+  }
+  try {
+    await clearBaza()
+  } catch {
+    /* brak bazy lokalnej */
+  }
+  try {
+    for (const k of Object.keys(localStorage)) if (k.startsWith('amico-')) localStorage.removeItem(k)
+  } catch {
+    /* localStorage niedostepny */
+  }
+  try {
+    if (typeof caches !== 'undefined') for (const n of await caches.keys()) await caches.delete(n)
+  } catch {
+    /* Cache API niedostepne */
+  }
+  C().ustaw({ status: 'off', email: null, workspaceId: null, joinCode: null, rola: null, blad: null })
+}
+
 export async function wylogujChmura() {
   // Nie gubimy niezapisanych zmian
   try {
@@ -344,6 +375,21 @@ export async function bootstrapFirmy(imie: string) {
   const r = Array.isArray(data) ? data[0] : data
   if (!r) throw new Error('Nie udało się przygotować firmy w chmurze')
   return { workspaceId: r.workspace_id as string, rola: r.rola as Rola, joinCode: r.join_code as string }
+}
+
+// Nadanie dostepu do firmy - JEDYNA droga wejscia. Tylko wlasciciel, po adresie e-mail
+// istniejacego konta. Dolaczanie kodem zostalo wylaczone po stronie bazy: kazdy, kto
+// poznal kod (a widzial go kazdy czlonek), mogl sam wejsc do danych firmy.
+export async function nadajDostepDoFirmy(email: string, rola: Rola): Promise<string> {
+  const ws = useCloud.getState().workspaceId
+  if (!ws) throw new Error('Brak połączenia z firmą w chmurze.')
+  const { data, error } = await supabase.rpc('amico_dodaj_czlonka', {
+    p_workspace: ws,
+    p_email: email,
+    p_rola: rola,
+  })
+  if (error) throw error
+  return data as string
 }
 
 export async function dolaczDoFirmy(kod: string, imie: string) {
@@ -398,7 +444,11 @@ export async function wgrajDokument(plik: File, id: string): Promise<{ sciezka: 
 }
 
 export async function dokumentPodpisanyUrl(sciezka: string): Promise<string | null> {
-  const { data, error } = await supabase.storage.from(BUCKET_DOK).createSignedUrl(sciezka, 60 * 60)
+  // TTL 5 minut + wymuszone POBRANIE zamiast wyswietlenia. Bez `download` plik .html
+  // albo .svg wgrany do dokumentow renderowalby sie w przegladarce jako aktywna tresc.
+  const { data, error } = await supabase.storage
+    .from(BUCKET_DOK)
+    .createSignedUrl(sciezka, 300, { download: true })
   if (error) return null
   return data?.signedUrl || null
 }
@@ -453,9 +503,11 @@ export async function skanUrl(sciezka: string): Promise<string | null> {
   const c = skanUrlCache.get(sciezka)
   if (c && c.do > Date.now()) return c.url
   try {
-    const { data, error } = await supabase.storage.from(BUCKET_SKAN).createSignedUrl(sciezka, 60 * 60)
+    // TTL 5 minut zamiast godziny: podpisany link, ktory wycieknie (historia przegladarki,
+    // zrzut ekranu, wklejenie na czacie) przestaje dzialac niemal od razu.
+    const { data, error } = await supabase.storage.from(BUCKET_SKAN).createSignedUrl(sciezka, 300)
     if (error || !data?.signedUrl) return null
-    skanUrlCache.set(sciezka, { url: data.signedUrl, do: Date.now() + 50 * 60 * 1000 })
+    skanUrlCache.set(sciezka, { url: data.signedUrl, do: Date.now() + 4 * 60 * 1000 })
     return data.signedUrl
   } catch {
     return null
